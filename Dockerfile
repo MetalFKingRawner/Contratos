@@ -10,7 +10,7 @@ RUN apt-get update && \
       libreoffice-headless \
       unoconv \
       python3-uno \
-      fonts-dejavu-core
+      fonts-dejavu-core \
     && rm -rf /var/lib/apt/lists/*
 
 # 3. Crea directorio de la app
