@@ -5,12 +5,12 @@ FROM python:3.11-slim
 # 2. Instala dependencias de sistema y LibreOffice/unoconv
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-      libreoffice \                     # instala todo el core de LibreOffice
-      libreoffice-writer \              # en caso de no venir con libreoffice
-      libreoffice-headless \            # ejecución sin GUI
-      unoconv \                         # la herramienta de conversión
-      python3-uno \                     # puente Python–UNO indispensable
-      fonts-dejavu-core                 # fuentes comunes para PDF
+      libreoffice \
+      libreoffice-writer \
+      libreoffice-headless \
+      unoconv \
+      python3-uno \
+      fonts-dejavu-core
     && rm -rf /var/lib/apt/lists/*
 
 # 3. Crea directorio de la app
