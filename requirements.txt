@@ -6,3 +6,4 @@ Requests==2.32.4
 gunicorn
 whitenoise
 dj-database-url
+django-formtools>=2.4
