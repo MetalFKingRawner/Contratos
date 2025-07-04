@@ -6,12 +6,10 @@ FROM python:3.11-slim
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
       libreoffice \
-      libreoffice-writer \
-      libreoffice-headless \
       unoconv \
       python3-uno \
-      fonts-dejavu-core \
-    && rm -rf /var/lib/apt/lists/*
+      fonts-dejavu-core && \
+    rm -rf /var/lib/apt/lists/*
 
 # 3. Crea directorio de la app
 WORKDIR /app
