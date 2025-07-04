@@ -5,3 +5,4 @@ python_docx==1.2.0
 Requests==2.32.4
 gunicorn
 whitenoise
+dj-database-url
