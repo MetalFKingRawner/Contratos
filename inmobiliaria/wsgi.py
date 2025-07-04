@@ -10,7 +10,10 @@ https://docs.djangoproject.com/en/5.0/howto/deployment/wsgi/
 import os
 
 from django.core.wsgi import get_wsgi_application
+from django.conf import settings  # ¡IMPORTANTE: AÑADE ESTA IMPORTACIÓN!
+from whitenoise import WhiteNoise
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'inmobiliaria.settings')
 
 application = get_wsgi_application()
+application = WhiteNoise(application, root=settings.STATIC_ROOT)  # Ahora settings está definido
