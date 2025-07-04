@@ -5,8 +5,9 @@ FROM python:3.11-slim
 # 2. Instala dependencias de sistema y LibreOffice/unoconv
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-      libreoffice \
-      unoconv \
+      libreoffice-core \
+      libreoffice-writer \
+      libreoffice-script-provider-python \
       python3-uno \
       fonts-dejavu-core && \
     rm -rf /var/lib/apt/lists/*
