@@ -5,6 +5,8 @@ from docxtpl import DocxTemplate
 import os
 import subprocess, shlex, logging
 
+logger = logging.getLogger(__name__)
+
 def fill_word_template(template_path, context, output_docx_path):
     """
     Rellena la plantilla Word (con marcadores Jinja {{ CAMPO }})
