@@ -23,9 +23,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-(554c!v@j7rpxf@z%ostxu#lhb2lwx=hld+amvqv9ez55ni)cl'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -50,6 +50,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -82,15 +83,22 @@ WSGI_APPLICATION = 'inmobiliaria.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
+#DATABASES = {
+#    "default": {
+#        "ENGINE": "django.db.backends.postgresql",
+#        "NAME": "inmobiliaria_db",
+#        "USER": "postgres",
+#        "PASSWORD": "hangar81",
+#        "HOST": "localhost",
+#        "PORT": "5432",
+#    }
+#}
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": "inmobiliaria_db",
-        "USER": "postgres",
-        "PASSWORD": "hangar81",
-        "HOST": "localhost",
-        "PORT": "5432",
-    }
+    'default': dj_database_url.config(
+        default=f"postgresql://neondb_owner:npg_QcEmihO6J0pb@ep-withered-term-afo0e7o2-pooler.c-2.us-west-2.aws.neon.tech/Inmobiliaria_db",  # URL local para pruebas
+        conn_max_age=600,
+        ssl_require=True  # Neon y Railway pueden requerir SSL
+    )
 }
 
 
@@ -138,3 +146,4 @@ MEDIA_ROOT = BASE_DIR / "media"
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'  # ✅
