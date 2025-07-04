@@ -1,9 +1,10 @@
 # utils.py
 from docx import Document
 from docx2pdf import convert
-import pythoncom
 from docxtpl import DocxTemplate
 import os
+import subprocess
+import shlex
 
 def fill_word_template(template_path, context, output_docx_path):
     """
@@ -15,14 +16,16 @@ def fill_word_template(template_path, context, output_docx_path):
     tpl.save(output_docx_path)
     return output_docx_path
 
-def convert_docx_to_pdf(docx_path, output_pdf_path):
-    """Convierte DOCX a PDF usando docx2pdf, inicializando COM."""
-    try:
-        pythoncom.CoInitialize()            # <— Inicializa COM
-        convert(docx_path, output_pdf_path)
-        return True
-    except Exception as e:
-        print(f"Error al convertir DOCX a PDF: {e}")
-        return False
-    finally:
-        pythoncom.CoUninitialize()          # <— Libera COM
+def convert_docx_to_pdf(docx_path: str, output_pdf_path: str) -> bool:
+    """
+    Convierte DOCX a PDF usando unoconv (LibreOffice).
+    Lanza RuntimeError si falla.
+    """
+    # Construye el comando
+    cmd = f'unoconv -f pdf -o "{output_pdf_path}" "{docx_path}"'
+    proc = subprocess.run(shlex.split(cmd), capture_output=True, text=True)
+    if proc.returncode != 0:
+        raise RuntimeError(
+            f"Error en unoconv:\nSTDOUT:{proc.stdout}\nSTDERR:{proc.stderr}"
+        )
+    return True
