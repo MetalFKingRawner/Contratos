@@ -1,0 +1,612 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Aviso de Privacidad{% endblock %}
+
+{% block extra_css %}
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+<style>
+:root {
+  --primary-gradient: linear-gradient(135deg, #2e8fcc 0%, #1e5f8c 100%);
+  --accent-gradient: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+  --text-primary: #2c3e50;
+  --text-secondary: #6c757d;
+  --shadow-primary: 0 15px 35px rgba(46, 143, 204, 0.15);
+  --shadow-hover: 0 25px 50px rgba(46, 143, 204, 0.25);
+  --glass-bg: rgba(255, 255, 255, 0.1);
+  --glass-border: rgba(255, 255, 255, 0.2);
+}
+
+.privacy-container {
+  background: var(--glass-bg);
+  border-radius: 30px;
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 25px 45px rgba(0, 0, 0, 0.1);
+  padding: 3rem 2rem;
+  margin: 2rem auto;
+  max-width: 1000px;
+  position: relative;
+  overflow: hidden;
+  animation: containerSlideIn 1s ease-out;
+}
+
+.privacy-container::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(46, 143, 204, 0.05) 0%, transparent 70%);
+  animation: rotateBackground 20s linear infinite;
+  z-index: -1;
+}
+
+.privacy-title {
+  font-size: clamp(2rem, 5vw, 3rem) !important;
+  font-weight: 700 !important;
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-align: center;
+  margin-bottom: 1rem !important;
+  position: relative;
+  animation: titleFloat 3s ease-in-out infinite alternate;
+}
+
+.privacy-title::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 3px;
+  background: var(--accent-gradient);
+  border-radius: 2px;
+  animation: lineGlow 2s ease-in-out infinite alternate;
+}
+
+.privacy-subtitle {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  text-align: center;
+  margin-bottom: 2rem;
+  font-weight: 300;
+  opacity: 0;
+  animation: fadeInUp 1s ease 0.5s forwards;
+}
+
+.pdf-container {
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 20px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.pdf-container::before {
+  content: '\f1c1';
+  font-family: 'Font Awesome 6 Free';
+  font-weight: 900;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 10rem;
+  color: rgba(46, 143, 204, 0.05);
+  z-index: 0;
+}
+
+.pdf-container object {
+  position: relative;
+  z-index: 1;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.signature-section {
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 20px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.3);
+}
+
+.section-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid rgba(46, 143, 204, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.section-title i {
+  color: var(--bs-primary);
+}
+
+.signature-canvas-container {
+  position: relative;
+  margin-bottom: 1.5rem;
+  display: flex; /* Make it a flex container */
+  flex-direction: column; /* Stack items vertically */
+  align-items:center; /* Optional: Align items to the start of the cross axis (left for column) */
+}
+
+.signature-canvas {
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+  border: 2px solid rgba(46, 143, 204, 0.2);
+  cursor: crosshair;
+  transition: border-color 0.3s;
+}
+
+.signature-canvas:hover {
+  border-color: var(--bs-primary);
+}
+
+.signature-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.signature-controls .btn-clear {
+  background: rgba(255, 107, 107, 0.1);
+  color: #ee5a6f;
+  border: none;
+  border-radius: 50px;
+  padding: 0.5rem 1.25rem;
+  font-weight: 500;
+  transition: all 0.3s;
+}
+
+.signature-controls .btn-clear:hover {
+  background: rgba(255, 107, 107, 0.2);
+  transform: translateY(-2px);
+}
+
+.signature-preview {
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.acceptance-section {
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 20px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.3);
+}
+
+.checkbox-container {
+  position: relative;
+  padding-left: 2.5rem;
+  min-height: 1.5rem;
+  display: flex;
+  align-items: center;
+}
+
+.checkbox-container input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+.checkmark {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 1.5rem;
+  width: 1.5rem;
+  background-color: white;
+  border: 2px solid rgba(46, 143, 204, 0.2);
+  border-radius: 6px;
+  transition: all 0.3s;
+}
+
+.checkbox-container:hover input ~ .checkmark {
+  border-color: var(--bs-primary);
+}
+
+.checkbox-container input:checked ~ .checkmark {
+  background-color: var(--bs-primary);
+  border-color: var(--bs-primary);
+}
+
+.checkmark:after {
+  content: "";
+  position: absolute;
+  display: none;
+}
+
+.checkbox-container input:checked ~ .checkmark:after {
+  display: block;
+}
+
+.checkbox-container .checkmark:after {
+  left: 0.45rem;
+  top: 0.25rem;
+  width: 0.35rem;
+  height: 0.7rem;
+  border: solid white;
+  border-width: 0 3px 3px 0;
+  transform: rotate(45deg);
+}
+
+.terms-label {
+  font-size: 1.1rem;
+  color: var(--text-primary);
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.terms-label:hover {
+  color: var(--bs-primary);
+}
+
+.btn-submit {
+  background: var(--primary-gradient) !important;
+  border: none !important;
+  color: white !important;
+  padding: 1.2rem 3.5rem !important;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-radius: 50px !important;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-primary);
+  min-width: 250px;
+  display: block;
+  margin: 2rem auto 0;
+}
+
+.btn-submit::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  transition: left 0.5s;
+}
+
+.btn-submit:hover::before {
+  left: 100%;
+}
+
+.btn-submit:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: var(--shadow-hover);
+  color: white !important;
+}
+
+.btn-submit i {
+  margin-left: 0.75rem;
+  transition: transform 0.3s ease;
+}
+
+.btn-submit:hover i {
+  transform: translateX(5px);
+}
+
+.progress-indicator {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 2rem;
+  opacity: 0;
+  animation: fadeInUp 1s ease 0.2s forwards;
+}
+
+.progress-step {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--primary-gradient);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  margin: 0 1rem;
+  box-shadow: 0 4px 15px rgba(46, 143, 204, 0.3);
+  position: relative;
+}
+
+.progress-step::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 100%;
+  width: 80px;
+  height: 2px;
+  background: rgba(46, 143, 204, 0.3);
+  transform: translateY(-50%);
+}
+
+.progress-step:last-child::after {
+  display: none;
+}
+
+.progress-step.active {
+  animation: pulse 2s infinite;
+  background: #4128a7;
+}
+
+.progress-step.completed {
+  background: #28a745;
+}
+
+.progress-step.completed::before {
+  content: '\f00c';
+  font-family: 'Font Awesome 6 Free';
+  font-weight: 900;
+}
+
+@media (max-width: 768px) {
+  .privacy-container {
+    margin: 1rem;
+    padding: 2rem 1rem;
+  }
+  
+  .privacy-title {
+    font-size: 2rem !important;
+  }
+  
+  .pdf-container {
+    padding: 1rem;
+  }
+  
+  .signature-section, .acceptance-section {
+    padding: 1.5rem;
+  }
+  
+  .btn-submit {
+    width: 100%;
+    min-width: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .progress-step {
+    width: 30px;
+    height: 30px;
+    font-size: 0.8rem;
+    margin: 0 0.5rem;
+  }
+  
+  .progress-step::after {
+    width: 40px;
+  }
+}
+
+/* Animaciones */
+@keyframes containerSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes titleFloat {
+  0% { transform: translateY(0px); }
+  100% { transform: translateY(-10px); }
+}
+
+@keyframes lineGlow {
+  0% { box-shadow: 0 0 5px rgba(46, 143, 204, 0.5); }
+  100% { box-shadow: 0 0 20px rgba(46, 143, 204, 0.8), 0 0 30px rgba(46, 143, 204, 0.4); }
+}
+
+@keyframes rotateBackground {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="privacy-container">
+  <!-- Indicador de progreso -->
+  <div class="progress-indicator">
+    <div class="progress-step completed">1</div>
+    <div class="progress-step completed">2</div>
+    <div class="progress-step completed">3</div>
+    <div class="progress-step active">4</div>
+    <div class="progress-step">5</div>
+  </div>
+
+  <h1 class="privacy-title">Aviso de Privacidad</h1>
+  <p class="privacy-subtitle">
+    Por favor lee atentamente y firma para continuar con tu proceso
+  </p>
+
+  <!-- Contenedor del PDF -->
+  <div class="pdf-container">
+    <h3 class="section-title">
+      <i class="fas fa-file-pdf"></i>
+      Documento de Aviso de Privacidad
+    </h3>
+    
+    <object data="{% static 'docs/aviso_privacidad.pdf' %}"
+            type="application/pdf"
+            width="100%" height="500px"
+            class="signature-canvas">
+      <p>Tu navegador no soporta PDF, <a href="{% static 'docs/aviso_privacidad.pdf' %}">descárgalo aquí</a>.</p>
+    </object>
+  </div>
+
+  <form method="post" novalidate>
+    {% csrf_token %}
+    
+    <!-- Sección de firma -->
+    <div class="signature-section">
+      <h3 class="section-title">
+        <i class="fas fa-signature"></i>
+        Firma de aceptación
+      </h3>
+      
+      <div class="signature-canvas-container">
+        <label class="form-label mb-3">Dibuja tu firma en el área de abajo:</label>
+        <canvas id="sig-canvas"
+                width="400" height="150"
+                class="signature-canvas"></canvas>
+      </div>
+      
+      <div class="signature-controls">
+        <button id="sig-clear" type="button" class="btn-clear">
+          <i class="fas fa-eraser me-1"></i>
+          Borrar firma
+        </button>
+        <div class="signature-preview">
+          <i class="fas fa-info-circle me-1"></i>
+          Tu firma aparecerá en los documentos legales
+        </div>
+      </div>
+      
+      <!-- Campo oculto para la firma -->
+      {{ form.firma_data }}
+    </div>
+    
+    <!-- Sección de aceptación -->
+    <div class="acceptance-section">
+      <h3 class="section-title">
+        <i class="fas fa-check-circle"></i>
+        Confirmación de aceptación
+      </h3>
+      
+      <div class="form-check">
+        <label class="checkbox-container">
+          {{ form.aceptar }}
+          <span class="checkmark"></span>
+          <span class="terms-label">
+            He leído y acepto los términos del Aviso de Privacidad
+          </span>
+        </label>
+        
+        {% if form.aceptar.errors %}
+          <div class="text-danger small mt-2">
+            <i class="fas fa-exclamation-circle me-1"></i>
+            {{ form.aceptar.errors.0 }}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+    
+    <button type="submit" class="btn-submit">
+      <i class="fas fa-file-contract"></i>
+      Aceptar y continuar
+      <i class="fas fa-arrow-right"></i>
+    </button>
+  </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const canvas = document.getElementById('sig-canvas');
+  const sigPad = new SignaturePad(canvas, {
+    minWidth: 1,
+    maxWidth: 3,
+    penColor: "#2c3e50"
+  });
+  
+  // Ajustar canvas a pantallas pequeñas
+  function resizeCanvas() {
+    const ratio = Math.max(window.devicePixelRatio || 1, 1);
+    canvas.width = canvas.offsetWidth * ratio;
+    canvas.height = canvas.offsetHeight * ratio;
+    canvas.getContext("2d").scale(ratio, ratio);
+    sigPad.clear(); // Limpiar al redimensionar
+  }
+  
+  // Inicializar y ajustar tamaño
+  window.addEventListener('resize', resizeCanvas);
+  resizeCanvas();
+  
+  // Botón borrar
+  document.getElementById('sig-clear').onclick = () => {
+    sigPad.clear();
+    canvas.style.borderColor = "rgba(46, 143, 204, 0.2)";
+  };
+  
+  // Manejar envío del formulario
+  document.querySelector('form').addEventListener('submit', (e) => {
+    const hidden = document.getElementById('{{ form.firma_data.id_for_label }}');
+    
+    if (sigPad.isEmpty()) {
+      canvas.style.borderColor = "#dc3545";
+      e.preventDefault();
+      alert('Por favor, proporciona tu firma');
+      return;
+    }
+    
+    hidden.value = sigPad.toDataURL('image/png');
+  });
+  
+  // Cambiar estilo al dibujar
+  canvas.addEventListener('pointerdown', () => {
+    canvas.style.borderColor = "#2e8fcc";
+  });
+  
+  // Animación de entrada para las secciones
+  const sections = document.querySelectorAll('.pdf-container, .signature-section, .acceptance-section');
+  sections.forEach((section, index) => {
+    section.style.opacity = '0';
+    section.style.transform = 'translateY(30px)';
+    setTimeout(() => {
+      section.style.transition = 'all 0.6s ease';
+      section.style.opacity = '1';
+      section.style.transform = 'translateY(0)';
+    }, 150 * index);
+  });
+});
+</script>
+{% endblock %}

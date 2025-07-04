@@ -1,0 +1,521 @@
+{% extends "base.html" %}
+{% block title %}Seleccionar plan de financiamiento{% endblock %}
+
+{% block extra_css %}
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+<style>
+/* Estilos adicionales específicos para financiamiento */
+.financing-container {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 30px;
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 25px 45px rgba(0, 0, 0, 0.1);
+  padding: 3rem 2rem;
+  margin: 2rem auto;
+  max-width: 900px;
+  position: relative;
+  overflow: hidden;
+}
+
+.financing-container::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(46, 143, 204, 0.05) 0%, transparent 70%);
+  animation: rotateBackground 20s linear infinite;
+  z-index: -1;
+}
+
+@keyframes rotateBackground {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.financing-title {
+  font-size: clamp(2rem, 5vw, 3rem) !important;
+  font-weight: 700 !important;
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-align: center;
+  margin-bottom: 2rem !important;
+  position: relative;
+  animation: titleFloat 3s ease-in-out infinite alternate;
+}
+
+.financing-title::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 3px;
+  background: var(--accent-gradient);
+  border-radius: 2px;
+  animation: lineGlow 2s ease-in-out infinite alternate;
+}
+
+.financing-subtitle {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  text-align: center;
+  margin-bottom: 3rem;
+  font-weight: 300;
+  opacity: 0;
+  animation: fadeInUp 1s ease 0.5s forwards;
+}
+
+.plan-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.plan-card {
+  position: relative;
+  border-radius: 15px;
+  padding: 1.5rem;
+  background: rgba(255,255,255,0.9);
+  border: 2px solid rgba(46,143,204,0.2);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  cursor: pointer;
+  transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
+}
+.plan-card:hover {
+  transform: translateY(-5px);
+  border-color: var(--bs-primary);
+  box-shadow: 0 15px 35px rgba(46,143,204,0.2);
+}
+.plan-card input[type="radio"] {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 1.2rem;
+  height: 1.2rem;
+}
+.plan-card h5 {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+.plan-card .meta {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+}
+.plan-card .detail {
+  font-size: 1rem;
+  color: var(--text-primary);
+}
+.form-field-wrapper {
+  position: relative;
+  margin-bottom: 1.5rem;
+}
+
+.form-field-wrapper label {
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+  display: block;
+  font-size: 1.1rem;
+}
+
+.form-field-wrapper .form-control,
+.form-field-wrapper select {
+  border-radius: 15px;
+  border: 2px solid rgba(46, 143, 204, 0.2);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.form-field-wrapper .form-control:focus,
+.form-field-wrapper select:focus {
+  border-color: var(--bs-primary);
+  box-shadow: 0 0 0 0.2rem rgba(46, 143, 204, 0.25);
+  background: rgba(255, 255, 255, 1);
+  outline: none;
+}
+
+.form-field-wrapper .form-control:hover,
+.form-field-wrapper select:hover {
+  border-color: var(--bs-primary);
+  transform: translateY(-2px);
+}
+
+.submit-section {
+  text-align: center;
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(46, 143, 204, 0.1);
+  opacity: 0;
+  animation: slideInUp 1s ease 1s forwards;
+}
+
+.btn-continue {
+  background: var(--primary-gradient) !important;
+  border: none !important;
+  color: white !important;
+  padding: 1rem 3rem !important;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-radius: 50px !important;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-primary);
+  min-width: 200px;
+}
+
+.btn-continue::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  transition: left 0.5s;
+}
+
+.btn-continue:hover::before {
+  left: 100%;
+}
+
+.btn-continue:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: var(--shadow-hover);
+  color: white !important;
+}
+
+.btn-continue i {
+  margin-left: 0.5rem;
+  transition: transform 0.3s ease;
+}
+
+.btn-continue:hover i {
+  transform: translateX(3px);
+}
+
+.info-card {
+  background: rgba(46, 143, 204, 0.05);
+  border: 1px solid rgba(46, 143, 204, 0.1);
+  border-radius: 15px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  position: relative;
+}
+
+.info-card::before {
+  content: '\f05a';
+  font-family: 'Font Awesome 6 Free';
+  font-weight: 900;
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  color: var(--bs-primary);
+  font-size: 1.2rem;
+}
+
+.info-card-content {
+  margin-left: 2rem;
+}
+
+.info-card h5 {
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.info-card p {
+  color: var(--text-secondary);
+  margin-bottom: 0;
+  font-size: 0.95rem;
+}
+
+/* Animaciones de entrada */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes titleFloat {
+  0% { transform: translateY(0px); }
+  100% { transform: translateY(-10px); }
+}
+
+@keyframes lineGlow {
+  0% { box-shadow: 0 0 5px rgba(46, 143, 204, 0.5); }
+  100% { box-shadow: 0 0 20px rgba(46, 143, 204, 0.8), 0 0 30px rgba(46, 143, 204, 0.4); }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .financing-container {
+    margin: 1rem;
+    padding: 2rem 1rem;
+  }
+  
+  .financing-title {
+    font-size: 2rem !important;
+  }
+  
+  .btn-continue {
+    width: 100%;
+    margin-top: 1rem;
+  }
+  
+  .plan-selection {
+    padding: 1.5rem;
+  }
+}
+/* Indicador de progreso */
+.progress-indicator {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 2rem;
+  opacity: 0;
+  animation: fadeInUp 1s ease 0.2s forwards;
+}
+
+.progress-step {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--primary-gradient);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  margin: 0 1rem;
+  box-shadow: 0 4px 15px rgba(46, 143, 204, 0.3);
+  position: relative;
+}
+
+.progress-step::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 100%;
+  width: 80px;
+  height: 2px;
+  background: rgba(46, 143, 204, 0.3);
+  transform: translateY(-50%);
+}
+
+.progress-step:last-child::after {
+  display: none;
+}
+
+.progress-step.active {
+  animation: pulse 2s infinite;
+  background: #4128a7;
+}
+
+.progress-step.completed {
+  background: #28a745;
+}
+
+.progress-step.completed::before {
+  content: '\f00c';
+  font-family: 'Font Awesome 6 Free';
+  font-weight: 900;
+}
+@media (max-width: 480px) {
+  .progress-step {
+    width: 30px;
+    height: 30px;
+    font-size: 0.8rem;
+    margin: 0 0.5rem;
+  }
+  
+  .progress-step::after {
+    width: 40px;
+  }
+}
+/* Animaciones */
+@keyframes containerSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes cardSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes formSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes submitSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes titleFloat {
+  0% { transform: translateY(0px); }
+  100% { transform: translateY(-10px); }
+}
+
+@keyframes lineGlow {
+  0% { box-shadow: 0 0 5px rgba(46, 143, 204, 0.5); }
+  100% { box-shadow: 0 0 20px rgba(46, 143, 204, 0.8), 0 0 30px rgba(46, 143, 204, 0.4); }
+}
+
+@keyframes rotateBackground {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes shimmer {
+  0%, 100% { transform: translateX(-100%); }
+  50% { transform: translateX(100%); }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="financing-container">
+  <div class="progress-indicator">
+    <div class="progress-step active">1</div>
+    <div class="progress-step">2</div>
+    <div class="progress-step">3</div>
+    <div class="progress-step">4</div>
+    <div class="progress-step">5</div>
+  </div>
+  <h1 class="financing-title">Selecciona tu Plan de Financiamiento</h1>
+  <p class="financing-subtitle">
+    Elige tu plan de financiamiento elaborado especialmente para ti
+  </p>
+
+  <!--<div class="info-card">
+    <div class="info-card-content">
+      <h5>¿Necesitas ayuda para decidir?</h5>
+      <p>Nuestros asesores financieros están disponibles para guiarte en la elección del plan más conveniente según tu perfil económico.</p>
+    </div>
+  </div> -->
+
+  <div class="plan-selection">
+    <form method="post">
+      {% csrf_token %}
+
+      <div class="plan-cards">
+        {% for plan in financiamientos %}
+        <label class="plan-card" for="fin_{{ plan.id }}">
+          <input 
+            type="radio" 
+            id="fin_{{ plan.id }}" 
+            name="financiamiento" 
+            value="{{ plan.id }}"
+            {% if plan.id == form.initial.financiamiento %}checked{% endif %}
+            required>
+          <h5>Plan: {{ plan.tipo_pago }}</h5>
+          <div class="meta">
+            Lote: {{ plan.lote.identificador }} — {{ plan.lote.proyecto.nombre }}
+          </div>
+          <div class="detail">
+            Cliente: {{ plan.nombre_cliente }}<br><br>
+            Ubicación: {{ plan.lote.proyecto.ubicacion }}<br>
+          </div>
+        </label>
+        {% empty %}
+        <p>No hay planes disponibles por el momento.</p>
+        {% endfor %}
+      </div>
+
+      <div class="submit-section">
+        <button type="submit" class="btn btn-continue">
+          Continuar con mi selección
+          <i class="fas fa-arrow-right"></i>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Resaltar tarjeta seleccionada
+  const cards = document.querySelectorAll('.plan-card');
+  cards.forEach(card => {
+    const radio = card.querySelector('input[type=radio]');
+    radio.addEventListener('change', () => {
+      cards.forEach(c => c.classList.remove('selected'));
+      if (radio.checked) card.classList.add('selected');
+    });
+    // click anywhere en la tarjeta activa el radio
+    card.addEventListener('click', () => radio.checked = true);
+  });
+});
+</script>
+{% endblock %}

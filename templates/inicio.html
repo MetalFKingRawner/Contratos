@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Inicio - Inmobiliaria{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column align-items-center justify-content-center" style="min-height:60vh;">
+  <h1 class="mb-3">Bienvenido a Grupo Jora</h1>
+  <p class="mb-4 text-center text-muted">Inicia tu proceso para generar tus documentos</p>
+  <div class="d-flex flex-column flex-sm-row gap-3">
+    <a href="{% url 'workflow:paso1_financiamiento' %}" class="btn btn-primary btn-lg px-4">
+      Iniciar
+    </a>
+    <!-- <a href="{% url 'workflow:aviso_contrato' %}" class="btn btn-outline-primary btn-lg px-4">
+      Contrato
+    </a>
+    <a href="{% url 'workflow:solicitud' %}" class="btn btn-outline-primary btn-lg px-4">
+      Solicitud de Contrato
+    </a>-->
+  </div>
+</div>
+{% endblock %}

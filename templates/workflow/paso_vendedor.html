@@ -1,0 +1,586 @@
+{% extends "base.html" %}
+{% block title %}¿Quién te atendió?{% endblock %}
+
+{% block extra_css %}
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+<style>
+:root {
+  --primary-gradient: linear-gradient(135deg, #2e8fcc 0%, #1e5f8c 100%);
+  --accent-gradient: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+  --text-primary: #2c3e50;
+  --text-secondary: #6c757d;
+  --shadow-primary: 0 15px 35px rgba(46, 143, 204, 0.15);
+  --shadow-hover: 0 25px 50px rgba(46, 143, 204, 0.25);
+  --glass-bg: rgba(255, 255, 255, 0.1);
+  --glass-border: rgba(255, 255, 255, 0.2);
+}
+
+.vendor-container {
+  background: var(--glass-bg);
+  border-radius: 30px;
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 25px 45px rgba(0, 0, 0, 0.1);
+  padding: 3rem 2rem;
+  margin: 2rem auto;
+  max-width: 1000px;
+  position: relative;
+  overflow: hidden;
+  animation: containerSlideIn 1s ease-out;
+}
+
+.vendor-container::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(46, 143, 204, 0.05) 0%, transparent 70%);
+  animation: rotateBackground 20s linear infinite;
+  z-index: -1;
+}
+
+.vendor-title {
+  font-size: clamp(2rem, 5vw, 3rem) !important;
+  font-weight: 700 !important;
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-align: center;
+  margin-bottom: 1rem !important;
+  position: relative;
+  animation: titleFloat 3s ease-in-out infinite alternate;
+}
+
+.vendor-title::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 3px;
+  background: var(--accent-gradient);
+  border-radius: 2px;
+  animation: lineGlow 2s ease-in-out infinite alternate;
+}
+
+.vendor-subtitle {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  text-align: center;
+  margin-bottom: 2rem;
+  font-weight: 300;
+  opacity: 0;
+  animation: fadeInUp 1s ease 0.5s forwards;
+}
+
+.vendor-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.vendor-card {
+  position: relative;
+  border-radius: 15px;
+  padding: 1.5rem;
+  background: rgba(255,255,255,0.9);
+  border: 2px solid rgba(46,143,204,0.2);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  cursor: pointer;
+  transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
+  overflow: hidden;
+}
+
+.vendor-card:hover {
+  transform: translateY(-5px);
+  border-color: var(--bs-primary);
+  box-shadow: 0 15px 35px rgba(46,143,204,0.2);
+}
+
+.vendor-card.selected {
+  border-color: #4128a7;
+  background: rgba(65, 40, 167, 0.05);
+  box-shadow: 0 10px 30px rgba(65, 40, 167, 0.15);
+}
+
+.vendor-card.selected::before {
+  content: '\f00c';
+  font-family: 'Font Awesome 6 Free';
+  font-weight: 900;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 30px;
+  height: 30px;
+  background: #4128a7;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+.vendor-card input[type="radio"] {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 1.2rem;
+  height: 1.2rem;
+  z-index: 1;
+}
+
+.vendor-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.vendor-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: var(--primary-gradient);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.vendor-info {
+  flex: 1;
+}
+
+.vendor-name {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+}
+
+.vendor-type {
+  font-size: 0.9rem;
+  padding: 0.25rem 0.75rem;
+  background: rgba(65, 40, 167, 0.1);
+  color: #4128a7;
+  border-radius: 20px;
+  display: inline-block;
+}
+
+.vendor-details {
+  margin-top: 1rem;
+}
+
+.vendor-detail {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.vendor-detail i {
+  color: var(--bs-primary);
+  min-width: 20px;
+  margin-top: 3px;
+}
+
+.vendor-projects {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(0,0,0,0.05);
+}
+
+.vendor-projects-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.project-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.project-tag {
+  background: rgba(46, 143, 204, 0.1);
+  color: var(--text-primary);
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+}
+
+.submit-section {
+  text-align: center;
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(46, 143, 204, 0.1);
+}
+
+.btn-continue {
+  background: var(--primary-gradient) !important;
+  border: none !important;
+  color: white !important;
+  padding: 1.2rem 3.5rem !important;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-radius: 50px !important;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-primary);
+  min-width: 250px;
+}
+
+.btn-continue::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  transition: left 0.5s;
+}
+
+.btn-continue:hover::before {
+  left: 100%;
+}
+
+.btn-continue:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: var(--shadow-hover);
+  color: white !important;
+}
+
+.btn-continue i {
+  margin-left: 0.75rem;
+  transition: transform 0.3s ease;
+}
+
+.btn-continue:hover i {
+  transform: translateX(5px);
+}
+
+.progress-indicator {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 2rem;
+  opacity: 0;
+  animation: fadeInUp 1s ease 0.2s forwards;
+}
+
+.progress-step {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--primary-gradient);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  margin: 0 1rem;
+  box-shadow: 0 4px 15px rgba(46, 143, 204, 0.3);
+  position: relative;
+}
+
+.progress-step::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 100%;
+  width: 80px;
+  height: 2px;
+  background: rgba(46, 143, 204, 0.3);
+  transform: translateY(-50%);
+}
+
+.progress-step:last-child::after {
+  display: none;
+}
+
+.progress-step.active {
+  animation: pulse 2s infinite;
+  background: #4128a7;
+}
+
+.progress-step.completed {
+  background: #28a745;
+}
+
+.progress-step.completed::before {
+  content: '\f00c';
+  font-family: 'Font Awesome 6 Free';
+  font-weight: 900;
+}
+
+@media (max-width: 768px) {
+  .vendor-container {
+    margin: 1rem;
+    padding: 2rem 1rem;
+  }
+  
+  .vendor-title {
+    font-size: 2rem !important;
+  }
+  
+  .vendor-cards {
+    grid-template-columns: 1fr;
+  }
+  
+  .btn-continue {
+    width: 100%;
+    min-width: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .progress-step {
+    width: 30px;
+    height: 30px;
+    font-size: 0.8rem;
+    margin: 0 0.5rem;
+  }
+  
+  .progress-step::after {
+    width: 40px;
+  }
+  
+  .vendor-avatar {
+    width: 50px;
+    height: 50px;
+    font-size: 1.2rem;
+  }
+}
+
+/* Animaciones */
+@keyframes containerSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes titleFloat {
+  0% { transform: translateY(0px); }
+  100% { transform: translateY(-10px); }
+}
+
+@keyframes lineGlow {
+  0% { box-shadow: 0 0 5px rgba(46, 143, 204, 0.5); }
+  100% { box-shadow: 0 0 20px rgba(46, 143, 204, 0.8), 0 0 30px rgba(46, 143, 204, 0.4); }
+}
+
+@keyframes rotateBackground {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="vendor-container">
+  <!-- Indicador de progreso -->
+  <div class="progress-indicator">
+    <div class="progress-step completed">1</div>
+    <div class="progress-step completed">2</div>
+    <div class="progress-step active">3</div>
+    <div class="progress-step">4</div>
+    <div class="progress-step">5</div>
+  </div>
+
+  <h1 class="vendor-title">¿Quién te atendió?</h1>
+  <p class="vendor-subtitle">
+    Selecciona a tu vendedor o apoderado para completar tu solicitud
+  </p>
+
+  <!-- Información del lote -->
+  <div class="alert alert-info" style="border-radius: 15px; border-left: 4px solid #2e8fcc; background: rgba(46, 143, 204, 0.05);">
+    <strong><i class="fas fa-map-marker-alt me-2"></i>Lote seleccionado:</strong> 
+    {{ financiamiento.lote }} en el proyecto <strong>{{ financiamiento.lote.proyecto.nombre }}</strong>
+  </div>
+
+  <!-- Mensaje cuando no hay vendedores -->
+  {% if not vendedores %}
+  <div class="no-vendors text-center py-5">
+    <i class="fas fa-user-slash fa-3x mb-3 text-secondary"></i>
+    <h3>No encontramos vendedores asociados</h3>
+    <p class="text-muted mb-4">
+      No hay vendedores asignados al proyecto "{{ financiamiento.lote.proyecto.nombre }}".
+      Por favor contacta al administrador.
+    </p>
+    <a href="mailto:admin@tuempresa.com" class="btn btn-primary">
+      <i class="fas fa-envelope me-2"></i>Contactar al administrador
+    </a>
+  </div>
+  {% endif %}
+
+  <!-- Tarjetas de vendedores -->
+  <form method="post" id="vendorForm">
+    {% csrf_token %}
+    
+    <div class="vendor-cards">
+      {% for vendedor in vendedores %}
+      <label class="vendor-card" for="vend_{{ vendedor.id }}">
+        <input 
+          type="radio" 
+          id="id_vendedor_{{ forloop.counter0 }}" 
+          name="vendedor" 
+          value="{{ vendedor.id }}"
+          {% if form.vendedor.value|stringformat:"s" == vendedor.id|stringformat:"s" %}checked{% endif %}
+          class="d-none">
+        
+        <div class="vendor-header">
+          <div class="vendor-avatar">
+            {{ vendedor.nombre_completo|slice:":1" }}
+          </div>
+          <div class="vendor-info">
+            <div class="vendor-name">{{ vendedor.nombre_completo }}</div>
+            <div class="vendor-type">
+              <i class="fas fa-{% if vendedor.tipo == 'vendedor' %}user-tie{% else %}user-shield{% endif %} me-1"></i>
+              {{ vendedor.get_tipo_display }}
+            </div>
+          </div>
+        </div>
+        
+        <div class="vendor-details">
+          <div class="vendor-detail">
+            <i class="fas fa-phone"></i>
+            <div>{{ vendedor.telefono }}</div>
+          </div>
+          
+          <div class="vendor-detail">
+            <i class="fas fa-envelope"></i>
+            <div>{{ vendedor.email }}</div>
+          </div>
+          
+          <div class="vendor-detail">
+            <i class="fas fa-map-marker-alt"></i>
+            <div>{{ vendedor.domicilio|truncatechars:40 }}</div>
+          </div>
+        </div>
+        
+        <div class="vendor-projects">
+          <div class="vendor-projects-title">
+            <i class="fas fa-building me-1"></i> Proyectos asociados:
+          </div>
+          <div class="project-tags">
+            {% for proyecto in vendedor.proyectos.all|slice:":3" %}
+            <div class="project-tag">{{ proyecto.nombre }}</div>
+            {% endfor %}
+            {% if vendedor.proyectos.count > 3 %}
+            <div class="project-tag">+{{ vendedor.proyectos.count|add:"-3" }} más</div>
+            {% endif %}
+          </div>
+        </div>
+      </label>
+      {% empty %}
+      {% comment %} Este bloque ya no es necesario si tenemos el if anterior {% endcomment %}
+      {% endfor %}
+    </div>
+
+    {% if form.vendedor.errors %}
+    <div class="alert alert-danger mt-3">
+      {% for error in form.vendedor.errors %}
+        <i class="fas fa-exclamation-circle me-2"></i>{{ error }}
+      {% endfor %}
+    </div>
+    {% endif %}
+    
+    {% if vendedores %}
+    <div class="submit-section">
+      <button type="submit" class="btn btn-continue">
+        <i class="fas fa-check-circle"></i>
+        Confirmar selección
+        <i class="fas fa-arrow-right"></i>
+      </button>
+    </div>
+    {% endif %}
+  </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Selección de tarjeta de vendedor
+  const cards = document.querySelectorAll('.vendor-card');
+  cards.forEach(card => {
+    const radio = card.querySelector('input[type=radio]');
+    
+    // Marcar como seleccionada si ya estaba seleccionada
+    if (radio.checked) {
+      card.classList.add('selected');
+    }
+    
+    radio.addEventListener('change', () => {
+      cards.forEach(c => c.classList.remove('selected'));
+      if (radio.checked) card.classList.add('selected');
+    });
+    
+    // Click en cualquier parte de la tarjeta selecciona el vendedor
+    card.addEventListener('click', function(e) {
+      if (e.target.tagName !== 'INPUT') {
+        radio.checked = true;
+        radio.dispatchEvent(new Event('change'));
+      }
+    });
+  });
+  
+  // Animación de entrada para las tarjetas
+  const vendorCards = document.querySelectorAll('.vendor-card');
+  vendorCards.forEach((card, index) => {
+    card.style.opacity = '0';
+    card.style.transform = 'translateY(30px)';
+    setTimeout(() => {
+      card.style.transition = 'all 0.6s ease';
+      card.style.opacity = '1';
+      card.style.transform = 'translateY(0)';
+    }, 150 * index);
+  });
+  
+  // Efecto de carga para el botón
+  const form = document.getElementById('vendorForm');
+  if (form) {
+    form.addEventListener('submit', function(e) {
+      const button = form.querySelector('.btn-continue');
+      const originalHtml = button.innerHTML;
+      button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+      button.disabled = true;
+    });
+  }
+});
+</script>
+{% endblock %}

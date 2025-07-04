@@ -1,0 +1,968 @@
+{% extends "base.html" %}
+{% block title %}Datos del Cliente{% endblock %}
+
+{% block extra_css %}
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+<style>
+/* Variables CSS para consistencia */
+:root {
+  --primary-gradient: linear-gradient(135deg, #2e8fcc 0%, #1e5f8c 100%);
+  --accent-gradient: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+  --text-primary: #2c3e50;
+  --text-secondary: #6c757d;
+  --shadow-primary: 0 15px 35px rgba(46, 143, 204, 0.15);
+  --shadow-hover: 0 25px 50px rgba(46, 143, 204, 0.25);
+  --glass-bg: rgba(255, 255, 255, 0.1);
+  --glass-border: rgba(255, 255, 255, 0.2);
+}
+
+/* Contenedor principal con efecto glass */
+.client-data-container {
+  background: var(--glass-bg);
+  border-radius: 30px;
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 25px 45px rgba(0, 0, 0, 0.1);
+  padding: 3rem 2rem;
+  margin: 2rem auto;
+  max-width: 1000px;
+  position: relative;
+  overflow: hidden;
+  animation: containerSlideIn 1s ease-out;
+}
+
+.client-data-container::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(46, 143, 204, 0.05) 0%, transparent 70%);
+  animation: rotateBackground 25s linear infinite;
+  z-index: -1;
+}
+
+.client-data-container::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.02) 50%, transparent 70%);
+  animation: shimmer 3s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* Título principal con efectos */
+.client-title {
+  font-size: clamp(2rem, 5vw, 3rem) !important;
+  font-weight: 700 !important;
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-align: center;
+  margin-bottom: 1rem !important;
+  position: relative;
+  animation: titleFloat 3s ease-in-out infinite alternate;
+}
+
+.client-title::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 3px;
+  background: var(--accent-gradient);
+  border-radius: 2px;
+  animation: lineGlow 2s ease-in-out infinite alternate;
+}
+
+.client-subtitle {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  text-align: center;
+  margin-bottom: 2rem;
+  font-weight: 300;
+  opacity: 0;
+  animation: fadeInUp 1s ease 0.5s forwards;
+}
+
+/* Tarjeta de información del plan */
+.plan-info-card {
+  background: rgba(46, 143, 204, 0.05);
+  border: 1px solid rgba(46, 143, 204, 0.2);
+  border-radius: 20px;
+  padding: 2rem;
+  margin-bottom: 3rem;
+  position: relative;
+  overflow: hidden;
+  animation: cardSlideIn 1s ease-out 0.3s both;
+  box-shadow: 0 10px 30px rgba(46, 143, 204, 0.1);
+}
+
+.plan-info-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--primary-gradient);
+  border-radius: 20px 20px 0 0;
+}
+
+.plan-info-card::after {
+  content: '\f3fd';
+  font-family: 'Font Awesome 6 Free';
+  font-weight: 900;
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  color: var(--bs-primary);
+  font-size: 1.5rem;
+  opacity: 0.3;
+}
+
+.plan-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.plan-info-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.plan-info-icon {
+  width: 40px;
+  height: 40px;
+  background: var(--primary-gradient);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1rem;
+  box-shadow: 0 4px 15px rgba(46, 143, 204, 0.3);
+}
+
+.plan-info-content strong {
+  color: var(--text-primary);
+  font-weight: 600;
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.plan-info-content span {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+
+/* Formulario estilizado */
+.form-container {
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 25px;
+  padding: 2.5rem;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+  animation: formSlideIn 1s ease-out 0.6s both;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.form-field-wrapper {
+  position: relative;
+  margin-bottom: 2rem;
+}
+
+.form-field-wrapper label {
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.1rem;
+}
+
+.form-field-wrapper label i {
+  color: var(--bs-primary);
+  font-size: 1rem;
+}
+
+.form-field-wrapper .form-control,
+.form-field-wrapper select,
+.form-field-wrapper textarea {
+  border-radius: 15px;
+  border: 2px solid rgba(46, 143, 204, 0.2);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  padding: 1rem 1.25rem;
+  font-size: 1rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  width: 100%;
+}
+
+.form-field-wrapper .form-control:focus,
+.form-field-wrapper select:focus,
+.form-field-wrapper textarea:focus {
+  border-color: var(--bs-primary);
+  box-shadow: 0 0 0 0.2rem rgba(46, 143, 204, 0.25), 0 8px 25px rgba(46, 143, 204, 0.15);
+  background: rgba(255, 255, 255, 1);
+  outline: none;
+  transform: translateY(-2px);
+}
+
+.form-field-wrapper .form-control:hover,
+.form-field-wrapper select:hover,
+.form-field-wrapper textarea:hover {
+  border-color: var(--bs-primary);
+  transform: translateY(-1px);
+}
+
+/* Campos especiales */
+.form-field-wrapper.phone-field::before {
+  content: '\f095';
+  font-family: 'Font Awesome 6 Free';
+  font-weight: 900;
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--bs-primary);
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.form-field-wrapper.email-field::before {
+  content: '\f0e0';
+  font-family: 'Font Awesome 6 Free';
+  font-weight: 900;
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--bs-primary);
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Errores de validación */
+.form-field-wrapper .text-danger {
+  color: #dc3545 !important;
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.form-field-wrapper .text-danger::before {
+  content: '\f071';
+  font-family: 'Font Awesome 6 Free';
+  font-weight: 900;
+  font-size: 0.8rem;
+}
+
+.form-field-wrapper.error .form-control,
+.form-field-wrapper.error select,
+.form-field-wrapper.error textarea {
+  border-color: #dc3545;
+  box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+/* Botón de continuar */
+.submit-section {
+  text-align: center;
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(46, 143, 204, 0.1);
+  animation: submitSlideIn 1s ease-out 0.9s both;
+}
+
+.btn-continue {
+  background: var(--primary-gradient) !important;
+  border: none !important;
+  color: white !important;
+  padding: 1.2rem 3.5rem !important;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-radius: 50px !important;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-primary);
+  min-width: 250px;
+}
+
+.btn-continue::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  transition: left 0.5s;
+}
+
+.btn-continue:hover::before {
+  left: 100%;
+}
+
+.btn-continue:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: var(--shadow-hover);
+  color: white !important;
+}
+
+.btn-continue i {
+  margin-left: 0.75rem;
+  transition: transform 0.3s ease;
+}
+
+.btn-continue:hover i {
+  transform: translateX(5px);
+}
+
+/* Indicador de progreso */
+.progress-indicator {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 2rem;
+  opacity: 0;
+  animation: fadeInUp 1s ease 0.2s forwards;
+}
+
+.progress-step {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--primary-gradient);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  margin: 0 1rem;
+  box-shadow: 0 4px 15px rgba(46, 143, 204, 0.3);
+  position: relative;
+}
+
+.progress-step::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 100%;
+  width: 80px;
+  height: 2px;
+  background: rgba(46, 143, 204, 0.3);
+  transform: translateY(-50%);
+}
+
+.progress-step:last-child::after {
+  display: none;
+}
+
+.progress-step.active {
+  animation: pulse 2s infinite;
+  background: #4128a7;
+}
+
+.progress-step.completed {
+  background: #28a745;
+}
+
+.progress-step.completed::before {
+  content: '\f00c';
+  font-family: 'Font Awesome 6 Free';
+  font-weight: 900;
+}
+
+/* Animaciones */
+@keyframes containerSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes cardSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes formSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes submitSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes titleFloat {
+  0% { transform: translateY(0px); }
+  100% { transform: translateY(-10px); }
+}
+
+@keyframes lineGlow {
+  0% { box-shadow: 0 0 5px rgba(46, 143, 204, 0.5); }
+  100% { box-shadow: 0 0 20px rgba(46, 143, 204, 0.8), 0 0 30px rgba(46, 143, 204, 0.4); }
+}
+
+@keyframes rotateBackground {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes shimmer {
+  0%, 100% { transform: translateX(-100%); }
+  50% { transform: translateX(100%); }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .client-data-container {
+    margin: 1rem;
+    padding: 2rem 1rem;
+  }
+  
+  .client-title {
+    font-size: 2rem !important;
+  }
+  
+  .form-container {
+    padding: 1.5rem;
+  }
+  
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .plan-info-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .btn-continue {
+    width: 100%;
+    min-width: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .progress-step {
+    width: 30px;
+    height: 30px;
+    font-size: 0.8rem;
+    margin: 0 0.5rem;
+  }
+  
+  .progress-step::after {
+    width: 40px;
+  }
+}
+/* Nuevos estilos para agrupación de campos */
+.field-group {
+  background: rgba(240, 245, 255, 0.4);
+  border-radius: 20px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  border-left: 4px solid var(--bs-primary);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+}
+
+.field-group-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.field-group-title i {
+  color: var(--bs-primary);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .client-data-container {
+    margin: 1rem;
+    padding: 2rem 1rem;
+  }
+  
+  .client-title {
+    font-size: 2rem !important;
+  }
+  
+  .form-container {
+    padding: 1.5rem;
+  }
+  
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .plan-info-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .btn-continue {
+    width: 100%;
+    min-width: auto;
+  }
+  
+  .field-group {
+    padding: 1rem;
+  }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="client-data-container">
+  <!-- Indicador de progreso -->
+  <div class="progress-indicator">
+    <div class="progress-step completed">1</div>
+    <div class="progress-step active">2</div>
+    <div class="progress-step">3</div>
+    <div class="progress-step">4</div>
+    <div class="progress-step">5</div>
+  </div>
+
+  <h1 class="client-title">Completa tus Datos Personales</h1>
+  <p class="client-subtitle">
+    Estás a un paso de hacer realidad tu sueño de tener tu propio lote
+  </p>
+
+  <!-- Información del plan seleccionado -->
+  <div class="plan-info-card">
+    <div class="plan-info-grid">
+      <div class="plan-info-item">
+        <div class="plan-info-icon">
+          <i class="fas fa-user"></i>
+        </div>
+        <div class="plan-info-content">
+          <strong>Plan para:</strong>
+          <span>{{ financiamiento.nombre_cliente }}</span>
+        </div>
+      </div>
+      
+      <div class="plan-info-item">
+        <div class="plan-info-icon">
+          <i class="fas fa-map-marked-alt"></i>
+        </div>
+        <div class="plan-info-content">
+          <strong>Lote:</strong>
+          <span>{{ financiamiento.lote }}</span>
+        </div>
+      </div>
+      
+      <div class="plan-info-item">
+        <div class="plan-info-icon">
+          <i class="fas fa-building"></i>
+        </div>
+        <div class="plan-info-content">
+          <strong>Proyecto:</strong>
+          <span>{{ financiamiento.lote.proyecto.nombre }}</span>
+        </div>
+      </div>
+      
+      <div class="plan-info-item">
+        <div class="plan-info-icon">
+          <i class="fas fa-dollar-sign"></i>
+        </div>
+        <div class="plan-info-content">
+          <strong>Precio:</strong>
+          <span>${{ financiamiento.precio_lote }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Formulario corregido -->
+  <div class="form-container">
+    <form method="post" id="clientForm">
+      {% csrf_token %}
+      
+      <!-- Grupo: Información Personal -->
+      <div class="field-group">
+        <h3 class="field-group-title">
+          <i class="fas fa-user-circle"></i>
+          Información Personal
+        </h3>
+        <div class="form-row">
+          <div class="form-field-wrapper {% if form.nombre_completo.errors %}error{% endif %}">
+            <label for="{{ form.nombre_completo.id_for_label }}">
+              <i class="fas fa-user"></i>
+              {{ form.nombre_completo.label }}
+            </label>
+            {{ form.nombre_completo }}
+            {% for error in form.nombre_completo.errors %}
+              <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+          </div>
+          
+          <div class="form-field-wrapper {% if form.sexo.errors %}error{% endif %}">
+            <label for="{{ form.sexo.id_for_label }}">
+              <i class="fas fa-venus-mars"></i>
+              {{ form.sexo.label }}
+            </label>
+            {{ form.sexo }}
+            {% for error in form.sexo.errors %}
+              <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+          </div>
+          
+          <div class="form-field-wrapper phone-field {% if form.telefono.errors %}error{% endif %}">
+            <label for="{{ form.telefono.id_for_label }}">
+              <i class="fas fa-phone"></i>
+              {{ form.telefono.label }}
+            </label>
+            {{ form.telefono }}
+            {% for error in form.telefono.errors %}
+              <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+          </div>
+          
+          <div class="form-field-wrapper email-field {% if form.email.errors %}error{% endif %}">
+            <label for="{{ form.email.id_for_label }}">
+              <i class="fas fa-envelope"></i>
+              {{ form.email.label }}
+            </label>
+            {{ form.email }}
+            {% for error in form.email.errors %}
+              <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      
+      <!-- Grupo: Identificación -->
+      <div class="field-group">
+        <h3 class="field-group-title">
+          <i class="fas fa-id-card"></i>
+          Identificación
+        </h3>
+        <div class="form-row">
+          <div class="form-field-wrapper {% if form.tipo_id.errors %}error{% endif %}">
+            <label for="{{ form.tipo_id.id_for_label }}">
+              <i class="fas fa-passport"></i>
+              {{ form.tipo_id.label }}
+            </label>
+            {{ form.tipo_id }}
+            {% for error in form.tipo_id.errors %}
+              <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+          </div>
+          
+          <div class="form-field-wrapper {% if form.numero_id.errors %}error{% endif %}">
+            <label for="{{ form.numero_id.id_for_label }}">
+              <i class="fas fa-fingerprint"></i>
+              {{ form.numero_id.label }}
+            </label>
+            {{ form.numero_id }}
+            {% for error in form.numero_id.errors %}
+              <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+          </div>
+          
+          <div class="form-field-wrapper {% if form.rfc.errors %}error{% endif %}">
+            <label for="{{ form.rfc.id_for_label }}">
+              <i class="fas fa-file-invoice"></i>
+              {{ form.rfc.label }}
+            </label>
+            {{ form.rfc }}
+            {% for error in form.rfc.errors %}
+              <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      
+      <!-- Grupo: Información Adicional -->
+      <div class="field-group">
+        <h3 class="field-group-title">
+          <i class="fas fa-info-circle"></i>
+          Información Adicional
+        </h3>
+        <div class="form-row">
+          <div class="form-field-wrapper {% if form.nacionalidad.errors %}error{% endif %}">
+            <label for="{{ form.nacionalidad.id_for_label }}">
+              <i class="fas fa-flag"></i>
+              {{ form.nacionalidad.label }}
+            </label>
+            {{ form.nacionalidad }}
+            {% for error in form.nacionalidad.errors %}
+              <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+          </div>
+          
+          <div class="form-field-wrapper {% if form.originario.errors %}error{% endif %}">
+            <label for="{{ form.originario.id_for_label }}">
+              <i class="fas fa-globe-americas"></i>
+              {{ form.originario.label }}
+            </label>
+            {{ form.originario }}
+            {% for error in form.originario.errors %}
+              <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+          </div>
+          
+          <div class="form-field-wrapper {% if form.estado_civil.errors %}error{% endif %}">
+            <label for="{{ form.estado_civil.id_for_label }}">
+              <i class="fas fa-heart"></i>
+              {{ form.estado_civil.label }}
+            </label>
+            {{ form.estado_civil }}
+            {% for error in form.estado_civil.errors %}
+              <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+          </div>
+          
+          <div class="form-field-wrapper {% if form.ocupacion.errors %}error{% endif %}">
+            <label for="{{ form.ocupacion.id_for_label }}">
+              <i class="fas fa-briefcase"></i>
+              {{ form.ocupacion.label }}
+            </label>
+            {{ form.ocupacion }}
+            {% for error in form.ocupacion.errors %}
+              <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      
+      <!-- Grupo: Domicilio -->
+      <div class="field-group">
+        <h3 class="field-group-title">
+          <i class="fas fa-map-marker-alt"></i>
+          Domicilio
+        </h3>
+        <div class="form-row">
+          <div class="form-field-wrapper {% if form.domicilio.errors %}error{% endif %}" style="grid-column: 1 / -1;">
+            <label for="{{ form.domicilio.id_for_label }}">
+              <i class="fas fa-home"></i>
+              {{ form.domicilio.label }}
+            </label>
+            {{ form.domicilio }}
+            {% for error in form.domicilio.errors %}
+              <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <div class="submit-section">
+        <button type="submit" class="btn btn-continue">
+          <i class="fas fa-rocket"></i>
+          Continuar mi Solicitud
+          <i class="fas fa-arrow-right"></i>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Animación de entrada para los campos del formulario
+  const formFields = document.querySelectorAll('.form-field-wrapper');
+  formFields.forEach((field, index) => {
+    field.style.opacity = '0';
+    field.style.transform = 'translateY(20px)';
+    setTimeout(() => {
+      field.style.transition = 'all 0.6s ease';
+      field.style.opacity = '1';
+      field.style.transform = 'translateY(0)';
+    }, 100 * index);
+  });
+
+  // Validación en tiempo real
+  const form = document.getElementById('clientForm');
+  const inputs = form.querySelectorAll('input, select, textarea');
+  
+  inputs.forEach(input => {
+    input.addEventListener('blur', function() {
+      validateField(this);
+    });
+    
+    input.addEventListener('input', function() {
+      if (this.classList.contains('is-invalid')) {
+        validateField(this);
+      }
+    });
+  });
+
+  function validateField(field) {
+    const wrapper = field.closest('.form-field-wrapper');
+    const errorDiv = wrapper.querySelector('.text-danger');
+    
+    // Limpiar estados previos
+    wrapper.classList.remove('error');
+    field.classList.remove('is-invalid');
+    
+    if (field.hasAttribute('required') && !field.value.trim()) {
+      showFieldError(wrapper, 'Este campo es requerido');
+      return false;
+    }
+    
+    // Validaciones específicas
+    if (field.type === 'email' && field.value) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(field.value)) {
+        showFieldError(wrapper, 'Ingresa un email válido');
+        return false;
+      }
+    }
+    
+    if (field.name === 'telefono' && field.value) {
+      const phoneRegex = /^[\d\s\-\+\(\)]+$/;
+      if (!phoneRegex.test(field.value)) {
+        showFieldError(wrapper, 'Ingresa un teléfono válido');
+        return false;
+      }
+    }
+    
+    // Campo válido
+    hideFieldError(wrapper);
+    return true;
+  }
+
+  function showFieldError(wrapper, message) {
+    wrapper.classList.add('error');
+    const input = wrapper.querySelector('input, select, textarea');
+    input.classList.add('is-invalid');
+    
+    let errorDiv = wrapper.querySelector('.text-danger');
+    if (!errorDiv) {
+      errorDiv = document.createElement('div');
+      errorDiv.className = 'text-danger';
+      wrapper.appendChild(errorDiv);
+    }
+    errorDiv.textContent = message;
+  }
+
+  function hideFieldError(wrapper) {
+    wrapper.classList.remove('error');
+    const input = wrapper.querySelector('input, select, textarea');
+    input.classList.remove('is-invalid');
+    
+    const errorDiv = wrapper.querySelector('.text-danger');
+    if (errorDiv && !errorDiv.textContent.includes('error')) {
+      errorDiv.remove();
+    }
+  }
+
+  // Efecto de carga para el botón
+  form.addEventListener('submit', function(e) {
+    const button = form.querySelector('.btn-continue');
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+    button.disabled = true;
+    
+    // Validar todos los campos antes de enviar
+    let isValid = true;
+    inputs.forEach(input => {
+      if (!validateField(input)) {
+        isValid = false;
+      }
+    });
+    
+    if (!isValid) {
+      e.preventDefault();
+      button.innerHTML = '<i class="fas fa-rocket"></i> Continuar mi Solicitud <i class="fas fa-arrow-right"></i>';
+      button.disabled = false;
+      
+      // Desplazar al primer error
+      const firstError = document.querySelector('.error');
+      if (firstError) {
+        firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+  });
+
+  // Efecto de floating labels
+  inputs.forEach(input => {
+    input.addEventListener('focus', function() {
+      this.closest('.form-field-wrapper').classList.add('focused');
+    });
+    
+    input.addEventListener('blur', function() {
+      if (!this.value) {
+        this.closest('.form-field-wrapper').classList.remove('focused');
+      }
+    });
+    
+    // Inicializar estado
+    if (input.value) {
+      input.closest('.form-field-wrapper').classList.add('focused');
+    }
+  });
+});
+</script>
+{% endblock %}

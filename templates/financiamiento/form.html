@@ -1,0 +1,284 @@
+{% extends "base.html" %}
+
+{% block title %}{% if object %}Editar{% else %}Nuevo{% endif %} Financiamiento{% endblock %}
+
+{% block extra_css %}
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+<style>
+:root {
+  --primary-gradient: linear-gradient(135deg, #2e8fcc 0%, #1e5f8c 100%);
+  --accent-gradient: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+  --text-primary: #2c3e50;
+  --text-secondary: #6c757d;
+  --glass-bg: rgba(255,255,255,0.15);
+  --glass-border: rgba(255,255,255,0.2);
+}
+
+.form-container {
+  background: var(--glass-bg);
+  border-radius: 25px;
+  backdrop-filter: blur(15px);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+  padding: 2.5rem;
+  max-width: 900px;
+  margin: 2rem auto;
+  position: relative;
+  overflow: hidden;
+  animation: fadeInUp 0.8s ease both;
+}
+
+.section-title {
+  font-family: 'Poppins', sans-serif;
+  font-size: 1.75rem;
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 1rem;
+  position: relative;
+}
+.section-title::after {
+  content: '';
+  position: absolute;
+  bottom: -5px; left: 0;
+  width: 60px; height: 3px;
+  background: var(--accent-gradient);
+  border-radius: 2px;
+}
+
+.field-group {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  border-left: 4px solid #2e8fcc;
+  background: rgba(240,245,255,0.4);
+  border-radius: 20px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+}
+.field-group-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px,1fr));
+  gap: 1.5rem;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-field label {
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.form-field .form-control,
+.form-field select,
+.form-field input {
+  border-radius: 12px;
+  border: 2px solid rgba(46,143,204,0.2);
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  transition: all 0.3s;
+}
+.form-field .form-control:focus,
+.form-field select:focus {
+  outline: none;
+  border-color: #1e5f8c;
+  box-shadow: 0 0 0 0.2rem rgba(46,143,204,0.25);
+}
+
+.submit-section {
+  text-align: center;
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(46,143,204,0.1);
+}
+.btn-save {
+  background: var(--primary-gradient);
+  border: none;
+  color: white;
+  padding: 0.9rem 2.5rem;
+  font-size: 1.05rem;
+  border-radius: 50px;
+  font-weight: 600;
+  transition: transform 0.3s;
+}
+.btn-save:hover {
+  transform: translateY(-2px) scale(1.03);
+}
+.btn-cancel {
+  margin-left: 1rem;
+}
+
+@keyframes fadeInUp {
+  from { opacity:0; transform: translateY(20px);} to { opacity:1; transform: translateY(0);}  
+}
+@media (max-width:768px) { .form-row { grid-template-columns: 1fr; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+  <h2 class="section-title">{% if object %}Editar{% else %}Nuevo{% endif %} Financiamiento</h2>
+  <form method="post" novalidate id="financiamiento-form">
+    {% csrf_token %}
+    <!-- Hidden field for monto_pago_final -->
+    <input type="hidden" id="id_monto_pago_final" name="monto_pago_final" value="{{ form.initial.monto_pago_final|default_if_none:'' }}">
+    {% csrf_token %}
+
+    <div class="field-group">
+      <div class="field-group-title"><i class="fas fa-info-circle"></i> Datos Generales</div>
+      <div class="form-row">
+        <div class="form-field">      
+          {{ form.nombre_cliente.label_tag }}
+          {{ form.nombre_cliente }}
+          {% for err in form.nombre_cliente.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
+        </div>
+        <div class="form-field">
+          {{ form.lote.label_tag }}
+          {{ form.lote }}
+          {% for err in form.lote.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
+        </div>
+        <div class="form-field">
+          {{ form.tipo_pago.label_tag }}
+          {{ form.tipo_pago }}
+          {% for err in form.tipo_pago.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
+        </div>
+        <div class="form-field">
+          {{ form.precio_lote.label_tag }}
+          {{ form.precio_lote }}
+        </div>
+        <div class="form-field">
+          {{ form.apartado.label_tag }}
+          {{ form.apartado }}
+        </div>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <div class="field-group-title"><i class="fas fa-wallet"></i> Financiamiento</div>
+      <div class="form-row">
+        <div class="form-field pago-contado">
+          {{ form.fecha_pago_completo.label_tag }}
+          {{ form.fecha_pago_completo }}
+          {% for err in form.fecha_pago_completo.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
+        </div>
+        <div class="form-field pago-contado">
+          {{ form.monto_pago_completo.label_tag }}
+          {{ form.monto_pago_completo }}
+          {% for err in form.monto_pago_completo.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
+        </div>
+
+        <div class="form-field pago-financiado">
+          {{ form.enganche.label_tag }}
+          {{ form.enganche }}
+          {% for err in form.enganche.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
+        </div>
+        <div class="form-field pago-financiado">
+          {{ form.fecha_enganche.label_tag }}
+          {{ form.fecha_enganche }}
+          {% for err in form.fecha_enganche.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
+        </div>
+        <div class="form-field pago-financiado">
+          {{ form.num_mensualidades.label_tag }}
+          {{ form.num_mensualidades }}
+          {% for err in form.num_mensualidades.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
+        </div>
+        <div class="form-field pago-financiado">
+          {{ form.monto_mensualidad.label_tag }}
+          {{ form.monto_mensualidad }}
+          {% for err in form.monto_mensualidad.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
+        </div>
+        <div class="form-field pago-financiado">
+          {{ form.fecha_primer_pago.label_tag }}
+          {{ form.fecha_primer_pago }}
+          {% for err in form.fecha_primer_pago.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
+        </div>
+        <div class="form-field pago-financiado">
+          {{ form.fecha_ultimo_pago.label_tag }}
+          {{ form.fecha_ultimo_pago }}
+          {% for err in form.fecha_ultimo_pago.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <div class="submit-section">
+      <button type="submit" class="btn btn-save">Guardar</button>
+      <a href="{% url 'financiamiento:list' %}" class="btn btn-secondary btn-cancel">Cancelar</a>
+    </div>
+  </form>
+</div>
+
+{% block extra_js %}
+<script>
+  function toggleFields() {
+    const tipo = document.getElementById('id_tipo_pago').value;
+    document.querySelectorAll('.pago-contado').forEach(el => el.style.display = tipo === 'contado' ? 'block' : 'none');
+    document.querySelectorAll('.pago-financiado').forEach(el => el.style.display = tipo === 'financiado' ? 'block' : 'none');
+    if (tipo === 'contado') calculateContado();
+    else calculateFinanciado();
+  }
+
+  function calculateContado() {
+    const precio = parseFloat(document.getElementById('id_precio_lote').value) || 0;
+    const apartado = parseFloat(document.getElementById('id_apartado').value) || 0;
+    // monto pago completo = precio_lote - apartado
+    const monto = (precio - apartado).toFixed(2);
+    document.getElementById('id_monto_pago_completo').value = monto;
+  }
+
+  function calculateFinanciado() {
+    const precio = parseFloat(document.getElementById('id_precio_lote').value) || 0;
+    const apartado = parseFloat(document.getElementById('id_apartado').value) || 0;
+    const enganche = parseFloat(document.getElementById('id_enganche').value) || 0;
+    const num = parseInt(document.getElementById('id_num_mensualidades').value) || 0;
+    const fechaPrimer = document.getElementById('id_fecha_primer_pago').value;
+    if (!fechaPrimer || num < 1) return;
+
+    // calcular fecha ultimo pago: sumar num-1 meses
+    const [y,m,d] = fechaPrimer.split('-').map(Number);
+    const date = new Date(y, m-1 + (num-1), d);
+    const yyyy = date.getFullYear();
+    const mm = String(date.getMonth()+1).padStart(2,'0');
+    const dd = String(date.getDate()).padStart(2,'0');
+    document.getElementById('id_fecha_ultimo_pago').value = `${yyyy}-${mm}-${dd}`;
+
+    // calcular montos
+    const restante = precio - apartado - enganche;
+    // monto mensual base
+    const base = restante / num;
+    // redondeo al centenar superior
+    const mensual = Math.ceil(base / 100) * 100;
+    // pago final = restante - mensual*(num-1)
+    const pagoFinal = (restante - mensual * (num - 1)).toFixed(2);
+    document.getElementById('id_monto_mensualidad').value = mensual.toFixed(2);
+    document.getElementById('id_monto_pago_final').value = pagoFinal;
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    ['id_precio_lote','id_apartado','id_monto_pago_completo'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener('input', toggleFields);
+    });
+    ['id_enganche','id_num_mensualidades','id_fecha_primer_pago'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener('input', toggleFields);
+    });
+    document.getElementById('id_tipo_pago').addEventListener('change', toggleFields);
+    toggleFields();
+  });
+</script>
+{% endblock %}
+
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Solicitud de Contrato{% endblock %}
+{% load static %}
+
+{% block content %}
+<div class="container py-4">
+  <h2 class="mb-4">Solicitud de Contrato</h2>
+
+  <form method="post" novalidate>
+    {% csrf_token %}
+    {{ form.apartado_letras }}
+    {% for field in form %}
+      <div class="mb-3">
+        <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {% if field.help_text %}
+          <div class="form-text">{{ field.help_text }}</div>
+        {% endif %}
+        {% for err in field.errors %}
+          <div class="text-danger small">{{ err }}</div>
+        {% endfor %}
+      </div>
+    {% endfor %}
+    <button type="submit" class="btn btn-success">Guardar y Generar Carta</button>
+    <a href="{% url 'inicio' %}" class="btn btn-secondary">Cancelar</a>
+  </form>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(function() {
+  $('#id_financiamiento').change(function() {
+    const id = $(this).val();
+    if (!id) return;
+
+    $.get("{% url 'workflow:ajax_financiamiento' %}", { id: id }, function(data) {
+      $('#id_direccion_inmueble').val(data.direccion);
+      $('#id_superficie').val(data.superficie);
+      $('#id_regimen').val(data.regimen);
+      $('#id_valor_venta').val(data.valor_venta);
+
+      // Actualizar vendedores
+      let $asesor = $('#id_asesor_id');
+      $asesor.empty();
+      data.vendedores.forEach(function(v) {
+        $asesor.append(new Option(v.nombre, v.id));
+      });
+    });
+  });
+});
+$(document).ready(function() {
+    // Actualizar monto en letras cuando cambia el monto numérico
+    $('#id_apartado_monto').on('input', function() {
+        const monto = parseFloat($(this).val()) || 0;
+        // Puedes hacer una llamada AJAX aquí para generar las letras
+        // o usar una función JavaScript similar
+    });
+});
+</script>
+{% endblock %}
