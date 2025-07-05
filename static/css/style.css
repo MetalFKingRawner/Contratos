@@ -445,12 +445,18 @@ footer a:hover {
 
 /* Correcciones para el navbar móvil */
 @media (max-width: 991.98px) {
+  /* Asegúrate de que el propio navbar genere un nuevo stacking context */
+  .navbar {
+    position: relative;
+    z-index: 1100;  /* debe ser mayor que el z-index del contenido normal */
+  }
+
   .navbar-collapse {
     position: absolute;
     top: 100%;
     left: 0;
     right: 0;
-    z-index: 1000; /* Asegura que esté sobre el contenido */
+    z-index: 1200;  /* aún más arriba para el desplegable */
     background: rgba(255, 255, 255, 0.98);
     backdrop-filter: blur(10px);
     border-radius: 0 0 0.5rem 0.5rem;
@@ -469,5 +475,4 @@ footer a:hover {
     padding: 0.75rem 1rem !important;
     text-align: center;
   }
-} 
-
+}
