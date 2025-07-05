@@ -441,4 +441,33 @@ footer a:hover {
     margin-top: 0.5rem;
     padding: 0.75rem;
   }
-}
+} 
+
+/* Correcciones para el navbar móvil */
+@media (max-width: 991.98px) {
+  .navbar-collapse {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 1000; /* Asegura que esté sobre el contenido */
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(10px);
+    border-radius: 0 0 0.5rem 0.5rem;
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+    padding: 1rem !important;
+    margin-top: 0.5rem;
+  }
+
+  /* Elimina márgenes que causan desplazamiento */
+  .navbar-nav {
+    margin: 0 !important;
+  }
+  
+  /* Mejora visibilidad de los enlaces */
+  .nav-link {
+    padding: 0.75rem 1rem !important;
+    text-align: center;
+  }
+} 
+
