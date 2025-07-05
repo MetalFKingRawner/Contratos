@@ -333,3 +333,112 @@ footer a:hover {
     width: 100%;
   }
 }
+
+/* Agregar estas reglas a tu CSS existente para corregir la navbar en móvil */
+
+/* Navbar mejorado - versión corregida */
+.navbar {
+  backdrop-filter: blur(20px);
+  background: rgba(255, 255, 255, 0.95) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+.navbar-brand {
+  font-weight: 600;
+  font-size: 1.25rem;
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Asegurar que el botón toggler funcione correctamente */
+.navbar-toggler {
+  border: none;
+  padding: 0.25rem 0.5rem;
+  font-size: 1.1rem;
+  border-radius: 0.375rem;
+  transition: all 0.3s ease;
+}
+
+.navbar-toggler:focus {
+  box-shadow: 0 0 0 0.2rem rgba(46, 143, 204, 0.25);
+}
+
+.navbar-toggler-icon {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%2846, 143, 204, 0.8%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+}
+
+/* Mejorar el comportamiento del menú colapsado */
+.navbar-collapse {
+  transition: all 0.3s ease;
+}
+
+.navbar-nav {
+  align-items: center;
+}
+
+.nav-link {
+  color: var(--text-primary) !important;
+  font-weight: 500;
+  padding: 0.5rem 1rem !important;
+  border-radius: 0.375rem;
+  transition: all 0.3s ease;
+}
+
+.nav-link:hover {
+  color: var(--bs-primary) !important;
+  background-color: rgba(46, 143, 204, 0.1);
+  transform: translateY(-2px);
+}
+
+/* Estilos específicos para móvil */
+@media (max-width: 991.98px) {
+  .navbar-collapse {
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(10px);
+    border-radius: 0.5rem;
+    margin-top: 1rem;
+    padding: 1rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .navbar-nav {
+    align-items: stretch;
+  }
+  
+  .nav-link {
+    margin: 0.25rem 0;
+    text-align: center;
+  }
+  
+  .nav-link:hover {
+    transform: none;
+    background-color: rgba(46, 143, 204, 0.1);
+  }
+}
+
+/* Estilos para pantallas muy pequeñas */
+@media (max-width: 576px) {
+  .navbar {
+    padding: 0.5rem 0;
+  }
+  
+  .navbar-brand {
+    font-size: 1.1rem;
+  }
+  
+  .navbar-brand img {
+    height: 35px;
+  }
+  
+  .navbar-toggler {
+    padding: 0.2rem 0.4rem;
+  }
+  
+  .navbar-collapse {
+    margin-top: 0.5rem;
+    padding: 0.75rem;
+  }
+}
