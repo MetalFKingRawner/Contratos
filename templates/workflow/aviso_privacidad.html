@@ -140,9 +140,11 @@
 .signature-canvas-container {
   position: relative;
   margin-bottom: 1.5rem;
-  display: flex; /* Make it a flex container */
-  flex-direction: column; /* Stack items vertically */
-  align-items:center; /* Optional: Align items to the start of the cross axis (left for column) */
+  display: flex;
+  flex-direction: column;
+  align-items:center;
+  /* FIX: Contenedor con altura fija en móviles */
+  height: 200px; /* Altura fija para todos los dispositivos */
 }
 
 .signature-canvas {
@@ -152,6 +154,9 @@
   border: 2px solid rgba(46, 143, 204, 0.2);
   cursor: crosshair;
   transition: border-color 0.3s;
+  /* FIX: Dimensiones fijas para el canvas */
+  width: 100% !important;
+  height: 150px !important;
 }
 
 .signature-canvas:hover {
@@ -162,6 +167,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
 }
 
 .signature-controls .btn-clear {
@@ -172,6 +178,7 @@
   padding: 0.5rem 1.25rem;
   font-weight: 500;
   transition: all 0.3s;
+  margin-bottom: 0.5rem;
 }
 
 .signature-controls .btn-clear:hover {
@@ -184,6 +191,7 @@
   font-size: 0.9rem;
   color: var(--text-secondary);
   font-style: italic;
+  margin-bottom: 0.5rem;
 }
 
 .acceptance-section {
@@ -390,6 +398,25 @@
     width: 100%;
     min-width: auto;
   }
+  
+  /* FIX: Estilos específicos para móviles */
+  .signature-canvas-container {
+    height: 180px; /* Altura ligeramente reducida para móviles */
+  }
+  
+  .signature-canvas {
+    height: 140px !important; /* Altura ligeramente reducida para móviles */
+  }
+  
+  .signature-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .signature-preview {
+    margin-top: 0.5rem;
+    text-align: center;
+  }
 }
 
 @media (max-width: 480px) {
@@ -402,6 +429,15 @@
   
   .progress-step::after {
     width: 40px;
+  }
+  
+  /* FIX: Estilos para móviles muy pequeños */
+  .signature-canvas-container {
+    height: 160px;
+  }
+  
+  .signature-canvas {
+    height: 130px !important;
   }
 }
 
@@ -494,7 +530,6 @@
       <div class="signature-canvas-container">
         <label class="form-label mb-3">Dibuja tu firma en el área de abajo:</label>
         <canvas id="sig-canvas"
-                width="400" height="150"
                 class="signature-canvas"></canvas>
       </div>
       
@@ -558,18 +593,29 @@ document.addEventListener('DOMContentLoaded', function() {
     penColor: "#2c3e50"
   });
   
-  // Ajustar canvas a pantallas pequeñas
+  // Función corregida para redimensionar el canvas
   function resizeCanvas() {
-    const ratio = Math.max(window.devicePixelRatio || 1, 1);
-    canvas.width = canvas.offsetWidth * ratio;
-    canvas.height = canvas.offsetHeight * ratio;
-    canvas.getContext("2d").scale(ratio, ratio);
-    sigPad.clear(); // Limpiar al redimensionar
+    const container = canvas.closest('.signature-canvas-container');
+    const containerWidth = container.clientWidth;
+    const containerHeight = container.clientHeight - 30; // Restamos espacio para la etiqueta
+    
+    // Definimos el tamaño máximo para móviles
+    const maxWidth = Math.min(containerWidth, 500);
+    const maxHeight = Math.min(containerHeight, 200);
+    
+    // Ajustamos el canvas
+    canvas.width = maxWidth;
+    canvas.height = maxHeight;
+    
+    // Redibujamos si hay firma
+    if (!sigPad.isEmpty()) {
+      sigPad.fromData(sigPad.toData());
+    }
   }
   
   // Inicializar y ajustar tamaño
-  window.addEventListener('resize', resizeCanvas);
   resizeCanvas();
+  window.addEventListener('resize', resizeCanvas);
   
   // Botón borrar
   document.getElementById('sig-clear').onclick = () => {
