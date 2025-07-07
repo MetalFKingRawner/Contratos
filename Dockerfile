@@ -7,7 +7,11 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends \
       libreoffice-core \
       libreoffice-writer \
-      fonts-dejavu-core && \
+      fonts-dejavu-core \
+      fontconfig && \
+      echo "debconf ttf-mscorefonts-installer/accepted-mscorefonts-eula select true" | debconf-set-selections && \
+      apt-get install -y --no-install-recommends ttf-mscorefonts-installer && \
+      fc-cache -f -v && \
     rm -rf /var/lib/apt/lists/*
 
 # 3. Crea directorio de la app
