@@ -5,13 +5,15 @@ FROM python:3.11-slim
 # 2. Instala dependencias de sistema y LibreOffice/unoconv
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-      libreoffice-core \
-      libreoffice-writer \
-      fonts-dejavu-core \
-      fontconfig && \
-      echo "debconf ttf-mscorefonts-installer/accepted-mscorefonts-eula select true" | debconf-set-selections && \
-      apt-get install -y --no-install-recommends ttf-mscorefonts-installer && \
-      fc-cache -f -v && \
+    libreoffice-core \
+    libreoffice-writer \
+    fontconfig \
+    fonts-dejavu-core \
+    fonts-crosextra-carlito \
+    fonts-freefont-ttf \
+    fonts-noto-cjk \
+    fonts-wqy-zenhei && \
+    fc-cache -f -v && \
     rm -rf /var/lib/apt/lists/*
 
 # 3. Crea directorio de la app
