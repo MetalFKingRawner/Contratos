@@ -595,19 +595,25 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Función corregida para redimensionar el canvas
   function resizeCanvas() {
+    const ratio = Math.max(window.devicePixelRatio || 1, 1);
+  
     const container = canvas.closest('.signature-canvas-container');
     const containerWidth = container.clientWidth;
-    const containerHeight = container.clientHeight - 30; // Restamos espacio para la etiqueta
-    
-    // Definimos el tamaño máximo para móviles
-    const maxWidth = Math.min(containerWidth, 500);
-    const maxHeight = Math.min(containerHeight, 200);
-    
-    // Ajustamos el canvas
-    canvas.width = maxWidth;
-    canvas.height = maxHeight;
-    
-    // Redibujamos si hay firma
+    const containerHeight = container.clientHeight - 30;
+  
+    // Establecer el tamaño real del canvas considerando el ratio
+    canvas.width = containerWidth * ratio;
+    canvas.height = containerHeight * ratio;
+  
+    // Mostrar el canvas en CSS con el tamaño deseado (sin escalado)
+    canvas.style.width = `${containerWidth}px`;
+    canvas.style.height = `${containerHeight}px`;
+  
+    // Escalar el contexto para que la firma no se vea distorsionada
+    const ctx = canvas.getContext("2d");
+    ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+  
+    // Redibujar si ya había una firma
     if (!sigPad.isEmpty()) {
       sigPad.fromData(sigPad.toData());
     }
