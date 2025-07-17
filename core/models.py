@@ -77,7 +77,7 @@ class Cliente(models.Model):
 
     nombre_completo = models.CharField("Nombre completo", max_length=150)
     sexo                  = models.CharField("Sexo", max_length=1, choices=SEXO_CHOICES, default='M')
-    rfc             = models.CharField("RFC", max_length=13)
+    rfc             = models.CharField("RFC", max_length=13, blank=True, null=True)
     domicilio       = models.TextField("Domicilio")
     telefono        = models.CharField("Teléfono", max_length=20)
     email           = models.EmailField("Correo electrónico")
