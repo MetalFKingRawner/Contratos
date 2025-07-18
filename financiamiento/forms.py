@@ -1,9 +1,21 @@
 # financiamiento/forms.py
 
 from django import forms
+from core.models import Proyecto, Lote
 from .models import Financiamiento
 
 class FinanciamientoForm(forms.ModelForm):
+    proyecto = forms.ModelChoiceField(
+        queryset=Proyecto.objects.all(),
+        label="Lotificación",
+        required=True
+    )
+    lote = forms.ModelChoiceField(
+        queryset=Lote.objects.none(),  # se llenará en __init__
+        label="Lote",
+        required=True
+    )
+    
     class Meta:
         model = Financiamiento
         fields = [
@@ -23,6 +35,21 @@ class FinanciamientoForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        # Si estamos editando y ya hay instancia, precargamos proyecto→lote
+        if self.instance and self.instance.lote_id:
+            proj = self.instance.lote.proyecto
+            self.fields['proyecto'].initial = proj
+            self.fields['lote'].queryset = Lote.objects.filter(proyecto=proj, activo=True)
+        # En un POST, si viene proyecto, filtramos lotes
+        elif 'proyecto' in self.data:
+            try:
+                proj_id = int(self.data.get('proyecto'))
+                self.fields['lote'].queryset = Lote.objects.filter(proyecto_id=proj_id, activo=True)
+            except (ValueError, TypeError):
+                pass
+        else:
+            # formulario en blanco: no mostrar lotes
+            self.fields['lote'].queryset = Lote.objects.none()
         # Campos que sólo validaremos en clean()
         opcionales = [
             'fecha_pago_completo', 'monto_pago_completo',
