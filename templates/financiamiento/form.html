@@ -224,105 +224,109 @@
 </div>
 
 {% block extra_js %}
-  <script src="https://cdn.jsdelivr.net/npm/autonumeric@4.6.0/dist/autoNumeric.min.js"></script>
-  <script>
-  document.addEventListener('DOMContentLoaded', () => {
-    // — 1) Inicializar AutoNumeric sólo en TEXT inputs
-    ['#id_precio_lote','#id_apartado','#id_enganche',
-     '#id_monto_pago_completo','#id_monto_mensualidad']
-    .forEach(selector => {
-      const el = document.querySelector(selector);
-      if (el) {
-        // Forzar type=text en el input
-        el.setAttribute('type','text');
-        new AutoNumeric(el, {
-          currencySymbol      : '$',
-          digitGroupSeparator : ',',
-          decimalCharacter    : '.',
-          decimalPlaces       : 2,
-          unformatOnSubmit    : true
-        });
-      }
+<script src="https://cdn.jsdelivr.net/npm/autonumeric@4.6.0/dist/autoNumeric.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  // 1) Inicializar AutoNumeric en los campos monetarios
+  ['#id_precio_lote', '#id_apartado', '#id_enganche', '#id_monto_mensualidad', '#id_monto_pago_completo']
+    .forEach(sel => {
+      const el = document.querySelector(sel);
+      if (!el) return;
+      // Forzamos que el input sea text para AutoNumeric
+      el.setAttribute('type', 'text');
+      new AutoNumeric(el, {
+        currencySymbol      : '$',
+        digitGroupSeparator : ',',
+        decimalCharacter    : '.',
+        decimalPlaces       : 2,
+        unformatOnSubmit    : true
+      });
     });
 
-    // — 2) Carga dinámica de lotes al cambiar proyecto
-    const proyectoSel = document.getElementById('id_proyecto');
-    const loteSel     = document.getElementById('id_lote');
-    if (proyectoSel && loteSel) {
-      proyectoSel.addEventListener('change', () => {
-        const id = proyectoSel.value;
-        loteSel.innerHTML = '<option>Cargando…</option>';
-        fetch(`/workflow/ajax/lotes/${id}/`)
-          .then(r=>r.json())
-          .then(json=>{
-            loteSel.innerHTML = '<option value="">— Selecciona lote —</option>';
-            json.lotes.forEach(l=>{
-              const o=document.createElement('option');
-              o.value = l.id; o.text = l.identificador;
-              loteSel.appendChild(o);
-            });
-          })
-          .catch(_=>{
-            loteSel.innerHTML = '<option>Error al cargar</option>';
+  // 2) Dinámica Proyecto → Lote (ajusta la URL si tu ruta es otra)
+  const proyectoSel = document.getElementById('id_proyecto');
+  const loteSel     = document.getElementById('id_lote');
+  if (proyectoSel && loteSel) {
+    proyectoSel.addEventListener('change', () => {
+      const projId = proyectoSel.value;
+      loteSel.innerHTML = '<option value="">Cargando...</option>';
+      fetch(`/workflow/ajax/lotes/${projId}/`)
+        .then(res => res.json())
+        .then(json => {
+          loteSel.innerHTML = '<option value="">— Selecciona lote —</option>';
+          json.lotes.forEach(l => {
+            const opt = document.createElement('option');
+            opt.value = l.id;
+            opt.text  = l.identificador;
+            loteSel.appendChild(opt);
           });
-      });
-    }
+        })
+        .catch(() => {
+          loteSel.innerHTML = '<option value="">Error al cargar</option>';
+        });
+    });
+  }
 
-    // — 3) Muestra/oculta campos según tipo de pago + cálculo
-    function toggleFields() {
-      const tipo = document.getElementById('id_tipo_pago').value;
-      document.querySelectorAll('.pago-contado')
-        .forEach(el=>el.style.display = tipo==='contado'?'block':'none');
-      document.querySelectorAll('.pago-financiado')
-        .forEach(el=>el.style.display = tipo==='financiado'?'block':'none');
-      if (tipo==='contado')   calculateContado();
-      else if (tipo==='financiado') calculateFinanciado();
-    }
+  // Funciones de cálculo
+  function toggleFields() {
+    const tipo = document.getElementById('id_tipo_pago').value;
+    document.querySelectorAll('.pago-contado')
+            .forEach(el => el.style.display = tipo === 'contado' ? 'block' : 'none');
+    document.querySelectorAll('.pago-financiado')
+            .forEach(el => el.style.display = tipo === 'financiado' ? 'block' : 'none');
+    if (tipo === 'contado') calculateContado();
+    else calculateFinanciado();
+  }
 
-    function calculateContado() {
-      const precio  = AutoNumeric.getAutoNumericElement('#id_precio_lote').getNumber() || 0;
-      const apartado= AutoNumeric.getAutoNumericElement('#id_apartado').getNumber()    || 0;
-      const monto   = (precio - apartado).toFixed(2);
-      AutoNumeric.getAutoNumericElement('#id_monto_pago_completo').set(monto);
-    }
+  function calculateContado() {
+    const precio   = parseFloat(AutoNumeric.getNumber('#id_precio_lote')) || 0;
+    const apartado = parseFloat(AutoNumeric.getNumber('#id_apartado'))    || 0;
+    const monto = (precio - apartado).toFixed(2);
+    AutoNumeric.set('#id_monto_pago_completo', monto);
+  }
 
-    function calculateFinanciado() {
-      const precio  = AutoNumeric.getAutoNumericElement('#id_precio_lote').getNumber() || 0;
-      const apartado= AutoNumeric.getAutoNumericElement('#id_apartado').getNumber()    || 0;
-      const eng     = AutoNumeric.getAutoNumericElement('#id_enganche').getNumber()    || 0;
-      const num    = parseInt(document.getElementById('id_num_mensualidades').value)||0;
-      const primer = document.getElementById('id_fecha_primer_pago').value;
-      if (!primer|| num<1) return;
+  function calculateFinanciado() {
+    const precio   = parseFloat(AutoNumeric.getNumber('#id_precio_lote')) || 0;
+    const apartado = parseFloat(AutoNumeric.getNumber('#id_apartado'))    || 0;
+    const enganche = parseFloat(AutoNumeric.getNumber('#id_enganche'))    || 0;
+    const num      = parseInt(document.getElementById('id_num_mensualidades').value) || 0;
+    const fechaPrimer = document.getElementById('id_fecha_primer_pago').value;
+    if (!fechaPrimer || num < 1) return;
 
-      // Calcula fecha último pago…
-      const [y,m,d]= primer.split('-').map(Number);
-      const dt = new Date(y,m-1+(num-1), d);
-      document.getElementById('id_fecha_ultimo_pago').value =
-        `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
+    // Fecha último pago
+    const [y,m,d] = fechaPrimer.split('-').map(Number);
+    const fecha   = new Date(y, m-1 + (num-1), d);
+    document.getElementById('id_fecha_ultimo_pago').value =
+      `${fecha.getFullYear()}-${String(fecha.getMonth()+1).padStart(2,'0')}-${String(fecha.getDate()).padStart(2,'0')}`;
 
-      // Montos
-      const restante = precio - apartado - eng;
-      const base  = restante/num;
-      const mens  = Math.ceil(base/100)*100;
-      const final = (restante - mens*(num-1)).toFixed(2);
-      AutoNumeric.getAutoNumericElement('#id_monto_mensualidad').set(mens.toFixed(2));
-      AutoNumeric.getAutoNumericElement('#id_monto_pago_final').set(final);
-    }
+    // Montos
+    const restante = precio - apartado - enganche;
+    const base     = restante / num;
+    const mensual  = Math.ceil(base / 100) * 100;
+    const pagoFinal= (restante - mensual * (num - 1)).toFixed(2);
+    AutoNumeric.set('#id_monto_mensualidad', mensual.toFixed(2));
+    AutoNumeric.set('#id_monto_pago_final',  pagoFinal);
+  }
 
-    // Adjunta un único listener “input” a cada campo relevante
-    ['#id_precio_lote','#id_apartado','#id_enganche','#id_num_mensualidades','#id_fecha_primer_pago']
-      .forEach(sel=>{
-        const el = document.querySelector(sel);
-        if (el) el.addEventListener('input', toggleFields);
-      });
-    document.getElementById('id_tipo_pago')
-      .addEventListener('change', toggleFields);
+  // 3) Eventos que disparan recálculo solo una vez (no en cada pulsación)
+  ['#id_precio_lote', '#id_apartado', '#id_enganche']
+    .forEach(sel => {
+      const el = document.querySelector(sel);
+      if (el) el.addEventListener('blur', toggleFields);
+    });
 
-    // Inicializa visibilidad
-    toggleFields();
-  });
-  </script>
+  const mensEl  = document.getElementById('id_num_mensualidades');
+  const fechaEl = document.getElementById('id_fecha_primer_pago');
+  if (mensEl)  mensEl.addEventListener('change', toggleFields);
+  if (fechaEl) fechaEl.addEventListener('change', toggleFields);
+
+  document.getElementById('id_tipo_pago')
+          .addEventListener('change', toggleFields);
+
+  // 4) Primer render
+  toggleFields();
+});
+</script>
 {% endblock %}
-
 
 {% endblock %}
