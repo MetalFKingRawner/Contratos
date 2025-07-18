@@ -230,14 +230,15 @@ document.addEventListener('DOMContentLoaded', () => {
   let autoNumericInstances = {};
   let isCalculating = false; // Flag para evitar loops infinitos
 
-  // Configuración de AutoNumeric
+  // Configuración de AutoNumeric CORREGIDA
   const autoNumericConfig = {
     currencySymbol: '$',
     digitGroupSeparator: ',',
     decimalCharacter: '.',
     decimalPlaces: 2,
     unformatOnSubmit: true,
-    minimumValue: '0'
+    minimumValue: '0',
+    watchExternalChanges: false // IMPORTANTE: Evita eventos duplicados
   };
 
   // Campos que tendrán formato de dinero
@@ -255,10 +256,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (element) {
       try {
         autoNumericInstances[fieldId] = new AutoNumeric(`#${fieldId}`, autoNumericConfig);
-        
-        // SOLUCIÓN: Remover eventos nativos de campos monetarios
-        element.removeEventListener('input', scheduleRecalculation);
-        element.removeEventListener('change', scheduleRecalculation);
       } catch (error) {
         console.warn(`No se pudo inicializar AutoNumeric en ${fieldId}:`, error);
       }
@@ -276,16 +273,16 @@ document.addEventListener('DOMContentLoaded', () => {
     return parseFloat(element?.value?.replace(/[$,]/g, '') || 0);
   }
 
-  // Función para establecer valor (evitando triggers de eventos)
+  // Función para establecer valor (evitando triggers de eventos) CORREGIDA
   function setCalculatedValue(fieldId, value) {
     if (isCalculating) return; // Evitar loops
     
     const instance = autoNumericInstances[fieldId];
     if (instance) {
-      // Temporalmente remover listeners para evitar recursión
+      // Usar opción para evitar eventos
       isCalculating = true;
-      instance.set(value);
-      setTimeout(() => isCalculating = false, 10);
+      instance.set(value, { event: { skip: true } });
+      setTimeout(() => isCalculating = false, 50);
     } else {
       const element = document.getElementById(fieldId);
       if (element) {
@@ -370,7 +367,7 @@ document.addEventListener('DOMContentLoaded', () => {
     recalcTimer = setTimeout(recalculate, 100);
   }
 
-  // Agregar listeners a campos que afectan cálculos
+  // Agregar listeners a campos que afectan cálculos CORREGIDO
   const calculationTriggers = [
     'id_tipo_pago',
     'id_precio_lote',
@@ -380,23 +377,18 @@ document.addEventListener('DOMContentLoaded', () => {
     'id_fecha_primer_pago'
   ];
 
-  // SOLUCIÓN: Modificar los event listeners
   calculationTriggers.forEach(fieldId => {
     const element = document.getElementById(fieldId);
     if (element) {
       if (autoNumericInstances[fieldId]) {
-        // SOLUCIÓN: Usar solo eventos de AutoNumeric para campos monetarios
-        element.addEventListener('autoNumeric:formatted', function(e) {
-          e.stopPropagation(); // Evitar propagación adicional
-          scheduleRecalculation();
-        });
+        // USAR rawValueModified EN LUGAR DE formatted
+        element.addEventListener('autoNumeric:rawValueModified', scheduleRecalculation);
       } else {
         element.addEventListener('input', scheduleRecalculation);
         element.addEventListener('change', scheduleRecalculation);
       }
     }
   });
-
   // Carga dinámica de lotes
   const proyectoSelect = document.getElementById('id_proyecto');
   const loteSelect = document.getElementById('id_lote');
