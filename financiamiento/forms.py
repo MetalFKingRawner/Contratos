@@ -19,14 +19,21 @@ class FinanciamientoForm(forms.ModelForm):
     class Meta:
         model = Financiamiento
         fields = [
-            'nombre_cliente', 'lote', 'tipo_pago',
-            'precio_lote', 'apartado',
-            'fecha_pago_completo', 'monto_pago_completo',
-            'enganche', 'fecha_enganche',
-            'num_mensualidades', 'monto_mensualidad',
-            'fecha_primer_pago', 'fecha_ultimo_pago','monto_pago_final',
+            'nombre_cliente','proyecto','lote','tipo_pago',
+            'precio_lote','apartado',
+            'fecha_pago_completo','monto_pago_completo',
+            'enganche','fecha_enganche',
+            'num_mensualidades','monto_mensualidad',
+            'fecha_primer_pago','fecha_ultimo_pago','monto_pago_final',
         ]
         widgets = {
+            # ¡OJO! aquí forzamos text en lugar de number:
+            'precio_lote':        forms.TextInput(attrs={'type': 'text'}),
+            'apartado':           forms.TextInput(attrs={'type': 'text'}),
+            'monto_pago_completo':forms.TextInput(attrs={'type': 'text'}),
+            'enganche':           forms.TextInput(attrs={'type': 'text'}),
+            'monto_mensualidad':  forms.TextInput(attrs={'type': 'text'}),
+            # Los dateInput se quedan igual:
             'fecha_pago_completo': forms.DateInput(attrs={'type': 'date'}),
             'fecha_enganche':      forms.DateInput(attrs={'type': 'date'}),
             'fecha_primer_pago':   forms.DateInput(attrs={'type': 'date'}),
