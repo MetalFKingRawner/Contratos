@@ -146,9 +146,12 @@
           {% for err in form.nombre_cliente.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
         </div>
         <div class="form-field">
+          {{ form.proyecto.label_tag }}
+          {{ form.proyecto }}
+        </div>
+        <div class="form-field">
           {{ form.lote.label_tag }}
           {{ form.lote }}
-          {% for err in form.lote.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
         </div>
         <div class="form-field">
           {{ form.tipo_pago.label_tag }}
@@ -222,6 +225,30 @@
 
 {% block extra_js %}
 <script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const proyectoSel = document.getElementById('id_proyecto');
+    const loteSel     = document.getElementById('id_lote');
+  
+    proyectoSel.addEventListener('change', () => {
+      const projId = proyectoSel.value;
+      loteSel.innerHTML = '<option value="">Cargando...</option>';
+      fetch(`/workflow/ajax/lotes/${projId}/`)
+        .then(res => res.json())
+        .then(json => {
+          loteSel.innerHTML = '<option value="">— Selecciona lote —</option>';
+          json.lotes.forEach(l => {
+            const opt = document.createElement('option');
+            opt.value = l.id;
+            opt.text  = l.identificador;
+            loteSel.appendChild(opt);
+          });
+        })
+        .catch(() => {
+          loteSel.innerHTML = '<option value="">Error al cargar</option>';
+        });
+    });
+  });
+  
   function toggleFields() {
     const tipo = document.getElementById('id_tipo_pago').value;
     document.querySelectorAll('.pago-contado').forEach(el => el.style.display = tipo === 'contado' ? 'block' : 'none');
