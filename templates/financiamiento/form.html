@@ -224,6 +224,25 @@
 </div>
 
 {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/autonumeric@4.6.0/dist/autoNumeric.min.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // Inicializar en los campos de monto/precio
+    ['#id_precio_lote','#id_apartado','#id_enganche',
+     '#id_monto_pago_completo','#id_monto_mensualidad'].forEach(selector => {
+      if (document.querySelector(selector)) {
+        new AutoNumeric(selector, {
+          currencySymbol      : '$',
+          digitGroupSeparator : ',',
+          decimalCharacter    : '.',
+          decimalPlaces       : 2,
+          unformatOnSubmit    : true
+        });
+      }
+    });
+  });
+</script>
+
 <script>
   document.addEventListener('DOMContentLoaded', () => {
     const proyectoSel = document.getElementById('id_proyecto');
