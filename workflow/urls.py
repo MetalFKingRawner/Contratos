@@ -23,6 +23,7 @@ urlpatterns = [
     path('vendedor/', SeleccionVendedorView.as_view(), name='paso_vendedor'),
     path('aviso-privacidad/', AvisoPrivacidadView.as_view(), name='aviso_privacidad'),
     path('documentos/', SeleccionDocumentosView.as_view(), name='paso3_documentos'),
+    path('ajax/lotes/<int:proyecto_id>/', views.ajax_lotes, name='ajax_lotes'),
     # reemplaza AvancePruebaView por la vista real cuando la crees
 ]
 
