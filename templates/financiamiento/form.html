@@ -255,6 +255,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (element) {
       try {
         autoNumericInstances[fieldId] = new AutoNumeric(`#${fieldId}`, autoNumericConfig);
+        
+        // SOLUCIÓN: Remover eventos nativos de campos monetarios
+        element.removeEventListener('input', scheduleRecalculation);
+        element.removeEventListener('change', scheduleRecalculation);
       } catch (error) {
         console.warn(`No se pudo inicializar AutoNumeric en ${fieldId}:`, error);
       }
@@ -376,14 +380,17 @@ document.addEventListener('DOMContentLoaded', () => {
     'id_fecha_primer_pago'
   ];
 
+  // SOLUCIÓN: Modificar los event listeners
   calculationTriggers.forEach(fieldId => {
     const element = document.getElementById(fieldId);
     if (element) {
-      // Para campos con AutoNumeric, usar su evento específico
       if (autoNumericInstances[fieldId]) {
-        element.addEventListener('autoNumeric:formatted', scheduleRecalculation);
+        // SOLUCIÓN: Usar solo eventos de AutoNumeric para campos monetarios
+        element.addEventListener('autoNumeric:formatted', function(e) {
+          e.stopPropagation(); // Evitar propagación adicional
+          scheduleRecalculation();
+        });
       } else {
-        // Para campos normales
         element.addEventListener('input', scheduleRecalculation);
         element.addEventListener('change', scheduleRecalculation);
       }
