@@ -33,6 +33,14 @@ from datetime import date
 from django.conf import settings
 from pdfs.utils import fill_word_template, convert_docx_to_pdf
 
+from django.http import JsonResponse
+from core.models import Lote
+
+def ajax_lotes(request, proyecto_id):
+    lotes = Lote.objects.filter(proyecto_id=proyecto_id, activo=True).order_by('identificador')
+    data = [{'id': l.id, 'identificador': l.identificador} for l in lotes]
+    return JsonResponse({'lotes': data})
+
 
 class SeleccionDocumentoView(TemplateView):
     template_name = "inicio.html"
