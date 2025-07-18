@@ -17,6 +17,7 @@ class Lote(models.Model):
     este = models.CharField(max_length=100)  # Cambiado de 'oriente' a 'este'
     oeste = models.CharField(max_length=100)  # Cambiado de 'poniente' a 'oeste'
     manzana = models.CharField(max_length=20, blank=True, null=True)  # Solo para algunos proyectos
+    activo      = models.BooleanField(default=True)  # ← NUEVO campo
 
     def __str__(self):
         return f"{self.proyecto.nombre} – Lote {self.identificador}"
