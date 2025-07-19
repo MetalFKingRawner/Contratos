@@ -479,6 +479,17 @@ class SeleccionDocumentosView(FormView):
         return response
 
 class AvisoForm(forms.Form):
+    FIRMAR_CHOICES = [
+        ('sí', 'Sí, deseo firmar digitalmente'),
+        ('no', 'No, prefiero firmar en papel'),
+    ]
+
+    firmar = forms.ChoiceField(
+        label="¿Deseas firmar digitalmente?",
+        choices=FIRMAR_CHOICES,
+        widget=forms.RadioSelect,
+        initial='sí',
+    )
     aceptar = forms.BooleanField(label="He leído y acepto el Aviso de Privacidad")
     firma_data = forms.CharField(widget=forms.HiddenInput(), required=False)
 
