@@ -228,9 +228,10 @@
 document.addEventListener('DOMContentLoaded', () => {
   // Variables globales
   let autoNumericInstances = {};
-  let isCalculating = false; // Flag para evitar loops infinitos
+  let isCalculating = false;
+  let userInputFields = new Set(); // Rastrear campos donde el usuario está escribiendo
 
-  // Configuración de AutoNumeric CORREGIDA
+  // Configuración de AutoNumeric
   const autoNumericConfig = {
     currencySymbol: '$',
     digitGroupSeparator: ',',
@@ -238,7 +239,7 @@ document.addEventListener('DOMContentLoaded', () => {
     decimalPlaces: 2,
     unformatOnSubmit: true,
     minimumValue: '0',
-    watchExternalChanges: false // IMPORTANTE: Evita eventos duplicados
+    watchExternalChanges: false
   };
 
   // Campos que tendrán formato de dinero
@@ -250,12 +251,38 @@ document.addEventListener('DOMContentLoaded', () => {
     'id_monto_mensualidad'
   ];
 
-  // Inicializar AutoNumeric SOLO en los campos que existen
+  // Campos que son SOLO de entrada (el usuario los modifica)
+  const inputFields = [
+    'id_precio_lote',
+    'id_apartado', 
+    'id_enganche'
+  ];
+
+  // Campos que son SOLO calculados (se actualizan automáticamente)
+  const calculatedFields = [
+    'id_monto_pago_completo',
+    'id_monto_mensualidad'
+  ];
+
+  // Inicializar AutoNumeric
   moneyFields.forEach(fieldId => {
     const element = document.getElementById(fieldId);
     if (element) {
       try {
         autoNumericInstances[fieldId] = new AutoNumeric(`#${fieldId}`, autoNumericConfig);
+        
+        // Rastrear cuándo el usuario está escribiendo en campos de entrada
+        if (inputFields.includes(fieldId)) {
+          element.addEventListener('focus', () => {
+            userInputFields.add(fieldId);
+          });
+          
+          element.addEventListener('blur', () => {
+            userInputFields.delete(fieldId);
+            // Recalcular cuando el usuario termina de escribir
+            setTimeout(recalculate, 100);
+          });
+        }
       } catch (error) {
         console.warn(`No se pudo inicializar AutoNumeric en ${fieldId}:`, error);
       }
@@ -268,27 +295,26 @@ document.addEventListener('DOMContentLoaded', () => {
     if (instance) {
       return parseFloat(instance.getNumericString()) || 0;
     }
-    // Fallback para campos sin AutoNumeric
     const element = document.getElementById(fieldId);
     return parseFloat(element?.value?.replace(/[$,]/g, '') || 0);
   }
 
-  // Función para establecer valor (evitando triggers de eventos) CORREGIDA
+  // Función para establecer valor SOLO en campos calculados
   function setCalculatedValue(fieldId, value) {
+    // NUNCA tocar campos donde el usuario está escribiendo
+    if (userInputFields.has(fieldId)) return;
+    
+    // SOLO actualizar campos calculados
+    if (!calculatedFields.includes(fieldId)) return;
+    
     const instance = autoNumericInstances[fieldId];
     if (instance) {
-      // Verificar si el usuario está escribiendo en este campo
-      const element = document.getElementById(fieldId);
-      if (element === document.activeElement) {
-        return; // No interferir si el usuario está escribiendo
-      }
-      
       isCalculating = true;
       instance.set(value);
       setTimeout(() => isCalculating = false, 50);
     } else {
       const element = document.getElementById(fieldId);
-      if (element && element !== document.activeElement) {
+      if (element) {
         element.value = value;
       }
     }
@@ -363,35 +389,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Event listeners con debounce para evitar spam
-  let recalcTimer = null;
-  function scheduleRecalculation() {
-    if (recalcTimer) clearTimeout(recalcTimer);
-    recalcTimer = setTimeout(recalculate, 100);
-  }
-
-  // Agregar listeners a campos que afectan cálculos CORREGIDO
-  const calculationTriggers = [
+  // Event listeners SIMPLIFICADOS - Solo para campos que NO son de dinero
+  const nonMoneyTriggers = [
     'id_tipo_pago',
-    'id_precio_lote',
-    'id_apartado',
-    'id_enganche',
     'id_num_mensualidades',
     'id_fecha_primer_pago'
   ];
 
-  calculationTriggers.forEach(fieldId => {
+  nonMoneyTriggers.forEach(fieldId => {
     const element = document.getElementById(fieldId);
     if (element) {
-      if (autoNumericInstances[fieldId]) {
-        // CAMBIAR: usar 'formatted' en lugar de 'rawValueModified'
-        element.addEventListener('autoNumeric:formatted', scheduleRecalculation);
-      } else {
-        element.addEventListener('input', scheduleRecalculation);
-        element.addEventListener('change', scheduleRecalculation);
-      }
+      element.addEventListener('change', recalculate);
     }
   });
+
   // Carga dinámica de lotes
   const proyectoSelect = document.getElementById('id_proyecto');
   const loteSelect = document.getElementById('id_lote');
