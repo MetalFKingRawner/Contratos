@@ -119,6 +119,7 @@
   box-shadow: 0 10px 30px rgba(0,0,0,0.05);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255,255,255,0.3);
+  height: 500px;      /* antes 500px, ahora 700px */
 }
 
 .section-title {
@@ -483,6 +484,57 @@
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.1); }
 }
+
+.form-group .radio-group {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.form-group .radio-group li {
+  list-style: none;
+}
+
+.form-group .radio-group label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  border: 2px solid rgba(46,143,204,0.3);
+  border-radius: 30px;
+  cursor: pointer;
+  transition: all .3s;
+}
+
+.form-group .radio-group input[type="radio"] {
+  display: none;
+}
+
+.form-group .radio-group input[type="radio"] + span {
+  position: relative;
+  padding-left: 1.4rem;
+}
+
+.form-group .radio-group input[type="radio"] + span::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 50%;
+  transform: translateY(-50%);
+  width: 1rem; height: 1rem;
+  border: 2px solid rgba(46,143,204,0.5);
+  border-radius: 50%;
+  background: white;
+  transition: background .3s, border-color .3s;
+}
+
+.form-group .radio-group input[type="radio"]:checked + span::before {
+  background: var(--primary-gradient);
+  border-color: var(--primary-gradient);
+}
+
+.form-group .radio-group label:hover {
+  border-color: var(--bs-primary);
+}
 </style>
 {% endblock %}
 
@@ -526,9 +578,16 @@
         <i class="fas fa-signature"></i>
         {{ form.firmar.label }}
       </label>
-      <div class="radio-group">
-        {{ form.firmar }}
-      </div>
+      <ul class="radio-group">
+        {% for radio in form.firmar %}
+          <li>
+            <label for="{{ radio.id_for_label }}">
+              {{ radio.tag }}
+              <span>{{ radio.choice_label }}</span>
+            </label>
+          </li>
+        {% endfor %}
+      </ul>
       {% if form.firmar.errors %}
         <div class="text-danger small">{{ form.firmar.errors.0 }}</div>
       {% endif %}
