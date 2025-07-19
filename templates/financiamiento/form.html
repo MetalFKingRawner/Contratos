@@ -381,8 +381,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const element = document.getElementById(fieldId);
     if (element) {
       if (autoNumericInstances[fieldId]) {
-        // USAR rawValueModified EN LUGAR DE formatted
-        element.addEventListener('autoNumeric:rawValueModified', scheduleRecalculation);
+        // CAMBIAR: usar 'formatted' en lugar de 'rawValueModified'
+        element.addEventListener('autoNumeric:formatted', scheduleRecalculation);
       } else {
         element.addEventListener('input', scheduleRecalculation);
         element.addEventListener('change', scheduleRecalculation);
