@@ -109,7 +109,8 @@
   z-index: 1;
   border-radius: 10px;
   box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-  height: 500px;      /* antes 500px, ahora 700px */
+  width: 100% !important;
+  height: 700px !important;
 }
 
 .signature-section {
@@ -534,6 +535,22 @@
 
 .form-group .radio-group label:hover {
   border-color: var(--bs-primary);
+}
+
+@media (min-width: 992px) {
+  .pdf-container object {
+    height: 800px !important;
+  }
+}
+@media (max-width: 991px) {
+  .pdf-container object {
+    height: 600px !important;
+  }
+}
+@media (max-width: 576px) {
+  .pdf-container object {
+    height: 400px !important;
+  }
 }
 </style>
 {% endblock %}
