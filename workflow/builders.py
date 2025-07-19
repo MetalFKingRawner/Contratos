@@ -165,7 +165,7 @@ def build_solicitud_contrato_context(fin, cli, ven, request=None, tpl=None, firm
         'ORIGINARIO_CLIENTE': cli.originario.upper(),
         'NACIONALIDAD':       cli.nacionalidad,
         'DIRECCION_CLIENTE':  cli.domicilio,
-        'RFC_CLIENTE':        cli.rfc.upper(),  # asume tienes campo rfc en Cliente
+        'RFC_CLIENTE':        (cli.rfc or "").upper(),
         # Lote y financiamiento
         'NOMBRE_LOTE':        str(fin.lote.proyecto.nombre).upper(),
         'NUMERO_LOTE':        fin.lote.identificador,
