@@ -52,7 +52,7 @@ def build_aviso_privacidad_context(fin, cli, ven, request=None, tpl=None,firma_d
             with os.fdopen(fd, 'wb') as f:
                 f.write(img_data)
             # Inserta la imagen de firma
-            context['FIRMA_CLIENTE'] = InlineImage(tpl, tmp, width=Mm(40))
+            context['FIRMA_CLIENTE'] = InlineImage(tpl, tmp, width=Mm(70))
         else:
             context['FIRMA_CLIENTE'] = ''
     else:
@@ -132,7 +132,7 @@ def build_carta_intencion_context(fin, cli, ven,request=None, tpl=None, firma_da
         context['FIRMA_CLIENTE'] = InlineImage(
             tpl,  # placeholder, luego se ignora
             tmp_path,
-            width=Mm(40)
+            width=Mm(70)
         )
     else:
         context['FIRMA_CLIENTE'] = ''
@@ -206,7 +206,7 @@ def build_solicitud_contrato_context(fin, cli, ven, request=None, tpl=None, firm
             with os.fdopen(fd, 'wb') as f:
                 f.write(img_data)
             # Inserta la imagen de firma
-            context['FIRMA_CLIENTE'] = InlineImage(tpl, tmp, width=Mm(40))
+            context['FIRMA_CLIENTE'] = InlineImage(tpl, tmp, width=Mm(70))
         else:
             context['FIRMA_CLIENTE'] = ''
     else:
@@ -373,7 +373,7 @@ def build_contrato_definitiva_pagos_context(fin, cli, ven, request=None, tpl=Non
             with os.fdopen(fd, 'wb') as f:
                 f.write(img_data)
             # Inserta la imagen de firma
-            context['FIRMA_CLIENTE'] = InlineImage(tpl, tmp, width=Mm(40))
+            context['FIRMA_CLIENTE'] = InlineImage(tpl, tmp, width=Mm(70))
         else:
             context['FIRMA_CLIENTE'] = ''
     else:
@@ -532,7 +532,7 @@ def build_contrato_definitiva_contado_context(fin, cli, ven, request=None, tpl=N
             with os.fdopen(fd, 'wb') as f:
                 f.write(img_data)
             # Inserta la imagen de firma
-            context['FIRMA_CLIENTE'] = InlineImage(tpl, tmp, width=Mm(40))
+            context['FIRMA_CLIENTE'] = InlineImage(tpl, tmp, width=Mm(70))
         else:
             context['FIRMA_CLIENTE'] = ''
     else:
@@ -697,7 +697,7 @@ def build_contrato_ejidal_pagos_context(fin, cli, ven, request=None, tpl=None, f
             with os.fdopen(fd, 'wb') as f:
                 f.write(img_data)
             # Inserta la imagen de firma
-            context['FIRMA_CLIENTE'] = InlineImage(tpl, tmp, width=Mm(40))
+            context['FIRMA_CLIENTE'] = InlineImage(tpl, tmp, width=Mm(70))
         else:
             context['FIRMA_CLIENTE'] = ''
     else:
@@ -835,7 +835,7 @@ def build_contrato_ejidal_contado_context(fin, cli, ven, request=None, tpl=None,
             with os.fdopen(fd, 'wb') as f:
                 f.write(img_data)
             # Inserta la imagen de firma
-            context['FIRMA_CLIENTE'] = InlineImage(tpl, tmp, width=Mm(40))
+            context['FIRMA_CLIENTE'] = InlineImage(tpl, tmp, width=Mm(70))
         else:
             context['FIRMA_CLIENTE'] = ''
     else:
