@@ -487,11 +487,19 @@ class AvisoPrivacidadView(FormView):
     form_class    = AvisoForm
 
     def form_valid(self, form):
-        # 1) Guarda aceptación y firma en sesión
+        # 1) Guarda que aceptó el aviso
         self.request.session['privacy_accepted'] = True
-        firma = form.cleaned_data.get('firma_data')
-        if firma:
+
+        # 2) Comprueba si quiso firmar digitalmente
+        firmar = form.cleaned_data.get('firmar')  # "sí" o "no"
+        firma  = form.cleaned_data.get('firma_data')
+
+        if firmar == 'sí' and firma:
+            # solo guardamos la firma si eligió “sí”
             self.request.session['firma_cliente_data'] = firma
+        else:
+            # si no quiere firmar digitalmente, eliminamos cualquier firma previa
+            self.request.session.pop('firma_cliente_data', None)
 
         # 2) Recupera IDs de pasos previos (deben existir en sesión)
         fin_id = self.request.session.get('financiamiento_id')
@@ -516,15 +524,17 @@ class AvisoPrivacidadView(FormView):
             tramite.financiamiento = financiamiento
             tramite.cliente        = cliente
             tramite.vendedor       = vendedor
-            tramite.firma_cliente  = firma or tramite.firma_cliente
+            # Si firmó, actualiza; si no, conserva la previa (o vacía)
+            if firmar == 'sí' and firma:
+                tramite.firma_cliente = firma
             tramite.save()
         else:
             # Nuevo trámite
             tramite = Tramite.objects.create(
-                financiamiento=financiamiento,
-                cliente=cliente,
-                vendedor=vendedor,
-                firma_cliente=firma or ""
+                financiamiento = financiamiento,
+                cliente        = cliente,
+                vendedor       = vendedor,
+                firma_cliente  = firma if firmar == 'sí' and firma else ""
             )
             self.request.session['tramite_id'] = tramite.id
 
