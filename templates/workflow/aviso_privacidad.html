@@ -519,42 +519,49 @@
 
   <form method="post" novalidate>
     {% csrf_token %}
-    
-    <!-- Sección de firma -->
-    <div class="signature-section">
+
+    <!-- 1) Elección de firma digital -->
+    <div class="form-group">
+      <label class="section-title">
+        <i class="fas fa-signature"></i>
+        ¿Deseas firmar digitalmente?
+      </label>
+      {{ form.firmar }}
+      {% if form.firmar.errors %}
+        <div class="text-danger small">
+          {{ form.firmar.errors.0 }}
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- 2) Canvas solo si firmar == 'sí' -->
+    <div id="signature-block" class="signature-section">
       <h3 class="section-title">
         <i class="fas fa-signature"></i>
         Firma de aceptación
       </h3>
-      
       <div class="signature-canvas-container">
-        <label class="form-label mb-3">Dibuja tu firma en el área de abajo:</label>
-        <canvas id="sig-canvas"
-                class="signature-canvas"></canvas>
+        <label class="form-label mb-3">Dibuja tu firma:</label>
+        <canvas id="sig-canvas" class="signature-canvas"></canvas>
       </div>
-      
       <div class="signature-controls">
         <button id="sig-clear" type="button" class="btn-clear">
-          <i class="fas fa-eraser me-1"></i>
-          Borrar firma
+          <i class="fas fa-eraser me-1"></i> Borrar firma
         </button>
         <div class="signature-preview">
           <i class="fas fa-info-circle me-1"></i>
           Tu firma aparecerá en los documentos legales
         </div>
       </div>
-      
-      <!-- Campo oculto para la firma -->
       {{ form.firma_data }}
     </div>
-    
-    <!-- Sección de aceptación -->
+
+    <!-- 3) Aceptación del aviso -->
     <div class="acceptance-section">
       <h3 class="section-title">
         <i class="fas fa-check-circle"></i>
         Confirmación de aceptación
       </h3>
-      
       <div class="form-check">
         <label class="checkbox-container">
           {{ form.aceptar }}
@@ -563,7 +570,6 @@
             He leído y acepto los términos del Aviso de Privacidad
           </span>
         </label>
-        
         {% if form.aceptar.errors %}
           <div class="text-danger small mt-2">
             <i class="fas fa-exclamation-circle me-1"></i>
@@ -572,7 +578,7 @@
         {% endif %}
       </div>
     </div>
-    
+
     <button type="submit" class="btn-submit">
       <i class="fas fa-file-contract"></i>
       Aceptar y continuar
@@ -660,5 +666,17 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 150 * index);
   });
 });
+</script>
+<script>
+document.querySelectorAll('input[name="firmar"]').forEach(radio => {
+  radio.addEventListener('change', () => {
+    document.getElementById('signature-block').style.display =
+      (radio.value === 'sí') ? 'block' : 'none';
+  });
+});
+// Al cargar, ocultamos si no está en “sí”
+if (document.querySelector('input[name="firmar"]:checked')?.value !== 'sí') {
+  document.getElementById('signature-block').style.display = 'none';
+}
 </script>
 {% endblock %}
