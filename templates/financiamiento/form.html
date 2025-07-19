@@ -225,361 +225,334 @@
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/autonumeric@4.6.0/dist/autoNumeric.min.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-  // SISTEMA DE DEBUG
-  function debugLog(message, data = null) {
-    console.log(`🐛 DEBUG: ${message}`, data ? data : '');
-  }
+// Prevenir ejecución múltiple
+if (!window.scriptLoaded) {
+  window.scriptLoaded = true;
 
-  debugLog('=== INICIANDO SCRIPT ===');
-
-  // Variables globales
-  let autoNumericInstances = {};
-  let isCalculating = false;
-  let userInputFields = new Set();
-
-  // Configuración de AutoNumeric
-  const autoNumericConfig = {
-    currencySymbol: '$',
-    digitGroupSeparator: ',',
-    decimalCharacter: '.',
-    decimalPlaces: 2,
-    unformatOnSubmit: true,
-    minimumValue: '0',
-    watchExternalChanges: false
-  };
-
-  // Campos que tendrán formato de dinero
-  const moneyFields = [
-    'id_precio_lote',
-    'id_apartado', 
-    'id_enganche',
-    'id_monto_pago_completo',
-    'id_monto_mensualidad'
-  ];
-
-  // Campos que son SOLO de entrada
-  const inputFields = [
-    'id_precio_lote',
-    'id_apartado', 
-    'id_enganche'
-  ];
-
-  // Campos que son SOLO calculados
-  const calculatedFields = [
-    'id_monto_pago_completo',
-    'id_monto_mensualidad'
-  ];
-
-  debugLog('Configuración cargada', {
-    moneyFields,
-    inputFields,
-    calculatedFields
-  });
-
-  // Inicializar AutoNumeric CON DEBUG
-  moneyFields.forEach(fieldId => {
-    const element = document.getElementById(fieldId);
-    if (element) {
-      debugLog(`Intentando inicializar AutoNumeric en: ${fieldId}`);
-      try {
-        // CREAR INSTANCIA
-        autoNumericInstances[fieldId] = new AutoNumeric(`#${fieldId}`, autoNumericConfig);
-        debugLog(`✅ AutoNumeric creado exitosamente en: ${fieldId}`);
-
-        // AGREGAR TODOS LOS EVENTOS POSIBLES PARA DEBUG
-        const events = [
-          'autoNumeric:rawValueModified',
-          'autoNumeric:formatted',
-          'autoNumeric:rawValueModified',
-          'input',
-          'change',
-          'keydown',
-          'keyup',
-          'keypress'
-        ];
-
-        events.forEach(eventName => {
-          element.addEventListener(eventName, (e) => {
-            debugLog(`📝 EVENTO [${eventName}] en ${fieldId}`, {
-              value: element.value,
-              key: e.key || 'N/A',
-              type: e.type,
-              target: e.target.id
-            });
-          });
-        });
-
-        // EVENTOS ESPECÍFICOS PARA CAMPOS DE ENTRADA
-        if (inputFields.includes(fieldId)) {
-          debugLog(`Configurando eventos especiales para campo de entrada: ${fieldId}`);
-          
-          element.addEventListener('focus', () => {
-            userInputFields.add(fieldId);
-            debugLog(`🎯 FOCUS en ${fieldId} - Campo marcado como "en uso"`);
-            debugLog(`Campos actualmente en uso:`, Array.from(userInputFields));
-          });
-          
-          element.addEventListener('blur', () => {
-            debugLog(`👋 BLUR en ${fieldId} - Campo desmarcado`);
-            userInputFields.delete(fieldId);
-            debugLog(`Campos actualmente en uso:`, Array.from(userInputFields));
-            
-            // Recalcular cuando el usuario termina de escribir
-            debugLog(`Programando recálculo después de blur en ${fieldId}`);
-            setTimeout(() => {
-              debugLog(`Ejecutando recálculo programado desde ${fieldId}`);
-              recalculate();
-            }, 100);
-          });
-
-          // DETECTAR TECLAS ESPECÍFICAS
-          element.addEventListener('keydown', (e) => {
-            debugLog(`⌨️ TECLA PRESIONADA en ${fieldId}`, {
-              key: e.key,
-              code: e.code,
-              valueBefore: element.value,
-              cursorPosition: element.selectionStart
-            });
-          });
-
-          element.addEventListener('keyup', (e) => {
-            debugLog(`⌨️ TECLA LIBERADA en ${fieldId}`, {
-              key: e.key,
-              code: e.code,
-              valueAfter: element.value,
-              cursorPosition: element.selectionStart
-            });
-          });
-        }
-
-      } catch (error) {
-        debugLog(`❌ ERROR al crear AutoNumeric en ${fieldId}:`, error);
-      }
-    } else {
-      debugLog(`⚠️ Elemento no encontrado: ${fieldId}`);
+  document.addEventListener('DOMContentLoaded', () => {
+    // SISTEMA DE DEBUG
+    function debugLog(message, data = null) {
+      console.log(`🐛 DEBUG: ${message}`, data ? data : '');
     }
-  });
 
-  // Función para obtener valor numérico limpio CON DEBUG
-  function getNumericValue(fieldId) {
-    debugLog(`🔍 Obteniendo valor numérico de: ${fieldId}`);
-    
-    const instance = autoNumericInstances[fieldId];
-    if (instance) {
-      const value = parseFloat(instance.getNumericString()) || 0;
-      debugLog(`✅ Valor obtenido de AutoNumeric ${fieldId}: ${value}`);
-      return value;
-    }
-    
-    const element = document.getElementById(fieldId);
-    const value = parseFloat(element?.value?.replace(/[$,]/g, '') || 0);
-    debugLog(`✅ Valor obtenido manualmente de ${fieldId}: ${value}`);
-    return value;
-  }
+    debugLog('=== INICIANDO SCRIPT (ÚNICA VEZ) ===');
 
-  // Función para establecer valor SOLO en campos calculados CON DEBUG
-  function setCalculatedValue(fieldId, value) {
-    debugLog(`🎯 Intentando establecer valor calculado en ${fieldId}: ${value}`);
-    
-    // NUNCA tocar campos donde el usuario está escribiendo
-    if (userInputFields.has(fieldId)) {
-      debugLog(`🚫 BLOQUEADO - Usuario escribiendo en ${fieldId}`);
-      return;
-    }
-    
-    // SOLO actualizar campos calculados
-    if (!calculatedFields.includes(fieldId)) {
-      debugLog(`🚫 BLOQUEADO - ${fieldId} no es un campo calculado`);
-      return;
-    }
-    
-    debugLog(`✅ Estableciendo valor en campo calculado ${fieldId}: ${value}`);
-    
-    const instance = autoNumericInstances[fieldId];
-    if (instance) {
-      isCalculating = true;
-      debugLog(`🔄 Usando AutoNumeric.set() para ${fieldId}`);
-      instance.set(value);
-      setTimeout(() => {
-        isCalculating = false;
-        debugLog(`🔄 Flag isCalculating desactivado para ${fieldId}`);
-      }, 50);
-    } else {
+    // Variables globales
+    let autoNumericInstances = {};
+    let isCalculating = false;
+    let userInputFields = new Set();
+
+    // Configuración de AutoNumeric
+    const autoNumericConfig = {
+      currencySymbol: '$',
+      digitGroupSeparator: ',',
+      decimalCharacter: '.',
+      decimalPlaces: 2,
+      unformatOnSubmit: true,
+      minimumValue: '0',
+      watchExternalChanges: false
+    };
+
+    // Campos que tendrán formato de dinero
+    const moneyFields = [
+      'id_precio_lote',
+      'id_apartado', 
+      'id_enganche',
+      'id_monto_pago_completo',
+      'id_monto_mensualidad'
+    ];
+
+    // Campos que son SOLO de entrada
+    const inputFields = [
+      'id_precio_lote',
+      'id_apartado', 
+      'id_enganche'
+    ];
+
+    // Campos que son SOLO calculados
+    const calculatedFields = [
+      'id_monto_pago_completo',
+      'id_monto_mensualidad'
+    ];
+
+    debugLog('Configuración cargada', {
+      moneyFields,
+      inputFields,
+      calculatedFields
+    });
+
+    // Inicializar AutoNumeric CON VERIFICACIÓN DE DUPLICADOS
+    moneyFields.forEach(fieldId => {
       const element = document.getElementById(fieldId);
       if (element) {
-        debugLog(`🔄 Usando element.value para ${fieldId}`);
-        element.value = value;
+        debugLog(`Intentando inicializar AutoNumeric en: ${fieldId}`);
+        
+        // VERIFICAR SI YA EXISTE UNA INSTANCIA
+        try {
+          const existingInstance = AutoNumeric.getAutoNumericElement(`#${fieldId}`);
+          if (existingInstance) {
+            debugLog(`⚠️ AutoNumeric ya existe en ${fieldId}, reutilizando instancia`);
+            autoNumericInstances[fieldId] = existingInstance;
+            return; // Salir, no crear otra instancia
+          }
+        } catch (e) {
+          // No existe instancia previa, continuar
+        }
+        
+        try {
+          // CREAR INSTANCIA SOLO SI NO EXISTE
+          autoNumericInstances[fieldId] = new AutoNumeric(`#${fieldId}`, autoNumericConfig);
+          debugLog(`✅ AutoNumeric creado exitosamente en: ${fieldId}`);
+
+          // AGREGAR EVENTOS SOLO PARA CAMPOS DE ENTRADA
+          if (inputFields.includes(fieldId)) {
+            debugLog(`Configurando eventos especiales para campo de entrada: ${fieldId}`);
+            
+            element.addEventListener('focus', () => {
+              userInputFields.add(fieldId);
+              debugLog(`🎯 FOCUS en ${fieldId} - Campo marcado como "en uso"`);
+            });
+            
+            element.addEventListener('blur', () => {
+              debugLog(`👋 BLUR en ${fieldId} - Campo desmarcado`);
+              userInputFields.delete(fieldId);
+              
+              // Recalcular cuando el usuario termina de escribir
+              setTimeout(() => {
+                debugLog(`Ejecutando recálculo programado desde ${fieldId}`);
+                recalculate();
+              }, 100);
+            });
+          }
+
+        } catch (error) {
+          debugLog(`❌ ERROR al crear AutoNumeric en ${fieldId}:`, error);
+        }
+      } else {
+        debugLog(`⚠️ Elemento no encontrado: ${fieldId}`);
       }
-    }
-  }
+    });
 
-  // Función para mostrar/ocultar campos CON DEBUG
-  function toggleFieldsVisibility() {
-    const tipo = document.getElementById('id_tipo_pago').value;
-    debugLog(`🔀 Cambiando visibilidad de campos para tipo: ${tipo}`);
-    
-    const contadoFields = document.querySelectorAll('.pago-contado');
-    const financiadoFields = document.querySelectorAll('.pago-financiado');
-    
-    contadoFields.forEach(el => el.style.display = tipo === 'contado' ? 'block' : 'none');
-    financiadoFields.forEach(el => el.style.display = tipo === 'financiado' ? 'block' : 'none');
-  }
-
-  // Cálculos para pago de contado CON DEBUG
-  function calculateContado() {
-    if (isCalculating) {
-      debugLog('🚫 calculateContado bloqueado - isCalculating = true');
-      return;
-    }
-    
-    debugLog('🧮 INICIANDO cálculo de contado');
-    
-    const precio = getNumericValue('id_precio_lote');
-    const apartado = getNumericValue('id_apartado');
-    const monto = precio - apartado;
-    
-    debugLog('🧮 Valores para cálculo contado:', { precio, apartado, monto });
-    
-    if (monto >= 0) {
-      debugLog('✅ Estableciendo monto de pago completo');
-      setCalculatedValue('id_monto_pago_completo', monto);
-    } else {
-      debugLog('⚠️ Monto negativo, no se establece valor');
-    }
-  }
-
-  // Cálculos para pago financiado CON DEBUG
-  function calculateFinanciado() {
-    if (isCalculating) {
-      debugLog('🚫 calculateFinanciado bloqueado - isCalculating = true');
-      return;
-    }
-    
-    debugLog('🧮 INICIANDO cálculo de financiado');
-    
-    const precio = getNumericValue('id_precio_lote');
-    const apartado = getNumericValue('id_apartado');
-    const enganche = getNumericValue('id_enganche');
-    const num = parseInt(document.getElementById('id_num_mensualidades').value) || 0;
-    const fechaPrimer = document.getElementById('id_fecha_primer_pago').value;
-    
-    debugLog('🧮 Valores para cálculo financiado:', { precio, apartado, enganche, num, fechaPrimer });
-    
-    if (!fechaPrimer || num < 1) {
-      debugLog('⚠️ Datos insuficientes para cálculo financiado');
-      return;
-    }
-
-    // Calcular fecha último pago
-    const [y, m, d] = fechaPrimer.split('-').map(Number);
-    const date = new Date(y, m - 1 + (num - 1), d);
-    const yyyy = date.getFullYear();
-    const mm = String(date.getMonth() + 1).padStart(2, '0');
-    const dd = String(date.getDate()).padStart(2, '0');
-    document.getElementById('id_fecha_ultimo_pago').value = `${yyyy}-${mm}-${dd}`;
-    debugLog('📅 Fecha último pago calculada:', `${yyyy}-${mm}-${dd}`);
-
-    // Calcular montos
-    const restante = precio - apartado - enganche;
-    debugLog('💰 Monto restante:', restante);
-    
-    if (restante > 0) {
-      const base = restante / num;
-      const mensual = Math.ceil(base / 100) * 100;
-      const pagoFinal = restante - mensual * (num - 1);
+    // Función para obtener valor numérico limpio
+    function getNumericValue(fieldId) {
+      debugLog(`🔍 Obteniendo valor numérico de: ${fieldId}`);
       
-      debugLog('💰 Cálculos finales:', { base, mensual, pagoFinal });
+      const instance = autoNumericInstances[fieldId];
+      if (instance) {
+        const value = parseFloat(instance.getNumericString()) || 0;
+        debugLog(`✅ Valor obtenido de AutoNumeric ${fieldId}: ${value}`);
+        return value;
+      }
       
-      setCalculatedValue('id_monto_mensualidad', mensual);
-      document.getElementById('id_monto_pago_final').value = pagoFinal.toFixed(2);
+      const element = document.getElementById(fieldId);
+      const value = parseFloat(element?.value?.replace(/[$,]/g, '') || 0);
+      debugLog(`✅ Valor obtenido manualmente de ${fieldId}: ${value}`);
+      return value;
     }
-  }
 
-  // Función principal de recálculo CON DEBUG
-  function recalculate() {
-    if (isCalculating) {
-      debugLog('🚫 recalculate bloqueado - isCalculating = true');
-      return;
-    }
-    
-    debugLog('🔄 INICIANDO RECÁLCULO GENERAL');
-    
-    const tipo = document.getElementById('id_tipo_pago').value;
-    debugLog('📋 Tipo de pago actual:', tipo);
-    
-    toggleFieldsVisibility();
-    
-    if (tipo === 'contado') {
-      calculateContado();
-    } else if (tipo === 'financiado') {
-      calculateFinanciado();
-    }
-    
-    debugLog('🔄 RECÁLCULO COMPLETADO');
-  }
-
-  // Event listeners SIMPLIFICADOS CON DEBUG
-  const nonMoneyTriggers = [
-    'id_tipo_pago',
-    'id_num_mensualidades',
-    'id_fecha_primer_pago'
-  ];
-
-  nonMoneyTriggers.forEach(fieldId => {
-    const element = document.getElementById(fieldId);
-    if (element) {
-      debugLog(`🔗 Agregando listener 'change' a: ${fieldId}`);
-      element.addEventListener('change', () => {
-        debugLog(`🔔 CHANGE event en ${fieldId}, valor: ${element.value}`);
-        recalculate();
-      });
-    }
-  });
-
-  // Carga dinámica de lotes (sin cambios pero con debug)
-  const proyectoSelect = document.getElementById('id_proyecto');
-  const loteSelect = document.getElementById('id_lote');
-  
-  if (proyectoSelect && loteSelect) {
-    debugLog('🏗️ Configurando carga dinámica de lotes');
-    proyectoSelect.addEventListener('change', function() {
-      const projId = this.value;
-      debugLog('🏗️ Cambio en proyecto:', projId);
+    // Función para establecer valor SOLO en campos calculados
+    function setCalculatedValue(fieldId, value) {
+      debugLog(`🎯 Intentando establecer valor calculado en ${fieldId}: ${value}`);
       
-      if (!projId) {
-        loteSelect.innerHTML = '<option value="">— Selecciona lote —</option>';
+      // NUNCA tocar campos donde el usuario está escribiendo
+      if (userInputFields.has(fieldId)) {
+        debugLog(`🚫 BLOQUEADO - Usuario escribiendo en ${fieldId}`);
         return;
       }
       
-      loteSelect.innerHTML = '<option value="">Cargando...</option>';
+      // SOLO actualizar campos calculados
+      if (!calculatedFields.includes(fieldId)) {
+        debugLog(`🚫 BLOQUEADO - ${fieldId} no es un campo calculado`);
+        return;
+      }
       
-      fetch(`/workflow/ajax/lotes/${projId}/`)
-        .then(response => response.json())
-        .then(data => {
-          loteSelect.innerHTML = '<option value="">— Selecciona lote —</option>';
-          if (data.lotes) {
-            data.lotes.forEach(lote => {
-              const option = document.createElement('option');
-              option.value = lote.id;
-              option.textContent = lote.identificador;
-              loteSelect.appendChild(option);
-            });
-            debugLog('🏗️ Lotes cargados:', data.lotes.length);
-          }
-        })
-        .catch(error => {
-          debugLog('❌ Error cargando lotes:', error);
-          loteSelect.innerHTML = '<option value="">Error al cargar lotes</option>';
-        });
-    });
-  }
+      debugLog(`✅ Estableciendo valor en campo calculado ${fieldId}: ${value}`);
+      
+      const instance = autoNumericInstances[fieldId];
+      if (instance) {
+        isCalculating = true;
+        debugLog(`🔄 Usando AutoNumeric.set() para ${fieldId}`);
+        instance.set(value);
+        setTimeout(() => {
+          isCalculating = false;
+          debugLog(`🔄 Flag isCalculating desactivado para ${fieldId}`);
+        }, 50);
+      } else {
+        const element = document.getElementById(fieldId);
+        if (element) {
+          debugLog(`🔄 Usando element.value para ${fieldId}`);
+          element.value = value;
+        }
+      }
+    }
 
-  // Inicialización CON DEBUG
-  debugLog('🚀 Ejecutando inicialización');
-  recalculate();
-  debugLog('=== SCRIPT INICIALIZADO COMPLETAMENTE ===');
-});
+    // Función para mostrar/ocultar campos
+    function toggleFieldsVisibility() {
+      const tipo = document.getElementById('id_tipo_pago').value;
+      debugLog(`🔀 Cambiando visibilidad de campos para tipo: ${tipo}`);
+      
+      const contadoFields = document.querySelectorAll('.pago-contado');
+      const financiadoFields = document.querySelectorAll('.pago-financiado');
+      
+      contadoFields.forEach(el => el.style.display = tipo === 'contado' ? 'block' : 'none');
+      financiadoFields.forEach(el => el.style.display = tipo === 'financiado' ? 'block' : 'none');
+    }
+
+    // Cálculos para pago de contado
+    function calculateContado() {
+      if (isCalculating) {
+        debugLog('🚫 calculateContado bloqueado - isCalculating = true');
+        return;
+      }
+      
+      debugLog('🧮 INICIANDO cálculo de contado');
+      
+      const precio = getNumericValue('id_precio_lote');
+      const apartado = getNumericValue('id_apartado');
+      const monto = precio - apartado;
+      
+      debugLog('🧮 Valores para cálculo contado:', { precio, apartado, monto });
+      
+      if (monto >= 0) {
+        debugLog('✅ Estableciendo monto de pago completo');
+        setCalculatedValue('id_monto_pago_completo', monto);
+      } else {
+        debugLog('⚠️ Monto negativo, no se establece valor');
+      }
+    }
+
+    // Cálculos para pago financiado
+    function calculateFinanciado() {
+      if (isCalculating) {
+        debugLog('🚫 calculateFinanciado bloqueado - isCalculating = true');
+        return;
+      }
+      
+      debugLog('🧮 INICIANDO cálculo de financiado');
+      
+      const precio = getNumericValue('id_precio_lote');
+      const apartado = getNumericValue('id_apartado');
+      const enganche = getNumericValue('id_enganche');
+      const num = parseInt(document.getElementById('id_num_mensualidades').value) || 0;
+      const fechaPrimer = document.getElementById('id_fecha_primer_pago').value;
+      
+      debugLog('🧮 Valores para cálculo financiado:', { precio, apartado, enganche, num, fechaPrimer });
+      
+      if (!fechaPrimer || num < 1) {
+        debugLog('⚠️ Datos insuficientes para cálculo financiado');
+        return;
+      }
+
+      // Calcular fecha último pago
+      const [y, m, d] = fechaPrimer.split('-').map(Number);
+      const date = new Date(y, m - 1 + (num - 1), d);
+      const yyyy = date.getFullYear();
+      const mm = String(date.getMonth() + 1).padStart(2, '0');
+      const dd = String(date.getDate()).padStart(2, '0');
+      document.getElementById('id_fecha_ultimo_pago').value = `${yyyy}-${mm}-${dd}`;
+      debugLog('📅 Fecha último pago calculada:', `${yyyy}-${mm}-${dd}`);
+
+      // Calcular montos
+      const restante = precio - apartado - enganche;
+      debugLog('💰 Monto restante:', restante);
+      
+      if (restante > 0) {
+        const base = restante / num;
+        const mensual = Math.ceil(base / 100) * 100;
+        const pagoFinal = restante - mensual * (num - 1);
+        
+        debugLog('💰 Cálculos finales:', { base, mensual, pagoFinal });
+        
+        setCalculatedValue('id_monto_mensualidad', mensual);
+        document.getElementById('id_monto_pago_final').value = pagoFinal.toFixed(2);
+      }
+    }
+
+    // Función principal de recálculo
+    function recalculate() {
+      if (isCalculating) {
+        debugLog('🚫 recalculate bloqueado - isCalculating = true');
+        return;
+      }
+      
+      debugLog('🔄 INICIANDO RECÁLCULO GENERAL');
+      
+      const tipo = document.getElementById('id_tipo_pago').value;
+      debugLog('📋 Tipo de pago actual:', tipo);
+      
+      toggleFieldsVisibility();
+      
+      if (tipo === 'contado') {
+        calculateContado();
+      } else if (tipo === 'financiado') {
+        calculateFinanciado();
+      }
+      
+      debugLog('🔄 RECÁLCULO COMPLETADO');
+    }
+
+    // Event listeners SIMPLIFICADOS
+    const nonMoneyTriggers = [
+      'id_tipo_pago',
+      'id_num_mensualidades',
+      'id_fecha_primer_pago'
+    ];
+
+    nonMoneyTriggers.forEach(fieldId => {
+      const element = document.getElementById(fieldId);
+      if (element) {
+        debugLog(`🔗 Agregando listener 'change' a: ${fieldId}`);
+        element.addEventListener('change', () => {
+          debugLog(`🔔 CHANGE event en ${fieldId}, valor: ${element.value}`);
+          recalculate();
+        });
+      }
+    });
+
+    // Carga dinámica de lotes
+    const proyectoSelect = document.getElementById('id_proyecto');
+    const loteSelect = document.getElementById('id_lote');
+    
+    if (proyectoSelect && loteSelect) {
+      debugLog('🏗️ Configurando carga dinámica de lotes');
+      proyectoSelect.addEventListener('change', function() {
+        const projId = this.value;
+        debugLog('🏗️ Cambio en proyecto:', projId);
+        
+        if (!projId) {
+          loteSelect.innerHTML = '<option value="">— Selecciona lote —</option>';
+          return;
+        }
+        
+        loteSelect.innerHTML = '<option value="">Cargando...</option>';
+        
+        fetch(`/workflow/ajax/lotes/${projId}/`)
+          .then(response => response.json())
+          .then(data => {
+            loteSelect.innerHTML = '<option value="">— Selecciona lote —</option>';
+            if (data.lotes) {
+              data.lotes.forEach(lote => {
+                const option = document.createElement('option');
+                option.value = lote.id;
+                option.textContent = lote.identificador;
+                loteSelect.appendChild(option);
+              });
+              debugLog('🏗️ Lotes cargados:', data.lotes.length);
+            }
+          })
+          .catch(error => {
+            debugLog('❌ Error cargando lotes:', error);
+            loteSelect.innerHTML = '<option value="">Error al cargar lotes</option>';
+          });
+      });
+    }
+
+    // Inicialización
+    debugLog('🚀 Ejecutando inicialización');
+    recalculate();
+    debugLog('=== SCRIPT INICIALIZADO COMPLETAMENTE (ÚNICA VEZ) ===');
+  });
+}
 </script>
 {% endblock %}
 
