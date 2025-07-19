@@ -275,17 +275,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Función para establecer valor (evitando triggers de eventos) CORREGIDA
   function setCalculatedValue(fieldId, value) {
-    if (isCalculating) return; // Evitar loops
-    
     const instance = autoNumericInstances[fieldId];
     if (instance) {
-      // Usar opción para evitar eventos
+      // Verificar si el usuario está escribiendo en este campo
+      const element = document.getElementById(fieldId);
+      if (element === document.activeElement) {
+        return; // No interferir si el usuario está escribiendo
+      }
+      
       isCalculating = true;
-      instance.set(value, { event: { skip: true } });
+      instance.set(value);
       setTimeout(() => isCalculating = false, 50);
     } else {
       const element = document.getElementById(fieldId);
-      if (element) {
+      if (element && element !== document.activeElement) {
         element.value = value;
       }
     }
