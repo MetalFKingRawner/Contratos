@@ -67,6 +67,15 @@ class SolicitudContratoForm(forms.Form):
         label="Asesor Inmobiliario"
     )
 
+class AvisoForm(forms.Form):
+    firmar = forms.ChoiceField(
+        choices=[('sí','Sí, firmaré en pantalla'), ('no','No, lo firmo en oficina')],
+        widget=forms.RadioSelect,
+        label="¿Deseas firmar digitalmente?",
+    )
+    aceptar    = forms.BooleanField(label="He leído y acepto el Aviso de Privacidad")
+    firma_data = forms.CharField(widget=forms.HiddenInput(), required=False)
+
 class Paso1Form(forms.Form):
     financiamiento = forms.ModelChoiceField(
         queryset=Financiamiento.objects.select_related('lote__proyecto'),
