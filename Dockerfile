@@ -7,12 +7,15 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     libreoffice-core \
     libreoffice-writer \
-    fontconfig \
     fonts-dejavu-core \
+    fonts-liberation \
     fonts-crosextra-carlito \
-    fonts-freefont-ttf \
+    fonts-roboto \
     fonts-noto-cjk \
-    fonts-wqy-zenhei && \
+    fonts-wqy-zenhei \
+    fontconfig \
+    build-essential \
+    libpq-dev && \
     fc-cache -f -v && \
     rm -rf /var/lib/apt/lists/*
 
