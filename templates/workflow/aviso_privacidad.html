@@ -524,13 +524,13 @@
     <div class="form-group">
       <label class="section-title">
         <i class="fas fa-signature"></i>
-        ¿Deseas firmar digitalmente?
+        {{ form.firmar.label }}
       </label>
-      {{ form.firmar }}
+      <div class="radio-group">
+        {{ form.firmar }}
+      </div>
       {% if form.firmar.errors %}
-        <div class="text-danger small">
-          {{ form.firmar.errors.0 }}
-        </div>
+        <div class="text-danger small">{{ form.firmar.errors.0 }}</div>
       {% endif %}
     </div>
 
