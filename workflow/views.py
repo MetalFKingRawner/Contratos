@@ -396,7 +396,7 @@ class SeleccionDocumentosView(FormView):
         regime = fin.lote.proyecto.tipo_contrato.lower()
         pago   = fin.tipo_pago
 
-        if 'definitiva' in regime:
+        if 'pequeña propiedad' in regime:
             if pago == 'contado':
                 slugs.append('contrato_definitiva_contado')
             else:
@@ -572,3 +572,4 @@ class Paso1FinanciamientoView(TemplateView):
         # guarda en sesión para los pasos siguientes
         request.session['financiamiento_id'] = int(plan_id)
         return redirect('workflow:paso2_cliente')
+
