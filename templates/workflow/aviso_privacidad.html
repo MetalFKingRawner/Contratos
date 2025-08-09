@@ -715,12 +715,12 @@ document.addEventListener('DOMContentLoaded', function() {
   document.querySelector('form').addEventListener('submit', (e) => {
     const hidden = document.getElementById('{{ form.firma_data.id_for_label }}');
     
-    if (sigPad.isEmpty()) {
-      canvas.style.borderColor = "#dc3545";
-      e.preventDefault();
-      alert('Por favor, proporciona tu firma');
-      return;
-    }
+    //if (sigPad.isEmpty()) {
+    //  canvas.style.borderColor = "#dc3545";
+    //  e.preventDefault();
+    //  alert('Por favor, proporciona tu firma');
+    //  return;
+    //}
     
     hidden.value = sigPad.toDataURL('image/png');
   });
@@ -756,3 +756,4 @@ if (document.querySelector('input[name="firmar"]:checked')?.value !== 'sí') {
 }
 </script>
 {% endblock %}
+
