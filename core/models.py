@@ -34,7 +34,7 @@ class Propietario(models.Model):
         ('M', 'Masculino'),
         ('F', 'Femenino'),
     ]
-    proyecto = models.OneToOneField(Proyecto, on_delete=models.CASCADE, related_name='propietario')
+    proyecto = models.ForeignKey(Proyecto, on_delete=models.CASCADE, related_name='propietario')
     nombre_completo = models.CharField(max_length=100)
     sexo                  = models.CharField("Sexo", max_length=1, choices=SEXO_CHOICES, default='M')
     nacionalidad = models.CharField(max_length=50)
@@ -100,6 +100,7 @@ class Cliente(models.Model):
 
     def __str__(self):
         return self.nombre_completo
+
 
 
 
