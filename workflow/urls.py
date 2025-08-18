@@ -2,7 +2,7 @@ from django.views.generic import TemplateView
 from django.urls import path
 from . import views
 from .views import obtener_datos_financiamiento
-from .views import GenerarCartaIntencionView, Paso1FinanciamientoView, ClienteDataView, SeleccionVendedorView, AvisoPrivacidadView, SeleccionDocumentosView
+from .views import GenerarCartaIntencionView, Paso1FinanciamientoView, ClienteDataView, SeleccionVendedorView, AvisoPrivacidadView, SeleccionDocumentosView, ClausulasEspecialesView
 
 from .views import (
     SeleccionDocumentoView,
@@ -30,4 +30,5 @@ urlpatterns = [
 
 class SeleccionDocumentoView(TemplateView):
     template_name = "inicio.html"
+
 
