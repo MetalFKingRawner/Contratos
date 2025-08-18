@@ -116,3 +116,52 @@ class SeleccionDocumentosForm(forms.Form):
             for slug in available_slugs
         ]
         self.fields['documentos'].choices = choices
+
+class ClausulasEspecialesForm(forms.Form):
+    clausula_pago = forms.CharField(
+        label="Cláusula especial de pago (opcional)",
+        widget=forms.Textarea(attrs={'rows': 3}),
+        required=False
+    )
+    clausula_deslinde = forms.CharField(
+        label="Cláusula adicional después de CUARTA (opcional)",
+        widget=forms.Textarea(attrs={'rows': 3}),
+        required=False
+    )
+    clausula_promesa = forms.CharField(
+        label="Cláusula adicional después de OCTAVA (opcional)",
+        widget=forms.Textarea(attrs={'rows': 3}),
+        required=False
+    )
+
+class SegundoClienteForm(forms.ModelForm):
+    class Meta:
+        model = Cliente
+        fields = [
+            'nombre_completo',
+            'sexo',
+            'rfc',
+            'domicilio',
+            'telefono',
+            'email',
+            'ocupacion',
+            'estado_civil',
+            'nacionalidad',
+            'originario',
+            'tipo_id',
+            'numero_id',
+        ]
+        widgets = {
+            'nombre_completo': forms.TextInput(attrs={'class': 'form-control'}),
+            'sexo': forms.Select(attrs={'class': 'form-control'}),
+            'telefono': forms.TextInput(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+            'tipo_id': forms.TextInput(attrs={'class': 'form-control'}),
+            'numero_id': forms.TextInput(attrs={'class': 'form-control'}),
+            'rfc': forms.TextInput(attrs={'class': 'form-control'}),
+            'nacionalidad': forms.TextInput(attrs={'class': 'form-control'}),
+            'originario': forms.TextInput(attrs={'class': 'form-control'}),
+            'estado_civil': forms.TextInput(attrs={'class': 'form-control'}),
+            'ocupacion': forms.TextInput(attrs={'class': 'form-control'}),
+            'domicilio': forms.Textarea(attrs={'class':'form-control','rows':2}),
+        }
