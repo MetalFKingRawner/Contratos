@@ -842,3 +842,537 @@ def build_contrato_ejidal_contado_context(fin, cli, ven, request=None, tpl=None,
         context['FIRMA_CLIENTE'] = ''
 
     return context
+
+def calcular_numeracion_clausulas(tiene_deslinde, tiene_promesa):
+    # Numeración base sin cláusulas adicionales
+    base = {
+        'QUINTA': 'QUINTA',
+        'SEXTA': 'SEXTA',
+        'SEPTIMA': 'SÉPTIMA',
+        'OCTAVA': 'OCTAVA',
+        'NOVENA': 'NOVENA',
+        'DECIMA': 'DÉCIMA',
+        'DECIMA_PRIMERA': 'DÉCIMA PRIMERA',
+        'DECIMA_SEGUNDA': 'DÉCIMA SEGUNDA',
+        'DECIMA_TERCERA': 'DÉCIMA TERCERA'
+    }
+    
+    # Ajustar numeración según cláusulas adicionales
+    if tiene_deslinde and tiene_promesa:
+        return {
+            'QUINTA': 'SEXTA',
+            'SEXTA': 'SÉPTIMA',
+            'SEPTIMA': 'OCTAVA',
+            'OCTAVA': 'NOVENA',
+            'NOVENA': 'DÉCIMA PRIMERA',
+            'DECIMA': 'DÉCIMA SEGUNDA',
+            'DECIMA_PRIMERA': 'DÉCIMA TERCERA',
+            'DECIMA_SEGUNDA': 'DÉCIMA CUARTA',
+            'DECIMA_TERCERA': 'DECIMA QUINTA'
+        }
+    elif tiene_deslinde:
+        return {
+            'QUINTA': 'SEXTA',
+            'SEXTA': 'SÉPTIMA',
+            'SEPTIMA': 'OCTAVA',
+            'OCTAVA': 'NOVENA',
+            'NOVENA': 'DÉCIMA',
+            'DECIMA': 'DÉCIMA PRIMERA',
+            'DECIMA_PRIMERA': 'DÉCIMA SEGUNDA',
+            'DECIMA_SEGUNDA': 'DÉCIMA TERCERA',
+            'DECIMA_TERCERA': 'DECIMA CUARTA'
+        }
+    elif tiene_promesa:
+        return {
+            'QUINTA': 'QUINTA',
+            'SEXTA': 'SEXTA',
+            'SEPTIMA': 'SÉPTIMA',
+            'OCTAVA': 'OCTAVA',
+            'NOVENA': 'DÉCIMA',
+            'DECIMA': 'DÉCIMA PRIMERA',
+            'DECIMA_PRIMERA': 'DÉCIMA SEGUNDA',
+            'DECIMA_SEGUNDA': 'DÉCIMA TERCERA',
+            'DECIMA_TERCERA': 'DECIMA CUARTA'
+        }
+    return base
+
+from decimal import Decimal, InvalidOperation
+# Helper para formatear dinero con separador de miles y 2 decimales
+def fmt_money(val):
+    """
+    Devuelve una cadena como '500,000.00' para entradas numéricas o cadenas numéricas.
+    Si no se puede parsear, devuelve str(val) sin modificación.
+    """
+    try:
+        d = Decimal(str(val))
+    except (InvalidOperation, TypeError, ValueError):
+        try:
+            d = Decimal(float(val))
+        except Exception:
+            return str(val)
+    # El formato con ',' funciona con Decimal en Python 3.6+
+    return f"{d:,.2f}"
+
+def build_contrato_propiedad_contado_context(fin, cli, ven, request=None, tpl=None, firma_data=None, clausulas_adicionales=None):
+    """
+    Construye el context para el Contrato Pequeña propiedad (Contado).
+    fin: Financiamiento
+    cli: Cliente
+    ven: Vendedor
+    request: HttpRequest para extraer firma
+    tpl: DocxTemplate para InlineImage
+    """
+    print("Entré al build de pequeña propiedad")
+
+    if clausulas_adicionales is None:
+        clausulas_adicionales = {}
+
+    # 1) Pronombres y formas según sexo
+    def art(sex, masculino, femenino):
+        return masculino if sex == 'M' else femenino
+
+    # SEXO_1: EL/LA VENDEDOR
+    SEXO_1 = art(ven.sexo, 'EL', 'LA')
+    # SEXO_2: VENDEDOR/VENDEDORA
+    SEXO_2 = art(ven.sexo, 'VENDEDOR', 'VENDEDORA')
+    # SEXO_3: EL/LA COMPRADOR
+    SEXO_3 = art(cli.sexo, 'EL', 'LA')
+    # SEXO_4: COMPRADOR/COMPRADORA
+    SEXO_4 = art(cli.sexo, 'COMPRADOR', 'COMPRADORA')
+    # SEXO_5: A/O
+    SEXO_5 = art(cli.sexo, 'O', 'A')
+    # SEXO_6: EL/LA PROPIETARIO/A
+    prop = fin.lote.proyecto.propietario.first()
+    SEXO_6 = art(prop.sexo, 'EL', 'LA')
+    # SEXO_7: A LA / AL
+    SEXO_7 = art(cli.sexo, 'A LA', 'AL')
+    # SEXO_8: DEL / DE LA
+    SEXO_8 = art(ven.sexo, 'DEL', 'DE LA')
+    #SEXO_9 = art(cli.sexo, 'LOS', 'LAS')
+    #SEXO_10 = art(cli.sexo, 'COMPRADORES','COMPRADORAS')
+    #SEXO_11 = art(cli.sexo, 'O', 'A')
+    #SEXO_12 = art(cli.sexo, 'A LOS', 'A LAS')
+    #SEXO_13 = art(cli.sexo, 'DE LOS', 'DE LAS')
+
+    # 2) Fecha de pago completo (hoy)
+    pago = date.today()
+    meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio",
+             "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]
+
+    # 3) Coordenadas por cada lado
+    dir_fields = {}
+    for dir_name in ('norte','sur','este','oeste'):
+        raw = getattr(fin.lote, dir_name, '')
+        metros, col = _parse_coord(raw)
+        key_m = f'NUMERO_METROS_{dir_name.upper()}'
+        key_c = f'COLINDANCIA_LOTE_{dir_name.upper()}'
+        dir_fields[key_m] = metros
+        dir_fields[key_c] = col
+
+    # 4) Cálculo pago restante
+    restante = float(fin.precio_lote) - float(fin.apartado)
+    restante_letra = numero_a_letras(restante)
+
+    fecha_posesion = fin.lote.proyecto.fecha_emision_documento
+    fecha_contrato = fin.lote.proyecto.fecha_emision_contrato
+    autoridad = fin.lote.proyecto.autoridad
+
+# 3) Miembro B dinámico según relación:
+    # — Si ven es propietario:
+    if ven.ine == prop.ine and prop.tipo == 'propietario':
+        claus_b = (
+            f"QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, "
+            f"QUE ACREDITA CON EL CONTRATO PRIVADO DE COMPRAVENTA Y CONSTANCIA DE POSESIÓN DE FECHA {fecha_posesion} "
+            f"EXPEDIDA POR LOS INTEGRANTES DEL / DE LA XXXXXXXXXX"
+        )
+    # — Si ven es apoderado:
+    elif ven.ine == prop.ine and prop.tipo == 'apoderado':
+        claus_b = (
+            f"QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, AL IGUAL QUE, CON LAS "
+            f"FACULTADES Y AUTORIZACIÓN SUFICIENTE PARA OBLIGARSE EN LOS TÉRMINOS DE ESTE, TAL COMO SE ACREDITA CON EL INSTRUMENTO PÚBLICO "
+            f"{fin.instrumento_publico} OTORGADO ANTE LA FE DEL NOTARIO PÚBLICO "
+            f"{fin.notario_publico} DE OAXACA, EL LICENCIADO {fin.nombre_notario.upper()}."
+            f"C. ESTAR LEGITIMADO PARA REALIZAR TODOS AQUELLOS ACTOS SOBRE LA PROPIEDAD, CONFORME AL PODER DESCRITO EN LA DECLARACIÓN ANTERIOR."
+        )
+    # — Si es vendedor autorizado:
+    else:
+        claus_b = (
+            f"QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, AL IGUAL QUE CON LAS FACULTADES Y AUTORIZACIÓN SUFICIENTE PARA OBLIGARSE EN LOS TÉRMINOS DE ESTE, "
+            f"TAL COMO SE ACREDITA EN EL CONTRATO DE EXCLUSIVIDAD, PROMOCIÓN Y COMISIÓN POR LA VENTA DEL BIEN INMUEBLE DE FECHA {fecha_contrato}"
+            f"OTORGADO POR EL / LA  C. {autoridad}"
+        )
+
+    # 5) Construcción del context
+    context = {
+        # Pronombres
+        'SEXO_1': SEXO_1,
+        'SEXO_2': SEXO_2,
+        'SEXO_3': SEXO_3,
+        'SEXO_4': SEXO_4,
+        'SEXO_5': SEXO_5,
+        'SEXO_6': SEXO_6,
+        'SEXO_7': SEXO_7,
+        'SEXO_8': SEXO_8,
+        #'SEXO_9': SEXO_9,
+        #'SEXO_10': SEXO_10,
+        #'SEXO_11': SEXO_11,
+        #'SEXO_12': SEXO_12,
+        #'SEXO_13': SEXO_13,
+
+        # Fecha de generación
+        'DIA': pago.day,
+        'MES': meses[pago.month - 1].upper(),
+
+        # Vendedor
+        'NOMBRE_VENDEDOR': ven.nombre_completo.upper(),
+        'ID_INE':          ven.ine,
+        'NUMERO_VENDEDOR': ven.telefono,
+
+        # Notario e instrumento (del propietario)
+        'INSTRUMENTO_PUBLICO': prop.instrumento_publico or '',
+        'NOTARIO':             prop.notario_publico or '',
+        'NOMBRE_NOTARIO':      prop.nombre_notario or '',
+
+        # Propietario
+        'NOMBRE_PROPIETARIO': prop.nombre_completo.upper(),
+
+        # Cliente/Comprador
+        'NOMBRE_COMPRADOR':   cli.nombre_completo.upper(),
+        'DIRECCION_COMPRADOR':cli.domicilio.upper(),
+        'ID_INE_COMPRADOR':    cli.numero_id,
+        'LUGAR_ORIGEN':        cli.originario.upper(),
+        'ESTADO_CIVIL':        cli.estado_civil.upper(),
+        'TELEFONO_COMPRADOR':  cli.telefono.upper(),
+        'OCUPACION_COMPRADOR': cli.ocupacion.upper(),
+        'CORREO_COMPRADOR':    cli.email.upper(),
+
+        # Lote
+        'IDENTIFICADOR_LOTE':    fin.lote.identificador,
+        'LETRA_IDENTIFICADOR':   numero_a_letras(float(fin.lote.identificador)),
+        'DIRECCION_PROYECTO_LOTE': fin.lote.proyecto.ubicacion.upper(),
+
+        # Coordenadas dinámicas
+        **dir_fields,
+
+        # Financiamiento y pagos
+        'PRECIO_LOTE_FINANCIAMIENTO': fmt_money(fin.precio_lote),
+        'LETRA_PRECIO_LOTE':          numero_a_letras(float(fin.precio_lote)),
+        'APARTADO_FINANCIAMIENTO':    fmt_money(fin.apartado),
+        'LETRA_APARTADO':             numero_a_letras(float(fin.apartado)),
+
+        'DIA_PAGO':  pago.day,
+        'MES_PAGO':  meses[pago.month - 1].upper(),
+        'ANIO_PAGO': pago.year,
+
+        'CANTIDAD_PAGO_COMPLETO':  fmt_money(restante),
+        'CANTIDAD_LETRA_PAGO':     restante_letra,
+
+        # Y la cláusula B variable:
+        'CLAUSULA_B': claus_b,
+    }
+
+    # 6) Firma del cliente (igual al otro builder)
+    if request and tpl:
+        data_url = firma_data or (request.session.get('firma_cliente_data') if request else None)
+        if data_url:
+            header, b64 = data_url.split(',', 1)
+            img_data = base64.b64decode(b64)
+            fd, tmp = tempfile.mkstemp(suffix='.png')
+            with os.fdopen(fd, 'wb') as f:
+                f.write(img_data)
+            # Inserta la imagen de firma
+            context['FIRMA_CLIENTE'] = InlineImage(tpl, tmp, width=Mm(40))
+        else:
+            context['FIRMA_CLIENTE'] = ''
+    else:
+        context['FIRMA_CLIENTE'] = ''
+
+    # Determinar qué cláusulas adicionales existen
+    tiene_pago = clausulas_adicionales and 'pago' in clausulas_adicionales and bool(clausulas_adicionales['pago'])
+    tiene_deslinde = clausulas_adicionales and 'deslinde' in clausulas_adicionales and bool(clausulas_adicionales['deslinde'])
+    tiene_promesa = clausulas_adicionales and 'promesa' in clausulas_adicionales and bool(clausulas_adicionales['promesa'])
+    
+    # Calcular numeración dinámica
+    numeracion = calcular_numeracion_clausulas(tiene_deslinde, tiene_promesa)
+    
+    # Formatear cláusulas adicionales con numeración correcta
+    clausula_pago = f"C) {clausulas_adicionales['pago']}" if tiene_pago else ''
+    
+    # Formatear cláusulas adicionales
+    clausula_pago = ""
+    if tiene_pago:
+        salto = '\n'
+        # Para la cláusula de pago (insertada como inciso C)
+        clausula_pago = f"{clausulas_adicionales['pago']}"
+    
+    clausula_deslinde = ""
+    if tiene_deslinde:
+        # Esta cláusula siempre será QUINTA cuando exista
+        clausula_deslinde = f"QUINTA. {clausulas_adicionales['deslinde']}"
+    
+    clausula_promesa = ""
+    if tiene_promesa:
+        # Determinar posición correcta
+        if tiene_deslinde:
+            # Si hay deslinde, la promesa será DÉCIMA
+            num = 'DÉCIMA'
+        else:
+            # Si no hay deslinde, la promesa será NOVENA
+            num = 'NOVENA'
+        clausula_promesa = f"{num}. {clausulas_adicionales['promesa']}"
+    
+    # Agregar al contexto
+    context.update({
+        'NUM_QUINTA': numeracion['QUINTA'],
+        'NUM_SEXTA': numeracion['SEXTA'],
+        'NUM_SEPTIMA': numeracion['SEPTIMA'],
+        'NUM_OCTAVA': numeracion['OCTAVA'],
+        'NUM_NOVENA': numeracion['NOVENA'],
+        'NUM_DECIMA': numeracion['DECIMA'],
+        'NUM_DECIMA_PRIMERA': numeracion['DECIMA_PRIMERA'],
+        'NUM_DECIMA_SEGUNDA': numeracion['DECIMA_SEGUNDA'],
+        'NUM_DECIMA_TERCERA': numeracion['DECIMA_TERCERA'],
+        
+        'CLAUSULA_PAGO': clausula_pago.upper(),
+        'CLAUSULA_DESLINDE': clausula_deslinde.upper(),
+        'CLAUSULA_PROMESA': clausula_promesa.upper(),
+    })
+
+    return context
+
+def build_contrato_propiedad_contado_varios_context(fin, cli, ven, cliente2=None, request=None, tpl=None, firma_data=None, clausulas_adicionales=None):
+    """
+    Construye el context para el Contrato Pequeña propiedad (Contado) con DOS COMPRADORES.
+    fin: Financiamiento
+    cli: Cliente (primer comprador)
+    ven: Vendedor
+    cliente2: Cliente (segundo comprador)
+    request: HttpRequest para extraer firma
+    tpl: DocxTemplate para InlineImage
+    """
+    print("Entré al build de pequeña propiedad para DOS COMPRADORES")
+
+    if clausulas_adicionales is None:
+        clausulas_adicionales = {}
+
+    # 1) Pronombres y formas según sexo para SINGULARES (igual que antes)
+    def art(sex, masculino, femenino):
+        return masculino if sex == 'M' else femenino
+
+    SEXO_1 = art(ven.sexo, 'EL', 'LA')
+    SEXO_2 = art(ven.sexo, 'VENDEDOR', 'VENDEDORA')
+    SEXO_3 = art(cli.sexo, 'EL', 'LA')
+    SEXO_4 = art(cli.sexo, 'COMPRADOR', 'COMPRADORA')
+    SEXO_5 = art(cli.sexo, 'O', 'A')
+    prop = fin.lote.proyecto.propietario.first()
+    SEXO_6 = art(prop.sexo, 'EL', 'LA')
+    SEXO_7 = art(cli.sexo, 'A LA', 'AL')
+    SEXO_8 = art(ven.sexo, 'DEL', 'DE LA')
+
+    # 2) Pronombres PLURALES para DOS COMPRADORES
+    # Determinar género predominante para plurales
+    if cliente2:
+        if cli.sexo == 'M' or cliente2.sexo == 'M':
+            # Si al menos uno es masculino -> masculino plural
+            SEXO_9 = 'LOS'
+            SEXO_10 = 'COMPRADORES'
+            SEXO_11 = 'O'
+            SEXO_12 = 'A LOS'
+            SEXO_13 = 'DE LOS'
+        else:
+            # Ambos femeninos -> femenino plural
+            SEXO_9 = 'LAS'
+            SEXO_10 = 'COMPRADORAS'
+            SEXO_11 = 'A'
+            SEXO_12 = 'A LAS'
+            SEXO_13 = 'DE LAS'
+    else:
+        # Por si acaso (aunque esta función es para varios)
+        SEXO_9 = 'LOS'
+        SEXO_10 = 'COMPRADORES'
+        SEXO_11 = 'O'
+        SEXO_12 = 'A LOS'
+        SEXO_13 = 'DE LOS'
+
+    # 3) Fecha de pago completo (hoy)
+    pago = date.today()
+    meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio",
+             "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]
+
+    # 4) Coordenadas por cada lado (igual que antes)
+    dir_fields = {}
+    for dir_name in ('norte','sur','este','oeste'):
+        raw = getattr(fin.lote, dir_name, '')
+        metros, col = _parse_coord(raw)
+        key_m = f'NUMERO_METROS_{dir_name.upper()}'
+        key_c = f'COLINDANCIA_LOTE_{dir_name.upper()}'
+        dir_fields[key_m] = metros
+        dir_fields[key_c] = col
+
+    # 5) Cálculo pago restante (igual que antes)
+    restante = float(fin.precio_lote) - float(fin.apartado)
+    restante_letra = numero_a_letras(restante)
+
+    fecha_posesion = fin.lote.proyecto.fecha_emision_documento
+    fecha_contrato = fin.lote.proyecto.fecha_emision_contrato
+    autoridad = fin.lote.proyecto.autoridad
+
+    # 6) Miembro B dinámico según relación (igual que antes)
+    if ven.ine == prop.ine and prop.tipo == 'propietario':
+        claus_b = (
+            f"QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, "
+            f"QUE ACREDITA CON EL CONTRATO PRIVADO DE COMPRAVENTA Y CONSTANCIA DE POSESIÓN DE FECHA {fecha_posesion} "
+            f"EXPEDIDA POR LOS INTEGRANTES DEL / DE LA XXXXXXXXXX"
+        )
+    elif ven.ine == prop.ine and prop.tipo == 'apoderado':
+        claus_b = (
+            f"QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, AL IGUAL QUE, CON LAS "
+            f"FACULTADES Y AUTORIZACIÓN SUFICIENTE PARA OBLIGARSE EN LOS TÉRMINOS DE ESTE, TAL COMO SE ACREDITA CON EL INSTRUMENTO PÚBLICO "
+            f"{fin.instrumento_publico} OTORGADO ANTE LA FE DEL NOTARIO PÚBLICO "
+            f"{fin.notario_publico} DE OAXACA, EL LICENCIADO {fin.nombre_notario.upper()}."
+            f"C. ESTAR LEGITIMADO PARA REALIZAR TODOS AQUELLOS ACTOS SOBRE LA PROPIEDAD, CONFORME AL PODER DESCRITO EN LA DECLARACIÓN ANTERIOR."
+        )
+    else:
+        claus_b = (
+            f"QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, AL IGUAL QUE CON LAS FACULTADES Y AUTORIZACIÓN SUFICIENTE PARA OBLIGARSE EN LOS TÉRMINOS DE ESTE, "
+            f"TAL COMO SE ACREDITA EN EL CONTRATO DE EXCLUSIVIDAD, PROMOCIÓN Y COMISIÓN POR LA VENTA DEL BIEN INMUEBLE DE FECHA {fecha_contrato}"
+            f"OTORGADO POR EL / LA  C. {autoridad}"
+        )
+
+    # 7) Construcción del context - con datos de AMBOS clientes
+    context = {
+        # Pronombres SINGULARES
+        'SEXO_1': SEXO_1,
+        'SEXO_2': SEXO_2,
+        'SEXO_3': SEXO_3,
+        'SEXO_4': SEXO_4,
+        'SEXO_5': SEXO_5,
+        'SEXO_6': SEXO_6,
+        'SEXO_7': SEXO_7,
+        'SEXO_8': SEXO_8,
+        # Pronombres PLURALES
+        'SEXO_9': SEXO_9,
+        'SEXO_10': SEXO_10,
+        'SEXO_11': SEXO_11,
+        'SEXO_12': SEXO_12,
+        'SEXO_13': SEXO_13,
+
+        # Fecha de generación
+        'DIA': pago.day,
+        'MES': meses[pago.month - 1].upper(),
+
+        # Vendedor
+        'NOMBRE_VENDEDOR': ven.nombre_completo.upper(),
+        'ID_INE':          ven.ine,
+        'NUMERO_VENDEDOR': ven.telefono,
+
+        # Notario e instrumento (del propietario)
+        'INSTRUMENTO_PUBLICO': prop.instrumento_publico or '',
+        'NOTARIO':             prop.notario_publico or '',
+        'NOMBRE_NOTARIO':      prop.nombre_notario or '',
+
+        # Propietario
+        'NOMBRE_PROPIETARIO': prop.nombre_completo.upper(),
+
+        # Primer Cliente/Comprador
+        'NOMBRE_COMPRADOR':   cli.nombre_completo.upper(),
+        'DIRECCION_COMPRADOR':cli.domicilio.upper(),
+        'ID_INE_COMPRADOR':    cli.numero_id,
+        'LUGAR_ORIGEN':        cli.originario.upper(),
+        'ESTADO_CIVIL':        cli.estado_civil.upper(),
+        'TELEFONO_COMPRADOR':  cli.telefono.upper(),
+        'OCUPACION_COMPRADOR': cli.ocupacion.upper(),
+        'CORREO_COMPRADOR':    cli.email.upper(),
+
+        # Segundo Cliente/Comprador
+        'NOMBRE_COMPRADOR_2':   cliente2.nombre_completo.upper() if cliente2 else '',
+        'DIRECCION_COMPRADOR_2':cliente2.domicilio.upper() if cliente2 else '',
+        'ID_INE_COMPRADOR_2':   cliente2.numero_id if cliente2 else '',
+        'LUGAR_ORIGEN_2':       cliente2.originario.upper() if cliente2 else '',
+        'ESTADO_CIVIL_2':       cliente2.estado_civil.upper() if cliente2 else '',
+        'TELEFONO_COMPRADOR_2': cliente2.telefono.upper() if cliente2 else '',
+        'OCUPACION_COMPRADOR_2':cliente2.ocupacion.upper() if cliente2 else '',
+        'CORREO_COMPRADOR_2':   cliente2.email.upper() if cliente2 else '',
+
+        # Lote
+        'IDENTIFICADOR_LOTE':    fin.lote.identificador,
+        'LETRA_IDENTIFICADOR':   numero_a_letras(float(fin.lote.identificador)),
+        'DIRECCION_PROYECTO_LOTE': fin.lote.proyecto.ubicacion.upper(),
+
+        # Coordenadas dinámicas
+        **dir_fields,
+
+        # Financiamiento y pagos
+        'PRECIO_LOTE_FINANCIAMIENTO': fmt_money(fin.precio_lote),
+        'LETRA_PRECIO_LOTE':          numero_a_letras(float(fin.precio_lote)),
+        'APARTADO_FINANCIAMIENTO':    fmt_money(fin.apartado),
+        'LETRA_APARTADO':             numero_a_letras(float(fin.apartado)),
+
+        'DIA_PAGO':  pago.day,
+        'MES_PAGO':  meses[pago.month - 1].upper(),
+        'ANIO_PAGO': pago.year,
+
+        'CANTIDAD_PAGO_COMPLETO':  fmt_money(restante),
+        'CANTIDAD_LETRA_PAGO':     restante_letra,
+
+        # Cláusula B variable
+        'CLAUSULA_B': claus_b,
+    }
+
+    # 8) Firma del cliente (para DOS clientes, usar la misma firma o implementar lógica para dos firmas)
+    # (Manteniendo la misma lógica por ahora)
+    if request and tpl:
+        data_url = firma_data or (request.session.get('firma_cliente_data') if request else None)
+        if data_url:
+            header, b64 = data_url.split(',', 1)
+            img_data = base64.b64decode(b64)
+            fd, tmp = tempfile.mkstemp(suffix='.png')
+            with os.fdopen(fd, 'wb') as f:
+                f.write(img_data)
+            context['FIRMA_CLIENTE'] = InlineImage(tpl, tmp, width=Mm(40))
+        else:
+            context['FIRMA_CLIENTE'] = ''
+    else:
+        context['FIRMA_CLIENTE'] = ''
+
+    # 9) Cláusulas adicionales (igual que antes)
+    tiene_pago = clausulas_adicionales and 'pago' in clausulas_adicionales and bool(clausulas_adicionales['pago'])
+    tiene_deslinde = clausulas_adicionales and 'deslinde' in clausulas_adicionales and bool(clausulas_adicionales['deslinde'])
+    tiene_promesa = clausulas_adicionales and 'promesa' in clausulas_adicionales and bool(clausulas_adicionales['promesa'])
+    
+    numeracion = calcular_numeracion_clausulas(tiene_deslinde, tiene_promesa)
+    
+    clausula_pago = ""
+    if tiene_pago:
+        clausula_pago = f"{clausulas_adicionales['pago']}"
+    
+    clausula_deslinde = ""
+    if tiene_deslinde:
+        clausula_deslinde = f"QUINTA. {clausulas_adicionales['deslinde']}"
+    
+    clausula_promesa = ""
+    if tiene_promesa:
+        if tiene_deslinde:
+            num = 'DÉCIMA'
+        else:
+            num = 'NOVENA'
+        clausula_promesa = f"{num}. {clausulas_adicionales['promesa']}"
+    
+    # Agregar al contexto
+    context.update({
+        'NUM_QUINTA': numeracion['QUINTA'],
+        'NUM_SEXTA': numeracion['SEXTA'],
+        'NUM_SEPTIMA': numeracion['SEPTIMA'],
+        'NUM_OCTAVA': numeracion['OCTAVA'],
+        'NUM_NOVENA': numeracion['NOVENA'],
+        'NUM_DECIMA': numeracion['DECIMA'],
+        'NUM_DECIMA_PRIMERA': numeracion['DECIMA_PRIMERA'],
+        'NUM_DECIMA_SEGUNDA': numeracion['DECIMA_SEGUNDA'],
+        'NUM_DECIMA_TERCERA': numeracion['DECIMA_TERCERA'],
+        
+        'CLAUSULA_PAGO': clausula_pago.upper(),
+        'CLAUSULA_DESLINDE': clausula_deslinde.upper(),
+        'CLAUSULA_PROMESA': clausula_promesa.upper(),
+    })
+
+    return context
