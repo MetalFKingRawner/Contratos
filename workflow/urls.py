@@ -24,8 +24,10 @@ urlpatterns = [
     path('aviso-privacidad/', AvisoPrivacidadView.as_view(), name='aviso_privacidad'),
     path('documentos/', SeleccionDocumentosView.as_view(), name='paso3_documentos'),
     path('ajax/lotes/<int:proyecto_id>/', views.ajax_lotes, name='ajax_lotes'),
+    path('clausulas-especiales/', ClausulasEspecialesView.as_view(), name='clausulas_especiales'),
     # reemplaza AvancePruebaView por la vista real cuando la crees
 ]
 
 class SeleccionDocumentoView(TemplateView):
     template_name = "inicio.html"
+
