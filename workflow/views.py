@@ -673,7 +673,7 @@ class AvisoPrivacidadView(FormView):
                 financiamiento = financiamiento,
                 cliente        = cliente,
                 vendedor       = vendedor,
-                firma_cliente  = firma if firmar == 'sí' and firma else ""
+                firma_cliente  = firma if firmar == 'sí' and firma else "",
                 cliente_2=cliente2  # Asignar segundo cliente (puede ser None)
             )
             self.request.session['tramite_id'] = tramite.id
@@ -720,5 +720,6 @@ class Paso1FinanciamientoView(TemplateView):
         # Guardar en sesión para los pasos siguientes
         request.session['financiamiento_id'] = int(plan_id)
         return redirect('workflow:paso2_cliente')
+
 
 
