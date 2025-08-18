@@ -29,7 +29,7 @@ from .forms import SolicitudContratoForm
 from .models import Tramite
 from django.shortcuts import redirect
 from datetime import date
-
+from workflow.forms import ClausulasEspecialesForm
 from django.conf import settings
 from pdfs.utils import fill_word_template, convert_docx_to_pdf
 
@@ -720,6 +720,7 @@ class Paso1FinanciamientoView(TemplateView):
         # Guardar en sesión para los pasos siguientes
         request.session['financiamiento_id'] = int(plan_id)
         return redirect('workflow:paso2_cliente')
+
 
 
 
