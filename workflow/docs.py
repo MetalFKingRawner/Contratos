@@ -8,6 +8,8 @@ from workflow.builders import (
     build_contrato_definitiva_contado_context,
     build_contrato_ejidal_pagos_context,
     build_contrato_ejidal_contado_context,
+    build_contrato_propiedad_contado_context,
+    build_contrato_propiedad_contado_varios_context
 )
 
 DOCUMENTOS = {
@@ -58,4 +60,24 @@ DOCUMENTOS = {
         "plantilla":  "pdfs/templates/pdfs/contrato_ejidal_contado.docx",
         "builder":    build_contrato_ejidal_contado_context,
     },
+    # Contratos pequeña propiedad – Financiamiento
+    "contrato_propiedad_pagos": {
+        "titulo":     "Contrato Pequeña Propiedad (Pagos)",
+        "descripcion":"Contrato con plan de pagos.",
+        "plantilla":  "pdfs/templates/pdfs/contrato_propiedad_pagos.docx",
+        "builder":    build_contrato_ejidal_pagos_context,
+    },
+    "contrato_propiedad_contado": {
+        "titulo":     "Contrato Pequeña Propiedad (Contado)",
+        "descripcion":"Contrato para pago al contado.",
+        "plantilla":  "pdfs/templates/pdfs/contrato_pequeña_contado_2.docx",
+        "builder":    build_contrato_propiedad_contado_context,
+    },
+    "contrato_propiedad_contado_varios": {
+        "titulo":     "Contrato Pequeña Propiedad varios compradores(Contado)",
+        "descripcion":"Contrato para pago al contado de varios compradores.",
+        "plantilla":  "pdfs/templates/pdfs/contrato_pequeña_contado_varios.docx",
+        "builder":    build_contrato_propiedad_contado_varios_context,
+    },
 }
+
