@@ -401,6 +401,72 @@
   font-weight: 900;
 }
 
+/* Nuevos estilos para el segundo cliente */
+.second-client-toggle {
+  background: rgba(240, 245, 255, 0.4);
+  border-radius: 20px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  border-left: 4px solid var(--bs-primary);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.second-client-toggle:hover {
+  background: rgba(230, 240, 255, 0.6);
+}
+
+.second-client-toggle input {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+.second-client-toggle label {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0;
+  cursor: pointer;
+  flex-grow: 1;
+}
+
+.second-client-toggle i {
+  color: var(--bs-primary);
+  font-size: 1.2rem;
+  transition: transform 0.3s ease;
+}
+
+.second-client-toggle.active i {
+  transform: rotate(180deg);
+}
+
+.second-client-section {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.5s ease-out;
+  margin-top: 1rem;
+}
+
+.second-client-section.active {
+  max-height: 3000px; /* Valor suficientemente grande para contener todo */
+}
+
+.second-client-title {
+  font-size: 1.8rem !important;
+  margin-top: 2rem !important;
+  margin-bottom: 1rem !important;
+  text-align: center;
+  background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
 /* Animaciones */
 @keyframes containerSlideIn {
   from {
@@ -509,6 +575,10 @@
   .btn-continue {
     width: 100%;
     min-width: auto;
+  }
+
+  .second-client-toggle {
+    padding: 1rem;
   }
 }
 
@@ -818,6 +888,190 @@
         </div>
       </div>
 
+      <!-- Sección para agregar segundo cliente -->
+      <div class="second-client-toggle" id="secondClientToggle">
+        <input type="checkbox" id="addSecondClient" name="second_add">
+        <label for="addSecondClient">
+          <i class="fas fa-user-plus"></i>
+          Agregar segundo cliente (ej. cónyuge, co-acreditado)
+        </label>
+        <i class="fas fa-chevron-down"></i>
+      </div>
+      
+      <!-- Sección del segundo cliente (inicialmente oculta) -->
+      <div class="second-client-section" id="secondClientSection">
+        <h2 class="client-title second-client-title">Datos del Segundo Cliente</h2>
+        
+        <!-- Grupo: Información Personal del segundo cliente -->
+        <div class="field-group">
+          <h3 class="field-group-title">
+            <i class="fas fa-user-circle"></i>
+            Información Personal
+          </h3>
+          <div class="form-row">
+            <div class="form-field-wrapper {% if segundo_form.nombre_completo.errors %}error{% endif %}">
+              <label for="{{ segundo_form.nombre_completo.id_for_label }}">
+                <i class="fas fa-user"></i>
+                {{ segundo_form.nombre_completo.label }}
+              </label>
+              {{ segundo_form.nombre_completo }}
+              {% for error in segundo_form.nombre_completo.errors %}
+                <div class="text-danger">{{ error }}</div>
+              {% endfor %}
+            </div>
+            
+            <div class="form-field-wrapper {% if segundo_form.sexo.errors %}error{% endif %}">
+              <label for="{{ segundo_form.sexo.id_for_label }}">
+                <i class="fas fa-venus-mars"></i>
+                {{ segundo_form.sexo.label }}
+              </label>
+              {{ segundo_form.sexo }}
+              {% for error in segundo_form.sexo.errors %}
+                <div class="text-danger">{{ error }}</div>
+              {% endfor %}
+            </div>
+            
+            <div class="form-field-wrapper phone-field {% if segundo_form.telefono.errors %}error{% endif %}">
+              <label for="{{ segundo_form.telefono.id_for_label }}">
+                <i class="fas fa-phone"></i>
+                {{ segundo_form.telefono.label }}
+              </label>
+              {{ segundo_form.telefono }}
+              {% for error in segundo_form.telefono.errors %}
+                <div class="text-danger">{{ error }}</div>
+              {% endfor %}
+            </div>
+            
+            <div class="form-field-wrapper email-field {% if segundo_form.email.errors %}error{% endif %}">
+              <label for="{{ segundo_form.email.id_for_label }}">
+                <i class="fas fa-envelope"></i>
+                {{ segundo_form.email.label }}
+              </label>
+              {{ segundo_form.email }}
+              {% for error in segundo_form.email.errors %}
+                <div class="text-danger">{{ error }}</div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+        
+        <!-- Grupo: Identificación del segundo cliente -->
+        <div class="field-group">
+          <h3 class="field-group-title">
+            <i class="fas fa-id-card"></i>
+            Identificación
+          </h3>
+          <div class="form-row">
+            <div class="form-field-wrapper {% if segundo_form.tipo_id.errors %}error{% endif %}">
+              <label for="{{ segundo_form.tipo_id.id_for_label }}">
+                <i class="fas fa-passport"></i>
+                {{ segundo_form.tipo_id.label }}
+              </label>
+              {{ segundo_form.tipo_id }}
+              {% for error in segundo_form.tipo_id.errors %}
+                <div class="text-danger">{{ error }}</div>
+              {% endfor %}
+            </div>
+            
+            <div class="form-field-wrapper {% if segundo_form.numero_id.errors %}error{% endif %}">
+              <label for="{{ segundo_form.numero_id.id_for_label }}">
+                <i class="fas fa-fingerprint"></i>
+                {{ segundo_form.numero_id.label }}
+              </label>
+              {{ segundo_form.numero_id }}
+              {% for error in segundo_form.numero_id.errors %}
+                <div class="text-danger">{{ error }}</div>
+              {% endfor %}
+            </div>
+            
+            <div class="form-field-wrapper {% if segundo_form.rfc.errors %}error{% endif %}">
+              <label for="{{ segundo_form.rfc.id_for_label }}">
+                <i class="fas fa-file-invoice"></i>
+                {{ segundo_form.rfc.label }}
+              </label>
+              {{ segundo_form.rfc }}
+              {% for error in segundo_form.rfc.errors %}
+                <div class="text-danger">{{ error }}</div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+        
+        <!-- Grupo: Información Adicional del segundo cliente -->
+        <div class="field-group">
+          <h3 class="field-group-title">
+            <i class="fas fa-info-circle"></i>
+            Información Adicional
+          </h3>
+          <div class="form-row">
+            <div class="form-field-wrapper {% if segundo_form.nacionalidad.errors %}error{% endif %}">
+              <label for="{{ segundo_form.nacionalidad.id_for_label }}">
+                <i class="fas fa-flag"></i>
+                {{ segundo_form.nacionalidad.label }}
+              </label>
+              {{ segundo_form.nacionalidad }}
+              {% for error in segundo_form.nacionalidad.errors %}
+                <div class="text-danger">{{ error }}</div>
+              {% endfor %}
+            </div>
+            
+            <div class="form-field-wrapper {% if segundo_form.originario.errors %}error{% endif %}">
+              <label for="{{ segundo_form.originario.id_for_label }}">
+                <i class="fas fa-globe-americas"></i>
+                {{ segundo_form.originario.label }}
+              </label>
+              {{ segundo_form.originario }}
+              {% for error in segundo_form.originario.errors %}
+                <div class="text-danger">{{ error }}</div>
+              {% endfor %}
+            </div>
+            
+            <div class="form-field-wrapper {% if segundo_form.estado_civil.errors %}error{% endif %}">
+              <label for="{{ segundo_form.estado_civil.id_for_label }}">
+                <i class="fas fa-heart"></i>
+                {{ segundo_form.estado_civil.label }}
+              </label>
+              {{ segundo_form.estado_civil }}
+              {% for error in segundo_form.estado_civil.errors %}
+                <div class="text-danger">{{ error }}</div>
+              {% endfor %}
+            </div>
+            
+            <div class="form-field-wrapper {% if segundo_form.ocupacion.errors %}error{% endif %}">
+              <label for="{{ segundo_form.ocupacion.id_for_label }}">
+                <i class="fas fa-briefcase"></i>
+                {{ segundo_form.ocupacion.label }}
+              </label>
+              {{ segundo_form.ocupacion }}
+              {% for error in segundo_form.ocupacion.errors %}
+                <div class="text-danger">{{ error }}</div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+        
+        <!-- Grupo: Domicilio del segundo cliente -->
+        <div class="field-group">
+          <h3 class="field-group-title">
+            <i class="fas fa-map-marker-alt"></i>
+            Domicilio
+          </h3>
+          <div class="form-row">
+            <div class="form-field-wrapper {% if segundo_form.domicilio.errors %}error{% endif %}" style="grid-column: 1 / -1;">
+              <label for="{{ segundo_form.domicilio.id_for_label }}">
+                <i class="fas fa-home"></i>
+                {{ segundo_form.domicilio.label }}
+              </label>
+              {{ segundo_form.domicilio }}
+              {% for error in segundo_form.domicilio.errors %}
+                <div class="text-danger">{{ error }}</div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+
       <div class="submit-section">
         <button type="submit" class="btn btn-continue">
           <i class="fas fa-rocket"></i>
@@ -845,7 +1099,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Validación en tiempo real
   const form = document.getElementById('clientForm');
-  const inputs = form.querySelectorAll('input, select, textarea');
+  // Seleccionar solo campos dentro de wrappers para evitar errores
+  const inputs = form.querySelectorAll('.form-field-wrapper input, .form-field-wrapper select, .form-field-wrapper textarea');
   
   inputs.forEach(input => {
     input.addEventListener('blur', function() {
@@ -859,13 +1114,98 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
 
+  // Toggle para mostrar/ocultar segundo cliente - CORREGIDO
+  const secondClientToggle = document.getElementById('secondClientToggle');
+  const secondClientSection = document.getElementById('secondClientSection');
+  const secondCheckbox = document.getElementById('addSecondClient');
+  
+  if (secondClientSection && !secondCheckbox.checked) {
+          toggleSecondClientSection(false);
+      }
+
+  if (secondClientToggle && secondClientSection && secondCheckbox) {
+    // Manejar cambio directo en el checkbox
+    secondCheckbox.addEventListener('change', function() {
+      toggleSecondClientSection(this.checked);
+    });
+    
+    // Manejar clic en el contenedor
+    secondClientToggle.addEventListener('click', function(e) {
+      // Solo alternar si no se hizo clic directamente en el checkbox
+      if (e.target !== secondCheckbox) {
+        const newState = !secondCheckbox.checked;
+        secondCheckbox.checked = newState;
+        toggleSecondClientSection(newState);
+      }
+    });
+    
+    // Si hay errores en el segundo formulario, mostrarlo automáticamente
+    const hasSecondErrors = document.querySelector('.second-client-section .error');
+    if (hasSecondErrors) {
+      toggleSecondClientSection(true);
+      secondCheckbox.checked = true;
+    }
+  }
+
+  // Función para mostrar/ocultar la sección del segundo cliente
+  function toggleSecondClientSection(show) {
+      const secondClientInputs = secondClientSection.querySelectorAll('input, select, textarea');
+      
+      if (show) {
+          secondClientSection.classList.add('active');
+          secondClientToggle.classList.add('active');
+          
+          // Habilitar campos y restaurar required si corresponde
+          secondClientInputs.forEach(input => {
+              input.disabled = false;
+              // Restaurar required si el campo lo tenía originalmente
+              if (input.dataset.originalRequired === 'true') {
+                  input.required = true;
+              }
+          });
+      } else {
+          secondClientSection.classList.remove('active');
+          secondClientToggle.classList.remove('active');
+          
+          // Deshabilitar campos del segundo cliente y quitar required
+          secondClientInputs.forEach(input => {
+              // Guardar estado original de required
+              if (input.hasAttribute('required')) {
+                  input.dataset.originalRequired = 'true';
+                  input.required = false;
+              }
+              input.disabled = true;
+              input.value = ''; // Opcional: limpiar valores
+          });
+          
+          // Limpiar errores
+          secondClientSection.querySelectorAll('.form-field-wrapper').forEach(wrapper => {
+              wrapper.classList.remove('error');
+              const input = wrapper.querySelector('input, select, textarea');
+              if (input) input.classList.remove('is-invalid');
+              const errorDiv = wrapper.querySelector('.text-danger');
+              if (errorDiv) errorDiv.remove();
+          });
+      }
+  }
+
   function validateField(field) {
     const wrapper = field.closest('.form-field-wrapper');
+    // Si no hay wrapper, salir temprano para evitar errores
+    if (!wrapper) return true;
+    
     const errorDiv = wrapper.querySelector('.text-danger');
     
     // Limpiar estados previos
     wrapper.classList.remove('error');
     field.classList.remove('is-invalid');
+    
+    // Si el campo pertenece al segundo cliente y la sección está oculta, no validar
+    if (wrapper.closest('.second-client-section') && 
+        secondClientSection && !secondClientSection.classList.contains('active')) {
+      hideFieldError(wrapper);
+      return true;
+    }
     
     if (field.hasAttribute('required') && !field.value.trim()) {
       showFieldError(wrapper, 'Este campo es requerido');
@@ -882,9 +1222,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     if (field.name === 'telefono' && field.value) {
-      const phoneRegex = /^[\d\s\-\+\(\)]+$/;
+      const phoneRegex = /^[\d\s\-\+\(\)]{10,15}$/; // Teléfono con 10-15 dígitos
       if (!phoneRegex.test(field.value)) {
-        showFieldError(wrapper, 'Ingresa un teléfono válido');
+        showFieldError(wrapper, 'Ingresa un teléfono válido (10-15 dígitos)');
         return false;
       }
     }
@@ -897,7 +1237,7 @@ document.addEventListener('DOMContentLoaded', function() {
   function showFieldError(wrapper, message) {
     wrapper.classList.add('error');
     const input = wrapper.querySelector('input, select, textarea');
-    input.classList.add('is-invalid');
+    if (input) input.classList.add('is-invalid');
     
     let errorDiv = wrapper.querySelector('.text-danger');
     if (!errorDiv) {
@@ -911,10 +1251,10 @@ document.addEventListener('DOMContentLoaded', function() {
   function hideFieldError(wrapper) {
     wrapper.classList.remove('error');
     const input = wrapper.querySelector('input, select, textarea');
-    input.classList.remove('is-invalid');
+    if (input) input.classList.remove('is-invalid');
     
     const errorDiv = wrapper.querySelector('.text-danger');
-    if (errorDiv && !errorDiv.textContent.includes('error')) {
+    if (errorDiv) {
       errorDiv.remove();
     }
   }
@@ -922,12 +1262,25 @@ document.addEventListener('DOMContentLoaded', function() {
   // Efecto de carga para el botón
   form.addEventListener('submit', function(e) {
     const button = form.querySelector('.btn-continue');
+    if (!button) return;
+    
     button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
     button.disabled = true;
     
-    // Validar todos los campos antes de enviar
+    // Validar solo campos visibles
     let isValid = true;
+    
     inputs.forEach(input => {
+      const wrapper = input.closest('.form-field-wrapper');
+      if (!wrapper) return;
+      
+      // Si es campo del segundo cliente y la sección no está visible, saltar validación
+      if (wrapper.closest('.second-client-section') && 
+          secondClientSection && !secondClientSection.classList.contains('active')) {
+        hideFieldError(wrapper); // Limpiar posibles errores previos
+        return;
+      }
+      
       if (!validateField(input)) {
         isValid = false;
       }
@@ -946,21 +1299,24 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 
-  // Efecto de floating labels
+  // Efecto de floating labels - CORREGIDO
   inputs.forEach(input => {
+    const wrapper = input.closest('.form-field-wrapper');
+    if (!wrapper) return;
+    
     input.addEventListener('focus', function() {
-      this.closest('.form-field-wrapper').classList.add('focused');
+      wrapper.classList.add('focused');
     });
     
     input.addEventListener('blur', function() {
       if (!this.value) {
-        this.closest('.form-field-wrapper').classList.remove('focused');
+        wrapper.classList.remove('focused');
       }
     });
     
     // Inicializar estado
     if (input.value) {
-      input.closest('.form-field-wrapper').classList.add('focused');
+      wrapper.classList.add('focused');
     }
   });
 });
