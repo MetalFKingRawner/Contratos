@@ -512,6 +512,8 @@ class SeleccionDocumentosView(FormView):
         fin = get_object_or_404(Financiamiento, id=self.request.session['financiamiento_id'])
         cli = get_object_or_404(Cliente, id=self.request.session['cliente_id'])
         ven = get_object_or_404(Vendedor, id=self.request.session['vendedor_id'])
+        tramite_id = self.request.session.get('tramite_id')
+        tramite = get_object_or_404(Tramite, id=tramite_id) if tramite_id else None
         slugs = self.get_form_kwargs()['available_slugs']
         # Construimos la lista de docs con toda la info
         available_docs = []
@@ -721,6 +723,7 @@ class Paso1FinanciamientoView(TemplateView):
         # Guardar en sesión para los pasos siguientes
         request.session['financiamiento_id'] = int(plan_id)
         return redirect('workflow:paso2_cliente')
+
 
 
 
