@@ -686,7 +686,7 @@ class AvisoPrivacidadView(FormView):
             del self.request.session['cliente2_data']
 
         # 5) Vamos a la selección de documentos
-        return redirect('workflow:paso3_documentos')
+        return redirect('workflow:clausulas_especiales')
 
 class Paso1FinanciamientoView(TemplateView):
     template_name = "workflow/paso1_financiamiento.html"
@@ -723,6 +723,7 @@ class Paso1FinanciamientoView(TemplateView):
         # Guardar en sesión para los pasos siguientes
         request.session['financiamiento_id'] = int(plan_id)
         return redirect('workflow:paso2_cliente')
+
 
 
 
