@@ -16,6 +16,7 @@ from django import forms
 from workflow.docs import DOCUMENTOS
 from .forms import SeleccionDocumentosForm
 from requests import request
+from .forms import SegundoClienteForm
 import io
 import zipfile
 from django.http import HttpResponse
@@ -720,6 +721,7 @@ class Paso1FinanciamientoView(TemplateView):
         # Guardar en sesión para los pasos siguientes
         request.session['financiamiento_id'] = int(plan_id)
         return redirect('workflow:paso2_cliente')
+
 
 
 
