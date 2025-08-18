@@ -2,6 +2,7 @@ from django import forms
 from financiamiento.models import Financiamiento
 from core.models import Vendedor
 from workflow.docs import DOCUMENTOS
+from core.models import Cliente
 
 class SolicitudContratoForm(forms.Form):
     # 1) Vinculación al plan de financiamiento (de donde sacaremos nombre_cliente, lote, proyecto…)
@@ -165,3 +166,4 @@ class SegundoClienteForm(forms.ModelForm):
             'ocupacion': forms.TextInput(attrs={'class': 'form-control'}),
             'domicilio': forms.Textarea(attrs={'class':'form-control','rows':2}),
         }
+
