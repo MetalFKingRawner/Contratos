@@ -9,7 +9,9 @@ from workflow.builders import (
     build_contrato_ejidal_pagos_context,
     build_contrato_ejidal_contado_context,
     build_contrato_propiedad_contado_context,
-    build_contrato_propiedad_contado_varios_context
+    build_contrato_propiedad_contado_varios_context,
+    build_contrato_propiedad_pagos_context,
+    build_contrato_propiedad_pagos_varios_context
 )
 
 DOCUMENTOS = {
@@ -64,8 +66,8 @@ DOCUMENTOS = {
     "contrato_propiedad_pagos": {
         "titulo":     "Contrato Pequeña Propiedad (Pagos)",
         "descripcion":"Contrato con plan de pagos.",
-        "plantilla":  "pdfs/templates/pdfs/contrato_propiedad_pagos.docx",
-        "builder":    build_contrato_ejidal_pagos_context,
+        "plantilla":  "pdfs/templates/pdfs/contrato_pequeña_pagos.docx",
+        "builder":    build_contrato_propiedad_pagos_context,
     },
     "contrato_propiedad_contado": {
         "titulo":     "Contrato Pequeña Propiedad (Contado)",
@@ -79,5 +81,12 @@ DOCUMENTOS = {
         "plantilla":  "pdfs/templates/pdfs/contrato_pequeña_contado_varios.docx",
         "builder":    build_contrato_propiedad_contado_varios_context,
     },
+    "contrato_propiedad_pagos_varios": {
+        "titulo":     "Contrato Pequeña Propiedad varios compradores (Pagos)",
+        "descripcion":"Contrato con plan de pagos de varios compradores.",
+        "plantilla":  "pdfs/templates/pdfs/contrato_pequeña_pagos_varios.docx",
+        "builder":    build_contrato_propiedad_pagos_varios_context,
+    },
 }
+
 
