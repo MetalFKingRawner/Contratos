@@ -491,7 +491,7 @@ class SeleccionDocumentosView(FormView):
                 if pago == 'contado':
                     slugs.append('contrato_propiedad_contado_varios')
                 else:
-                    slugs.append('contrato_definitiva_pagos')
+                    slugs.append('contrato_propiedad_pagos_varios')
             else:
                 if pago == 'contado':
                     slugs.append('contrato_propiedad_contado')
@@ -723,6 +723,7 @@ class Paso1FinanciamientoView(TemplateView):
         # Guardar en sesión para los pasos siguientes
         request.session['financiamiento_id'] = int(plan_id)
         return redirect('workflow:paso2_cliente')
+
 
 
 
