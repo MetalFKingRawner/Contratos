@@ -939,16 +939,16 @@ def build_contrato_propiedad_contado_context(fin, cli, ven, request=None, tpl=No
     SEXO_3 = art(cli.sexo, 'EL', 'LA')
     # SEXO_4: COMPRADOR/COMPRADORA
     SEXO_4 = art(cli.sexo, 'COMPRADOR', 'COMPRADORA')
-    # SEXO_5: A/O
+    # SEXO_5: A/O 
     SEXO_5 = art(cli.sexo, 'O', 'A')
     # SEXO_6: EL/LA PROPIETARIO/A
     prop = fin.lote.proyecto.propietario.first()
     SEXO_6 = art(prop.sexo, 'EL', 'LA')
     # SEXO_7: A LA / AL
-    SEXO_7 = art(cli.sexo, 'AL', 'A LA')
+    SEXO_7 = art(ven.sexo, 'AL', 'A LA')
     # SEXO_8: DEL / DE LA
-    SEXO_8 = art(ven.sexo, 'DEL', 'DE LA')
-    #SEXO_9 = art(cli.sexo, 'LOS', 'LAS')
+    SEXO_8 = art(cli.sexo, 'DEL', 'DE LA')
+    SEXO_9 = art(ven.sexo, 'O', 'A')
     #SEXO_10 = art(cli.sexo, 'COMPRADORES','COMPRADORAS')
     #SEXO_11 = art(cli.sexo, 'O', 'A')
     #SEXO_12 = art(cli.sexo, 'A LOS', 'A LAS')
@@ -976,6 +976,7 @@ def build_contrato_propiedad_contado_context(fin, cli, ven, request=None, tpl=No
     fecha_posesion = fin.lote.proyecto.fecha_emision_documento
     fecha_contrato = fin.lote.proyecto.fecha_emision_contrato
     autoridad = fin.lote.proyecto.autoridad
+    dia_actual = date.today()
 
 # 3) Miembro B dinámico según relación:
     # — Si ven es propietario:
@@ -983,7 +984,7 @@ def build_contrato_propiedad_contado_context(fin, cli, ven, request=None, tpl=No
         claus_b = (
             f"QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, "
             f"QUE ACREDITA CON EL CONTRATO PRIVADO DE COMPRAVENTA Y CONSTANCIA DE POSESIÓN DE FECHA {fecha_posesion} "
-            f"EXPEDIDA POR LOS INTEGRANTES DEL / DE LA XXXXXXXXXX"
+            f"EXPEDIDA POR LOS INTEGRANTES DEL / DE LA {autoridad}"
         )
     # — Si ven es apoderado:
     elif ven.ine == prop.ine and prop.tipo == 'apoderado':
@@ -998,8 +999,8 @@ def build_contrato_propiedad_contado_context(fin, cli, ven, request=None, tpl=No
     else:
         claus_b = (
             f"QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, AL IGUAL QUE CON LAS FACULTADES Y AUTORIZACIÓN SUFICIENTE PARA OBLIGARSE EN LOS TÉRMINOS DE ESTE, "
-            f"TAL COMO SE ACREDITA EN EL CONTRATO DE EXCLUSIVIDAD, PROMOCIÓN Y COMISIÓN POR LA VENTA DEL BIEN INMUEBLE DE FECHA {fecha_contrato}"
-            f"OTORGADO POR EL / LA  C. {autoridad}"
+            f"TAL COMO SE ACREDITA EN EL CONTRATO DE EXCLUSIVIDAD, PROMOCIÓN Y COMISIÓN POR LA VENTA DEL BIEN INMUEBLE DE FECHA {fecha_contrato} "
+            f"OTORGADO POR EL / LA  C. {prop.nombre_completo.upper()}"
         )
 
     # 5) Construcción del context
@@ -1013,6 +1014,7 @@ def build_contrato_propiedad_contado_context(fin, cli, ven, request=None, tpl=No
         'SEXO_6': SEXO_6,
         'SEXO_7': SEXO_7,
         'SEXO_8': SEXO_8,
+        'SEXO_9': SEXO_9,
         #'SEXO_9': SEXO_9,
         #'SEXO_10': SEXO_10,
         #'SEXO_11': SEXO_11,
@@ -1020,8 +1022,8 @@ def build_contrato_propiedad_contado_context(fin, cli, ven, request=None, tpl=No
         #'SEXO_13': SEXO_13,
 
         # Fecha de generación
-        'DIA': pago.day,
-        'MES': meses[pago.month - 1].upper(),
+        'DIA': dia_actual.day,
+        'MES': meses[dia_actual.month - 1].upper(),
 
         # Vendedor
         'NOMBRE_VENDEDOR': ven.nombre_completo.upper(),
@@ -1039,7 +1041,7 @@ def build_contrato_propiedad_contado_context(fin, cli, ven, request=None, tpl=No
         # Cliente/Comprador
         'NOMBRE_COMPRADOR':   cli.nombre_completo.upper(),
         'DIRECCION_COMPRADOR':cli.domicilio.upper(),
-        'ID_INE_COMPRADOR':    cli.numero_id,
+        'ID_INE_COMPRADOR':    cli.numero_id.upper(),
         'LUGAR_ORIGEN':        cli.originario.upper(),
         'ESTADO_CIVIL':        cli.estado_civil.upper(),
         'TELEFONO_COMPRADOR':  cli.telefono.upper(),
@@ -1166,8 +1168,9 @@ def build_contrato_propiedad_contado_varios_context(fin, cli, ven, cliente2=None
     SEXO_5 = art(cli.sexo, 'O', 'A')
     prop = fin.lote.proyecto.propietario.first()
     SEXO_6 = art(prop.sexo, 'EL', 'LA')
-    SEXO_7 = art(cli.sexo, 'AL', 'A LA')
-    SEXO_8 = art(ven.sexo, 'DEL', 'DE LA')
+    SEXO_7 = art(ven.sexo, 'AL', 'A LA')
+    SEXO_8 = art(cli.sexo, 'DEL', 'DE LA')
+    SEXO_14 = art(ven.sexo, 'O', 'A')
 
     # 2) Pronombres PLURALES para DOS COMPRADORES
     # Determinar género predominante para plurales
@@ -1222,7 +1225,7 @@ def build_contrato_propiedad_contado_varios_context(fin, cli, ven, cliente2=None
         claus_b = (
             f"QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, "
             f"QUE ACREDITA CON EL CONTRATO PRIVADO DE COMPRAVENTA Y CONSTANCIA DE POSESIÓN DE FECHA {fecha_posesion} "
-            f"EXPEDIDA POR LOS INTEGRANTES DEL / DE LA XXXXXXXXXX"
+            f"EXPEDIDA POR LOS INTEGRANTES DEL / DE LA {autoridad}"
         )
     elif ven.ine == prop.ine and prop.tipo == 'apoderado':
         claus_b = (
@@ -1236,7 +1239,7 @@ def build_contrato_propiedad_contado_varios_context(fin, cli, ven, cliente2=None
         claus_b = (
             f"QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, AL IGUAL QUE CON LAS FACULTADES Y AUTORIZACIÓN SUFICIENTE PARA OBLIGARSE EN LOS TÉRMINOS DE ESTE, "
             f"TAL COMO SE ACREDITA EN EL CONTRATO DE EXCLUSIVIDAD, PROMOCIÓN Y COMISIÓN POR LA VENTA DEL BIEN INMUEBLE DE FECHA {fecha_contrato}"
-            f"OTORGADO POR EL / LA  C. {autoridad}"
+            f"OTORGADO POR EL / LA  C. {prop.nombre_completo.upper()}"
         )
 
     # 7) Construcción del context - con datos de AMBOS clientes
@@ -1256,6 +1259,7 @@ def build_contrato_propiedad_contado_varios_context(fin, cli, ven, cliente2=None
         'SEXO_11': SEXO_11,
         'SEXO_12': SEXO_12,
         'SEXO_13': SEXO_13,
+        'SEXO_14': SEXO_14,
 
         # Fecha de generación
         'DIA': pago.day,
@@ -1287,7 +1291,7 @@ def build_contrato_propiedad_contado_varios_context(fin, cli, ven, cliente2=None
         # Segundo Cliente/Comprador
         'NOMBRE_COMPRADOR_2':   cliente2.nombre_completo.upper() if cliente2 else '',
         'DIRECCION_COMPRADOR_2':cliente2.domicilio.upper() if cliente2 else '',
-        'ID_INE_COMPRADOR_2':   cliente2.numero_id if cliente2 else '',
+        'ID_INE_COMPRADOR_2':   cliente2.numero_id.upper() if cliente2 else '',
         'LUGAR_ORIGEN_2':       cliente2.originario.upper() if cliente2 else '',
         'ESTADO_CIVIL_2':       cliente2.estado_civil.upper() if cliente2 else '',
         'TELEFONO_COMPRADOR_2': cliente2.telefono.upper() if cliente2 else '',
@@ -1404,15 +1408,16 @@ def build_contrato_propiedad_pagos_context(fin, cli, ven, request=None, tpl=None
     SEXO_3 = art(cli.sexo, 'EL', 'LA')
     # SEXO_4: COMPRADOR/COMPRADORA
     SEXO_4 = art(cli.sexo, 'COMPRADOR', 'COMPRADORA')
-    # SEXO_5: A/O
+    # SEXO_5: A/O 
     SEXO_5 = art(cli.sexo, 'O', 'A')
     # SEXO_6: EL/LA PROPIETARIO/A
     prop = fin.lote.proyecto.propietario.first()
     SEXO_6 = art(prop.sexo, 'EL', 'LA')
     # SEXO_7: A LA / AL
-    SEXO_7 = art(cli.sexo, 'AL', 'A LA')
+    SEXO_7 = art(ven.sexo, 'AL', 'A LA')
     # SEXO_8: DEL / DE LA
-    SEXO_8 = art(ven.sexo, 'DEL', 'DE LA')
+    SEXO_8 = art(cli.sexo, 'DEL', 'DE LA')
+    SEXO_9 = art(ven.sexo, 'O', 'A')
 
     # 2) Fecha actual
     hoy   = date.today()
@@ -1437,7 +1442,7 @@ def build_contrato_propiedad_pagos_context(fin, cli, ven, request=None, tpl=None
         claus_b = (
             f"QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, "
             f"QUE ACREDITA CON EL CONTRATO PRIVADO DE COMPRAVENTA Y CONSTANCIA DE POSESIÓN DE FECHA {fecha_posesion} "
-            f"EXPEDIDA POR LOS INTEGRANTES DEL / DE LA XXXXXXXXXX"
+            f"EXPEDIDA POR LOS INTEGRANTES DEL / DE LA {autoridad}"
         )
     # — Si ven es apoderado:
     elif ven.ine == prop.ine and prop.tipo == 'apoderado':
@@ -1453,7 +1458,7 @@ def build_contrato_propiedad_pagos_context(fin, cli, ven, request=None, tpl=None
         claus_b = (
             f"QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, AL IGUAL QUE CON LAS FACULTADES Y AUTORIZACIÓN SUFICIENTE PARA OBLIGARSE EN LOS TÉRMINOS DE ESTE, "
             f"TAL COMO SE ACREDITA EN EL CONTRATO DE EXCLUSIVIDAD, PROMOCIÓN Y COMISIÓN POR LA VENTA DEL BIEN INMUEBLE DE FECHA {fecha_contrato}"
-            f"OTORGADO POR EL / LA  C. {autoridad}"
+            f"OTORGADO POR EL / LA  C. {prop.nombre_completo.upper()}"
         )
 
     # 4) Enganche y mensualidades
@@ -1473,7 +1478,7 @@ def build_contrato_propiedad_pagos_context(fin, cli, ven, request=None, tpl=None
         # Pronombres
         'SEXO_1': SEXO_1, 'SEXO_2': SEXO_2, 'SEXO_3': SEXO_3,
         'SEXO_4': SEXO_4, 'SEXO_5': SEXO_5, 'SEXO_6': SEXO_6,
-        'SEXO_7': SEXO_7, 'SEXO_8': SEXO_8,
+        'SEXO_7': SEXO_7, 'SEXO_8': SEXO_8, 'SEXO_9': SEXO_9,
 
         # Fecha
         'DIA': DIA, 'MES': MES,
@@ -1492,7 +1497,7 @@ def build_contrato_propiedad_pagos_context(fin, cli, ven, request=None, tpl=None
         # Comprador
         'NOMBRE_COMPRADOR':    cli.nombre_completo.upper(),
         'DIRECCION_COMPRADOR': cli.domicilio.upper(),
-        'ID_INE_COMPRADOR':    cli.numero_id,
+        'ID_INE_COMPRADOR':    cli.numero_id.upper(),
         'LUGAR_ORIGEN':        cli.originario.upper(),
         'ESTADO_CIVIL':        cli.estado_civil.upper(),
         'TELEFONO_COMPRADOR':  cli.telefono.upper(),
@@ -1627,8 +1632,9 @@ def build_contrato_propiedad_pagos_varios_context(fin, cli, ven, cliente2=None, 
     SEXO_5 = art(cli.sexo, 'O', 'A')
     prop = fin.lote.proyecto.propietario.first()
     SEXO_6 = art(prop.sexo, 'EL', 'LA')
-    SEXO_7 = art(cli.sexo, 'AL', 'A LA')
-    SEXO_8 = art(ven.sexo, 'DEL', 'DE LA')
+    SEXO_7 = art(ven.sexo, 'AL', 'A LA')
+    SEXO_8 = art(cli.sexo, 'DEL', 'DE LA')
+    SEXO_14 = art(ven.sexo, 'O', 'A')
 
     # 2) Pronombres PLURALES para DOS COMPRADORES
     # Determinar género predominante para plurales
@@ -1684,7 +1690,7 @@ def build_contrato_propiedad_pagos_varios_context(fin, cli, ven, cliente2=None, 
         claus_b = (
             f"QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, "
             f"QUE ACREDITA CON EL CONTRATO PRIVADO DE COMPRAVENTA Y CONSTANCIA DE POSESIÓN DE FECHA {fecha_posesion} "
-            f"EXPEDIDA POR LOS INTEGRANTES DEL / DE LA XXXXXXXXXX"
+            f"EXPEDIDA POR LOS INTEGRANTES DEL / DE LA {autoridad}"
         )
     elif ven.ine == prop.ine and prop.tipo == 'apoderado':
         claus_b = (
@@ -1698,7 +1704,7 @@ def build_contrato_propiedad_pagos_varios_context(fin, cli, ven, cliente2=None, 
         claus_b = (
             f"QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, AL IGUAL QUE CON LAS FACULTADES Y AUTORIZACIÓN SUFICIENTE PARA OBLIGARSE EN LOS TÉRMINOS DE ESTE, "
             f"TAL COMO SE ACREDITA EN EL CONTRATO DE EXCLUSIVIDAD, PROMOCIÓN Y COMISIÓN POR LA VENTA DEL BIEN INMUEBLE DE FECHA {fecha_contrato}"
-            f"OTORGADO POR EL / LA  C. {autoridad}"
+            f"OTORGADO POR EL / LA  C. {prop.nombre_completo.upper()}"
         )
 
     # 4) Enganche y mensualidades
@@ -1730,6 +1736,7 @@ def build_contrato_propiedad_pagos_varios_context(fin, cli, ven, cliente2=None, 
         'SEXO_11': SEXO_11,
         'SEXO_12': SEXO_12,
         'SEXO_13': SEXO_13,
+        'SEXO_14': SEXO_14,
 
         # Fecha
         'DIA': DIA, 'MES': MES,
@@ -1857,3 +1864,4 @@ def build_contrato_propiedad_pagos_varios_context(fin, cli, ven, cliente2=None, 
     })
 
     return context
+
