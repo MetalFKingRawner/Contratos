@@ -1171,6 +1171,7 @@ def build_contrato_propiedad_contado_varios_context(fin, cli, ven, cliente2=None
     SEXO_7 = art(ven.sexo, 'AL', 'A LA')
     SEXO_8 = art(cli.sexo, 'DEL', 'DE LA')
     SEXO_14 = art(ven.sexo, 'O', 'A')
+    SEXO_15 = art(ven.sexo, 'DEL', 'DE LA')
 
     # 2) Pronombres PLURALES para DOS COMPRADORES
     # Determinar género predominante para plurales
@@ -1238,10 +1239,10 @@ def build_contrato_propiedad_contado_varios_context(fin, cli, ven, cliente2=None
     else:
         claus_b = (
             f"QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, AL IGUAL QUE CON LAS FACULTADES Y AUTORIZACIÓN SUFICIENTE PARA OBLIGARSE EN LOS TÉRMINOS DE ESTE, "
-            f"TAL COMO SE ACREDITA EN EL CONTRATO DE EXCLUSIVIDAD, PROMOCIÓN Y COMISIÓN POR LA VENTA DEL BIEN INMUEBLE DE FECHA {fecha_contrato}"
+            f"TAL COMO SE ACREDITA EN EL CONTRATO DE EXCLUSIVIDAD, PROMOCIÓN Y COMISIÓN POR LA VENTA DEL BIEN INMUEBLE DE FECHA {fecha_contrato} "
             f"OTORGADO POR EL / LA  C. {prop.nombre_completo.upper()}"
         )
-
+    fecha_pago = fin.fecha_pago_completo
     # 7) Construcción del context - con datos de AMBOS clientes
     context = {
         # Pronombres SINGULARES
@@ -1260,6 +1261,7 @@ def build_contrato_propiedad_contado_varios_context(fin, cli, ven, cliente2=None
         'SEXO_12': SEXO_12,
         'SEXO_13': SEXO_13,
         'SEXO_14': SEXO_14,
+        'SEXO_15': SEXO_15,
 
         # Fecha de generación
         'DIA': pago.day,
@@ -1312,9 +1314,9 @@ def build_contrato_propiedad_contado_varios_context(fin, cli, ven, cliente2=None
         'APARTADO_FINANCIAMIENTO':    fmt_money(fin.apartado),
         'LETRA_APARTADO':             numero_a_letras(float(fin.apartado)),
 
-        'DIA_PAGO':  pago.day,
-        'MES_PAGO':  meses[pago.month - 1].upper(),
-        'ANIO_PAGO': pago.year,
+        'DIA_PAGO':  fecha_pago.day,
+        'MES_PAGO':  meses[fecha_pago.month - 1].upper(),
+        'ANIO_PAGO': fecha_pago.year,
 
         'CANTIDAD_PAGO_COMPLETO':  fmt_money(restante),
         'CANTIDAD_LETRA_PAGO':     restante_letra,
@@ -1635,6 +1637,7 @@ def build_contrato_propiedad_pagos_varios_context(fin, cli, ven, cliente2=None, 
     SEXO_7 = art(ven.sexo, 'AL', 'A LA')
     SEXO_8 = art(cli.sexo, 'DEL', 'DE LA')
     SEXO_14 = art(ven.sexo, 'O', 'A')
+    SEXO_15 = art(ven.sexo, 'DEL', 'DE LA')
 
     # 2) Pronombres PLURALES para DOS COMPRADORES
     # Determinar género predominante para plurales
@@ -1703,7 +1706,7 @@ def build_contrato_propiedad_pagos_varios_context(fin, cli, ven, cliente2=None, 
     else:
         claus_b = (
             f"QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, AL IGUAL QUE CON LAS FACULTADES Y AUTORIZACIÓN SUFICIENTE PARA OBLIGARSE EN LOS TÉRMINOS DE ESTE, "
-            f"TAL COMO SE ACREDITA EN EL CONTRATO DE EXCLUSIVIDAD, PROMOCIÓN Y COMISIÓN POR LA VENTA DEL BIEN INMUEBLE DE FECHA {fecha_contrato}"
+            f"TAL COMO SE ACREDITA EN EL CONTRATO DE EXCLUSIVIDAD, PROMOCIÓN Y COMISIÓN POR LA VENTA DEL BIEN INMUEBLE DE FECHA {fecha_contrato} "
             f"OTORGADO POR EL / LA  C. {prop.nombre_completo.upper()}"
         )
 
@@ -1737,6 +1740,7 @@ def build_contrato_propiedad_pagos_varios_context(fin, cli, ven, cliente2=None, 
         'SEXO_12': SEXO_12,
         'SEXO_13': SEXO_13,
         'SEXO_14': SEXO_14,
+        'SEXO_15': SEXO_15,
 
         # Fecha
         'DIA': DIA, 'MES': MES,
