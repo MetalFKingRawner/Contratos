@@ -922,7 +922,7 @@ def build_contrato_propiedad_contado_context(fin, cli, ven, request=None, tpl=No
     request: HttpRequest para extraer firma
     tpl: DocxTemplate para InlineImage
     """
-    print("Entré al build de pequeña propiedad")
+    print("Entré al build de pequeña propiedad a contado de un comprador")
 
     if clausulas_adicionales is None:
         clausulas_adicionales = {}
@@ -947,8 +947,14 @@ def build_contrato_propiedad_contado_context(fin, cli, ven, request=None, tpl=No
     # SEXO_7: A LA / AL
     SEXO_7 = art(ven.sexo, 'AL', 'A LA')
     # SEXO_8: DEL / DE LA
-    SEXO_8 = art(cli.sexo, 'DEL', 'DE LA')
+    SEXO_8 = art(ven.sexo, 'DEL', 'DE LA')
     SEXO_9 = art(ven.sexo, 'O', 'A')
+
+    SEXO_16 = art(ven.sexo, 'ÉSTE', 'ÉSTA')
+    SEXO_17 = art(cli.sexo, 'ÉSTE', 'ÉSTA')
+    SEXO_18 = art(cli.sexo, 'DEL', 'DE LA')
+    SEXO_19 = art(cli.sexo, 'AL', 'A LA')
+    SEXO_20 = art(prop.sexo, 'EL', 'LA')
     #SEXO_10 = art(cli.sexo, 'COMPRADORES','COMPRADORAS')
     #SEXO_11 = art(cli.sexo, 'O', 'A')
     #SEXO_12 = art(cli.sexo, 'A LOS', 'A LAS')
@@ -1000,7 +1006,7 @@ def build_contrato_propiedad_contado_context(fin, cli, ven, request=None, tpl=No
         claus_b = (
             f"QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, AL IGUAL QUE CON LAS FACULTADES Y AUTORIZACIÓN SUFICIENTE PARA OBLIGARSE EN LOS TÉRMINOS DE ESTE, "
             f"TAL COMO SE ACREDITA EN EL CONTRATO DE EXCLUSIVIDAD, PROMOCIÓN Y COMISIÓN POR LA VENTA DEL BIEN INMUEBLE DE FECHA {fecha_contrato} "
-            f"OTORGADO POR EL / LA  C. {prop.nombre_completo.upper()}"
+            f"OTORGADO POR {SEXO_20}  C. {prop.nombre_completo.upper()}"
         )
 
     # 5) Construcción del context
@@ -1015,6 +1021,9 @@ def build_contrato_propiedad_contado_context(fin, cli, ven, request=None, tpl=No
         'SEXO_7': SEXO_7,
         'SEXO_8': SEXO_8,
         'SEXO_9': SEXO_9,
+        'SEXO_17': SEXO_17,
+        'SEXO_18': SEXO_18,
+        'SEXO_19': SEXO_19,
         #'SEXO_9': SEXO_9,
         #'SEXO_10': SEXO_10,
         #'SEXO_11': SEXO_11,
@@ -1022,7 +1031,7 @@ def build_contrato_propiedad_contado_context(fin, cli, ven, request=None, tpl=No
         #'SEXO_13': SEXO_13,
 
         # Fecha de generación
-        'DIA': dia_actual.day,
+        'DIA': numero_a_letras(float(dia_actual.day)),
         'MES': meses[dia_actual.month - 1].upper(),
 
         # Vendedor
@@ -1169,9 +1178,11 @@ def build_contrato_propiedad_contado_varios_context(fin, cli, ven, cliente2=None
     prop = fin.lote.proyecto.propietario.first()
     SEXO_6 = art(prop.sexo, 'EL', 'LA')
     SEXO_7 = art(ven.sexo, 'AL', 'A LA')
-    SEXO_8 = art(cli.sexo, 'DEL', 'DE LA')
+    SEXO_8 = art(ven.sexo, 'DEL', 'DE LA')
     SEXO_14 = art(ven.sexo, 'O', 'A')
     SEXO_15 = art(ven.sexo, 'DEL', 'DE LA')
+    SEXO_16 = art(ven.sexo, 'ÉSTE', 'ÉSTA')
+    SEXO_20 = art(prop.sexo, 'EL', 'LA')
 
     # 2) Pronombres PLURALES para DOS COMPRADORES
     # Determinar género predominante para plurales
@@ -1183,6 +1194,7 @@ def build_contrato_propiedad_contado_varios_context(fin, cli, ven, cliente2=None
             SEXO_11 = 'O'
             SEXO_12 = 'A LOS'
             SEXO_13 = 'DE LOS'
+            SEXO_17 = 'ÉSTOS'
         else:
             # Ambos femeninos -> femenino plural
             SEXO_9 = 'LAS'
@@ -1190,6 +1202,7 @@ def build_contrato_propiedad_contado_varios_context(fin, cli, ven, cliente2=None
             SEXO_11 = 'A'
             SEXO_12 = 'A LAS'
             SEXO_13 = 'DE LAS'
+            SEXO_17 = 'ÉSTAS'
     else:
         # Por si acaso (aunque esta función es para varios)
         SEXO_9 = 'LOS'
@@ -1197,6 +1210,7 @@ def build_contrato_propiedad_contado_varios_context(fin, cli, ven, cliente2=None
         SEXO_11 = 'O'
         SEXO_12 = 'A LOS'
         SEXO_13 = 'DE LOS'
+        SEXO_17 = 'ÉSTOS'
 
     # 3) Fecha de pago completo (hoy)
     pago = date.today()
@@ -1240,7 +1254,7 @@ def build_contrato_propiedad_contado_varios_context(fin, cli, ven, cliente2=None
         claus_b = (
             f"QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, AL IGUAL QUE CON LAS FACULTADES Y AUTORIZACIÓN SUFICIENTE PARA OBLIGARSE EN LOS TÉRMINOS DE ESTE, "
             f"TAL COMO SE ACREDITA EN EL CONTRATO DE EXCLUSIVIDAD, PROMOCIÓN Y COMISIÓN POR LA VENTA DEL BIEN INMUEBLE DE FECHA {fecha_contrato} "
-            f"OTORGADO POR EL / LA  C. {prop.nombre_completo.upper()}"
+            f"OTORGADO POR {SEXO_20}  C. {prop.nombre_completo.upper()}"
         )
     fecha_pago = fin.fecha_pago_completo
     # 7) Construcción del context - con datos de AMBOS clientes
@@ -1262,9 +1276,11 @@ def build_contrato_propiedad_contado_varios_context(fin, cli, ven, cliente2=None
         'SEXO_13': SEXO_13,
         'SEXO_14': SEXO_14,
         'SEXO_15': SEXO_15,
+        'SEXO_16': SEXO_16,
+        'SEXO_17': SEXO_17,
 
         # Fecha de generación
-        'DIA': pago.day,
+        'DIA': numero_a_letras(float(pago.day)),
         'MES': meses[pago.month - 1].upper(),
 
         # Vendedor
@@ -1418,14 +1434,20 @@ def build_contrato_propiedad_pagos_context(fin, cli, ven, request=None, tpl=None
     # SEXO_7: A LA / AL
     SEXO_7 = art(ven.sexo, 'AL', 'A LA')
     # SEXO_8: DEL / DE LA
-    SEXO_8 = art(cli.sexo, 'DEL', 'DE LA')
+    SEXO_8 = art(ven.sexo, 'DEL', 'DE LA')
     SEXO_9 = art(ven.sexo, 'O', 'A')
+
+    SEXO_16 = art(ven.sexo, 'ÉSTE', 'ÉSTA')
+    SEXO_17 = art(cli.sexo, 'ÉSTE', 'ÉSTA')
+    SEXO_18 = art(cli.sexo, 'DEL', 'DE LA')
+    SEXO_19 = art(cli.sexo, 'AL', 'A LA')
+    SEXO_20 = art(prop.sexo, 'EL', 'LA')
 
     # 2) Fecha actual
     hoy   = date.today()
     meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio",
              "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]
-    DIA, MES = hoy.day, meses[hoy.month-1].upper()
+    DIA, MES = numero_a_letras(float(hoy.day)), meses[hoy.month-1].upper()
 
     coords = {}
     for lado in ('norte','sur','este','oeste'):
@@ -1460,7 +1482,7 @@ def build_contrato_propiedad_pagos_context(fin, cli, ven, request=None, tpl=None
         claus_b = (
             f"QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, AL IGUAL QUE CON LAS FACULTADES Y AUTORIZACIÓN SUFICIENTE PARA OBLIGARSE EN LOS TÉRMINOS DE ESTE, "
             f"TAL COMO SE ACREDITA EN EL CONTRATO DE EXCLUSIVIDAD, PROMOCIÓN Y COMISIÓN POR LA VENTA DEL BIEN INMUEBLE DE FECHA {fecha_contrato}"
-            f"OTORGADO POR EL / LA  C. {prop.nombre_completo.upper()}"
+            f"OTORGADO POR {SEXO_20}  C. {prop.nombre_completo.upper()}"
         )
 
     # 4) Enganche y mensualidades
@@ -1481,6 +1503,7 @@ def build_contrato_propiedad_pagos_context(fin, cli, ven, request=None, tpl=None
         'SEXO_1': SEXO_1, 'SEXO_2': SEXO_2, 'SEXO_3': SEXO_3,
         'SEXO_4': SEXO_4, 'SEXO_5': SEXO_5, 'SEXO_6': SEXO_6,
         'SEXO_7': SEXO_7, 'SEXO_8': SEXO_8, 'SEXO_9': SEXO_9,
+        'SEXO_16': SEXO_16,'SEXO_17': SEXO_17, 'SEXO_18': SEXO_18, 'SEXO_19': SEXO_19,
 
         # Fecha
         'DIA': DIA, 'MES': MES,
@@ -1635,9 +1658,11 @@ def build_contrato_propiedad_pagos_varios_context(fin, cli, ven, cliente2=None, 
     prop = fin.lote.proyecto.propietario.first()
     SEXO_6 = art(prop.sexo, 'EL', 'LA')
     SEXO_7 = art(ven.sexo, 'AL', 'A LA')
-    SEXO_8 = art(cli.sexo, 'DEL', 'DE LA')
+    SEXO_8 = art(ven.sexo, 'DEL', 'DE LA')
     SEXO_14 = art(ven.sexo, 'O', 'A')
     SEXO_15 = art(ven.sexo, 'DEL', 'DE LA')
+    SEXO_16 = art(ven.sexo, 'ÉSTE', 'ÉSTA')
+    SEXO_20 = art(prop.sexo, 'EL', 'LA')
 
     # 2) Pronombres PLURALES para DOS COMPRADORES
     # Determinar género predominante para plurales
@@ -1649,6 +1674,7 @@ def build_contrato_propiedad_pagos_varios_context(fin, cli, ven, cliente2=None, 
             SEXO_11 = 'O'
             SEXO_12 = 'A LOS'
             SEXO_13 = 'DE LOS'
+            SEXO_17 = 'ÉSTOS'
         else:
             # Ambos femeninos -> femenino plural
             SEXO_9 = 'LAS'
@@ -1656,6 +1682,7 @@ def build_contrato_propiedad_pagos_varios_context(fin, cli, ven, cliente2=None, 
             SEXO_11 = 'A'
             SEXO_12 = 'A LAS'
             SEXO_13 = 'DE LAS'
+            SEXO_17 = 'ÉSTAS'
     else:
         # Por si acaso (aunque esta función es para varios)
         SEXO_9 = 'LOS'
@@ -1663,12 +1690,14 @@ def build_contrato_propiedad_pagos_varios_context(fin, cli, ven, cliente2=None, 
         SEXO_11 = 'O'
         SEXO_12 = 'A LOS'
         SEXO_13 = 'DE LOS'
+        SEXO_17 = 'ÉSTOS'
+
 
     # 2) Fecha actual
     hoy   = date.today()
     meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio",
              "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]
-    DIA, MES = hoy.day, meses[hoy.month-1].upper()
+    DIA, MES = numero_a_letras(float(hoy.day)), meses[hoy.month-1].upper()
 
     # 4) Coordenadas por cada lado (igual que antes)
     dir_fields = {}
@@ -1707,7 +1736,7 @@ def build_contrato_propiedad_pagos_varios_context(fin, cli, ven, cliente2=None, 
         claus_b = (
             f"QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, AL IGUAL QUE CON LAS FACULTADES Y AUTORIZACIÓN SUFICIENTE PARA OBLIGARSE EN LOS TÉRMINOS DE ESTE, "
             f"TAL COMO SE ACREDITA EN EL CONTRATO DE EXCLUSIVIDAD, PROMOCIÓN Y COMISIÓN POR LA VENTA DEL BIEN INMUEBLE DE FECHA {fecha_contrato} "
-            f"OTORGADO POR EL / LA  C. {prop.nombre_completo.upper()}"
+            f"OTORGADO POR {SEXO_20}  C. {prop.nombre_completo.upper()}"
         )
 
     # 4) Enganche y mensualidades
@@ -1741,6 +1770,8 @@ def build_contrato_propiedad_pagos_varios_context(fin, cli, ven, cliente2=None, 
         'SEXO_13': SEXO_13,
         'SEXO_14': SEXO_14,
         'SEXO_15': SEXO_15,
+        'SEXO_16': SEXO_16,
+        'SEXO_17': SEXO_17,
 
         # Fecha
         'DIA': DIA, 'MES': MES,
@@ -1868,4 +1899,3 @@ def build_contrato_propiedad_pagos_varios_context(fin, cli, ven, cliente2=None, 
     })
 
     return context
-
