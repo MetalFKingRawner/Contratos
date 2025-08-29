@@ -12,6 +12,8 @@ urlpatterns = [
     path("workflow/", include("workflow.urls")),
     path("reviews/", include("reviews.urls")),
     path('financiamiento/', include('financiamiento.urls', namespace='financiamiento')),
+    path('dashboard/', include('dashboard.urls', namespace='dashboard')),
 ]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
 
