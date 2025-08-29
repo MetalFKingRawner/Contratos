@@ -1,0 +1,8 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Lote {{ lote.identificador }}{% endblock %}
+{% block content %}
+  {# Aquí puedes incluir el mismo contenido que en la parcial o mantenerlo simple #}
+  <div id="client-detail-content">
+    {% include "dashboard/partials/lote_detail.html" %}
+  </div>
+{% endblock %}

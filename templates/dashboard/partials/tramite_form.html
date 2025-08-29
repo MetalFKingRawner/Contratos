@@ -1,0 +1,1391 @@
+<div class="panel-card form-enhanced">
+  <div class="form-header">
+    <div class="form-header-content">
+      <div class="form-icon-wrapper">
+        <i class="fas fa-file-contract"></i>
+      </div>
+      <div class="form-title-section">
+        <h2 class="form-title">
+          {% if form.instance.pk %}Editar Trámite{% else %}Nuevo Trámite{% endif %}
+        </h2>
+        <p class="form-subtitle">
+          {% if form.instance.pk %}Actualiza la información del trámite{% else %}Completa los datos del nuevo trámite{% endif %}
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <form method="post" 
+        hx-post="{{ request.path }}" 
+        hx-target="#content" 
+        hx-swap="innerHTML"
+        class="tramite-form">
+    {% csrf_token %}
+    
+    <!-- Errores generales -->
+    {% if form.non_field_errors %}
+      <div class="form-errors-general">
+        <div class="error-icon">
+          <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <div class="error-content">
+          {% for error in form.non_field_errors %}
+            <p class="error-message">{{ error }}</p>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+
+    <!-- Secciones del formulario -->
+    <div class="form-sections">
+      
+      <!-- Información Principal -->
+      <div class="form-section">
+        <div class="section-header">
+          <div class="section-icon primary">
+            <i class="fas fa-users"></i>
+          </div>
+          <h3 class="section-title">Información Principal</h3>
+        </div>
+        
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">
+              Financiamiento
+              {% if form.financiamiento.field.required %}
+                <span class="required-indicator">*</span>
+              {% endif %}
+            </label>
+            <div class="input-wrapper">
+              {{ form.financiamiento }}
+              <div class="input-icon">
+                <i class="fas fa-dollar-sign"></i>
+              </div>
+            </div>
+            {% if form.financiamiento.help_text %}
+              <small class="form-help-text">{{ form.financiamiento.help_text }}</small>
+            {% endif %}
+            {% if form.financiamiento.errors %}
+              <div class="field-errors">
+                {% for error in form.financiamiento.errors %}
+                  <span class="field-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    {{ error }}
+                  </span>
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              Vendedor
+              {% if form.vendedor.field.required %}
+                <span class="required-indicator">*</span>
+              {% endif %}
+            </label>
+            <div class="input-wrapper">
+              {{ form.vendedor }}
+              <div class="input-icon">
+                <i class="fas fa-user-tie"></i>
+              </div>
+            </div>
+            {% if form.vendedor.help_text %}
+              <small class="form-help-text">{{ form.vendedor.help_text }}</small>
+            {% endif %}
+            {% if form.vendedor.errors %}
+              <div class="field-errors">
+                {% for error in form.vendedor.errors %}
+                  <span class="field-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    {{ error }}
+                  </span>
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Información de Clientes -->
+      <div class="form-section">
+        <div class="section-header">
+          <div class="section-icon secondary">
+            <i class="fas fa-user-friends"></i>
+          </div>
+          <h3 class="section-title">Información de Clientes</h3>
+        </div>
+        
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">
+              Cliente Principal
+              {% if form.cliente.field.required %}
+                <span class="required-indicator">*</span>
+              {% endif %}
+            </label>
+            <div class="input-wrapper">
+              {{ form.cliente }}
+              <div class="input-icon">
+                <i class="fas fa-user"></i>
+              </div>
+            </div>
+            {% if form.cliente.help_text %}
+              <small class="form-help-text">{{ form.cliente.help_text }}</small>
+            {% endif %}
+            {% if form.cliente.errors %}
+              <div class="field-errors">
+                {% for error in form.cliente.errors %}
+                  <span class="field-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    {{ error }}
+                  </span>
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              Cliente Secundario (Opcional)
+              {% if form.cliente_2.field.required %}
+                <span class="required-indicator">*</span>
+              {% endif %}
+            </label>
+            <div class="input-wrapper">
+              {{ form.cliente_2 }}
+              <div class="input-icon">
+                <i class="fas fa-user-plus"></i>
+              </div>
+            </div>
+            {% if form.cliente_2.help_text %}
+              <small class="form-help-text">{{ form.cliente_2.help_text }}</small>
+            {% endif %}
+            {% if form.cliente_2.errors %}
+              <div class="field-errors">
+                {% for error in form.cliente_2.errors %}
+                  <span class="field-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    {{ error }}
+                  </span>
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Cláusulas Especiales -->
+      <div class="form-section">
+        <div class="section-header">
+          <div class="section-icon clausulas">
+            <i class="fas fa-file-contract"></i>
+          </div>
+          <h3 class="section-title">Cláusulas Especiales</h3>
+        </div>
+        
+        <div class="form-grid">
+          <div class="form-group form-group-full">
+            <label class="form-label">
+              Cláusula de Pago
+              {% if form.clausulas_form.clausula_pago.field.required %}
+                <span class="required-indicator">*</span>
+              {% endif %}
+            </label>
+            <div class="input-wrapper">
+              {{ form.clausulas_form.clausula_pago }}
+              <div class="input-icon">
+                <i class="fas fa-credit-card"></i>
+              </div>
+            </div>
+            {% if form.clausulas_form.clausula_pago.help_text %}
+              <small class="form-help-text">{{ form.clausulas_form.clausula_pago.help_text }}</small>
+            {% endif %}
+            {% if form.clausulas_form.clausula_pago.errors %}
+              <div class="field-errors">
+                {% for error in form.clausulas_form.clausula_pago.errors %}
+                  <span class="field-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    {{ error }}
+                  </span>
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
+
+          <div class="form-group form-group-full">
+            <label class="form-label">
+              Cláusula de Deslinde
+            </label>
+            <div class="input-wrapper">
+              {{ form.clausulas_form.clausula_deslinde }}
+              <div class="input-icon">
+                <i class="fas fa-map-marked-alt"></i>
+              </div>
+            </div>
+            {% if form.clausulas_form.clausula_deslinde.help_text %}
+              <small class="form-help-text">{{ form.clausulas_form.clausula_deslinde.help_text }}</small>
+            {% endif %}
+            {% if form.clausulas_form.clausula_deslinde.errors %}
+              <div class="field-errors">
+                {% for error in form.clausulas_form.clausula_deslinde.errors %}
+                  <span class="field-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    {{ error }}
+                  </span>
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
+
+          <div class="form-group form-group-full">
+            <label class="form-label">
+              Cláusula de Promesa
+            </label>
+            <div class="input-wrapper">
+              {{ form.clausulas_form.clausula_promesa }}
+              <div class="input-icon">
+                <i class="fas fa-handshake"></i>
+              </div>
+            </div>
+            {% if form.clausulas_form.clausula_promesa.help_text %}
+              <small class="form-help-text">{{ form.clausulas_form.clausula_promesa.help_text }}</small>
+            {% endif %}
+            {% if form.clausulas_form.clausula_promesa.errors %}
+              <div class="field-errors">
+                {% for error in form.clausulas_form.clausula_promesa.errors %}
+                  <span class="field-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    {{ error }}
+                  </span>
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Firma del Cliente -->
+      <div class="form-section">
+        <div class="section-header">
+          <div class="section-icon accent">
+            <i class="fas fa-signature"></i>
+          </div>
+          <h3 class="section-title">Firma del Cliente</h3>
+        </div>
+        
+        <div class="signature-container">
+          <div id="signature-pad" class="signature-pad">
+            <div class="signature-pad--body">
+              <canvas width="100%" height="200" class="signature-canvas"></canvas>
+            </div>
+            <div class="signature-pad--footer">
+              <div class="signature-description">
+                <i class="fas fa-pen-fancy"></i>
+                <span>Firma en el área superior</span>
+              </div>
+              <div class="signature-pad--actions">
+                <button type="button" class="signature-btn secondary" data-action="clear">
+                  <i class="fas fa-eraser"></i>
+                  <span>Limpiar</span>
+                </button>
+                <button type="button" class="signature-btn primary" data-action="save">
+                  <i class="fas fa-save"></i>
+                  <span>Guardar</span>
+                </button>
+              </div>
+            </div>
+          </div>
+          {{ form.firma_cliente }}
+          
+        </div>
+      </div>
+    </div>
+
+    <!-- Botones de acción -->
+    <div class="form-actions">
+      <button type="submit" class="form-btn primary">
+        <i class="fas fa-save"></i>
+        <span>{% if form.instance.pk %}Actualizar{% else %}Crear{% endif %} Trámite</span>
+        <div class="btn-shine"></div>
+      </button>
+      
+      <button type="button" 
+              class="form-btn outline"
+              hx-get="{% if form.instance.pk %}{% url 'dashboard:tramite_detail' form.instance.pk %}{% else %}{% url 'dashboard:tramite_list' %}{% endif %}" 
+              hx-target="#content" 
+              hx-swap="innerHTML">
+        <i class="fas fa-times"></i>
+        <span>Cancelar</span>
+      </button>
+    </div>
+  </form>
+</div>
+
+<style>
+/* Variables CSS personalizadas */
+:root {
+  --glass-bg: rgba(255, 255, 255, 0.1);
+  --glass-border: rgba(255, 255, 255, 0.2);
+  --primary-gradient: linear-gradient(135deg, #2E8FCC 0%, #87CEEB 100%);
+  --secondary-gradient: linear-gradient(135deg, #10B981 0%, #34D399 100%);
+  --accent-gradient: linear-gradient(135deg, #F59E0B 0%, #FBBF24 100%);
+  --signature-gradient: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%);
+  --clausulas-gradient: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+  --text-primary: #333;
+  --text-secondary: #666;
+  --logo-blue: #2E8FCC;
+  --border-radius: 16px;
+  --shadow-sm: 0 4px 15px rgba(46, 143, 204, 0.1);
+  --shadow-md: 0 8px 25px rgba(46, 143, 204, 0.15);
+  --shadow-primary: 0 6px 20px rgba(46, 143, 204, 0.25);
+  --shadow-hover: 0 12px 35px rgba(46, 143, 204, 0.3);
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ==== PANEL CARD MEJORADO ==== */
+.panel-card.form-enhanced {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  animation: slideInRight 0.5s ease;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+/* ==== HEADER DEL FORMULARIO ==== */
+.form-header {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 1.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  position: relative;
+}
+
+.form-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at 20% 20%, rgba(46, 143, 204, 0.08) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.form-header-content {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  position: relative;
+}
+
+.form-icon-wrapper {
+  width: 50px;
+  height: 50px;
+  background: var(--primary-gradient);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-sm);
+  animation: pulse 2s infinite;
+}
+
+.form-icon-wrapper i {
+  font-size: 1.5rem;
+  color: white;
+}
+
+.form-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0;
+}
+
+.form-subtitle {
+  color: var(--text-secondary);
+  margin: 0.25rem 0 0 0;
+  font-size: 0.9rem;
+}
+
+/* ==== FORMULARIO PRINCIPAL ==== */
+.tramite-form {
+  padding: 1.75rem;
+}
+
+/* ==== ERRORES GENERALES ==== */
+.form-errors-general {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 10px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  animation: shake 0.5s ease-in-out;
+}
+
+.error-icon {
+  width: 35px;
+  height: 35px;
+  background: rgba(239, 68, 68, 0.2);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #EF4444;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.error-content {
+  flex: 1;
+}
+
+.error-message {
+  color: #EF4444;
+  margin: 0;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+/* ==== SECCIONES DEL FORMULARIO ==== */
+.form-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.form-section {
+  position: relative;
+  animation: fadeInUp 0.6s ease;
+  animation-fill-mode: both;
+}
+
+.form-section:nth-child(1) { animation-delay: 0.1s; }
+.form-section:nth-child(2) { animation-delay: 0.2s; }
+.form-section:nth-child(3) { animation-delay: 0.3s; }
+.form-section:nth-child(4) { animation-delay: 0.4s; }
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.section-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1rem;
+}
+
+.section-icon.primary {
+  background: var(--primary-gradient);
+}
+
+.section-icon.secondary {
+  background: var(--secondary-gradient);
+}
+
+.section-icon.accent {
+  background: var(--accent-gradient);
+}
+
+.section-icon.clausulas {
+  background: var(--clausulas-gradient);
+}
+
+.section-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+/* ==== GRID DEL FORMULARIO ==== */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.25rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group-full {
+  grid-column: 1 / -1;
+}
+
+.form-label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.required-indicator {
+  color: #EF4444;
+  font-weight: 600;
+}
+
+/* ==== INPUTS ==== */
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  padding-right: 2.75rem;
+  border: 2px solid rgba(46, 143, 204, 0.2);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  transition: var(--transition);
+  font-family: inherit;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Estados hover para mejor UX */
+.form-group input:hover,
+.form-group select:hover,
+.form-group textarea:hover {
+  border-color: rgba(46, 143, 204, 0.4);
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
+}
+
+/* Mejorar visibilidad de textareas específicamente */
+.form-group textarea {
+  min-height: 120px;
+  resize: vertical;
+  background: rgba(255, 255, 255, 0.85);
+  border: 2px solid rgba(46, 143, 204, 0.25);
+  line-height: 1.5;
+}
+
+/* Estados focus mejorados */
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--logo-blue);
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 
+    inset 0 2px 4px rgba(0, 0, 0, 0.08),
+    0 0 0 3px rgba(46, 143, 204, 0.15);
+  transform: translateY(-1px);
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+  color: var(--text-secondary);
+}
+
+.form-group textarea:hover {
+  background: rgba(255, 255, 255, 0.92);
+  border-color: rgba(46, 143, 204, 0.45);
+}
+.form-group textarea:focus {
+  background: rgba(255, 255, 255, 0.98);
+  border-color: var(--logo-blue);
+}
+
+/* Mejorar selects */
+.form-group select {
+  background: rgba(255, 255, 255, 0.85) url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4 5"><path fill="%23666" d="M2 0L0 2h4zm0 5L0 3h4z"/></svg>') no-repeat right 0.75rem center;
+  background-size: 12px;
+  appearance: none;
+  cursor: pointer;
+}
+
+.form-group select:hover {
+  background-color: rgba(255, 255, 255, 0.92);
+}
+
+.form-group select:focus {
+  background-color: rgba(255, 255, 255, 0.98);
+}
+
+/* Placeholder más visible */
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+  color: #888;
+  font-style: italic;
+}
+
+.form-group input:focus::placeholder,
+.form-group textarea:focus::placeholder {
+  color: #aaa;
+  transform: translateY(-1px);
+}
+
+.input-icon {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: rgba(46, 143, 204, 0.6);
+  font-size: 0.85rem;
+  pointer-events: none;
+  transition: var(--transition);
+  z-index: 1;
+}
+
+.form-group input:focus + .input-icon,
+.form-group select:focus + .input-icon,
+.form-group textarea:focus + .input-icon {
+  color: var(--logo-blue);
+  transform: translateY(-50%) scale(1.1);
+}
+
+.form-group input:hover + .input-icon,
+.form-group select:hover + .input-icon,
+.form-group textarea:hover + .input-icon {
+  color: rgba(46, 143, 204, 0.8);
+}
+
+/* ==== MEJORAS DE VALIDACIÓN VISUAL ==== */
+.form-group input:invalid:not(:focus):not(:placeholder-shown) {
+  border-color: rgba(239, 68, 68, 0.6);
+  background: rgba(255, 245, 245, 0.8);
+  box-shadow: inset 0 2px 4px rgba(239, 68, 68, 0.05);
+}
+
+.form-group textarea:invalid:not(:focus):not(:placeholder-shown) {
+  border-color: rgba(239, 68, 68, 0.6);
+  background: rgba(255, 245, 245, 0.8);
+}
+
+.form-group input:valid:not(:focus):not(:placeholder-shown) {
+  border-color: rgba(16, 185, 129, 0.6);
+  background: rgba(240, 255, 245, 0.8);
+  box-shadow: inset 0 2px 4px rgba(16, 185, 129, 0.05);
+}
+
+.form-group textarea:valid:not(:focus):not(:placeholder-shown) {
+  border-color: rgba(16, 185, 129, 0.6);
+  background: rgba(240, 255, 245, 0.8);
+}
+
+/* Iconos de validación */
+.form-group input:valid:not(:focus):not(:placeholder-shown) + .input-icon::after {
+  content: '\f00c';
+  font-family: 'Font Awesome 5 Free';
+  font-weight: 900;
+  color: #10B981;
+  position: absolute;
+  right: -20px;
+}
+
+.form-group input:invalid:not(:focus):not(:placeholder-shown) + .input-icon::after {
+  content: '\f06a';
+  font-family: 'Font Awesome 5 Free';
+  font-weight: 900;
+  color: #EF4444;
+  position: absolute;
+  right: -20px;
+}
+
+/* ==== TEXTO DE AYUDA ==== */
+.form-help-text {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
+  font-style: italic;
+}
+
+/* ==== ERRORES DE CAMPO ==== */
+.field-errors {
+  margin-top: 0.5rem;
+}
+
+.field-error {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #EF4444;
+  font-size: 0.8rem;
+  font-weight: 500;
+  animation: fadeInDown 0.3s ease;
+}
+
+.field-error i {
+  font-size: 0.75rem;
+}
+
+/* ==== SECCIÓN DE FIRMA ==== */
+.signature-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.signature-pad {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1.5px solid var(--glass-border);
+  border-radius: 12px;
+  padding: 1.25rem;
+  backdrop-filter: blur(10px);
+  transition: var(--transition);
+}
+
+.signature-pad:hover {
+  border-color: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.signature-canvas {
+  width: 100%;
+  height: 200px;
+  border: 2px dashed var(--glass-border);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.02);
+  cursor: crosshair;
+  transition: var(--transition);
+}
+
+.signature-canvas:hover {
+  border-color: var(--logo-blue);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.signature-pad--footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.signature-description {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.signature-description i {
+  color: var(--logo-blue);
+}
+
+.signature-pad--actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.signature-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+  font-size: 0.85rem;
+  backdrop-filter: blur(10px);
+}
+
+.signature-btn.primary {
+  background: var(--primary-gradient);
+  color: white;
+  box-shadow: 0 3px 10px rgba(46, 143, 204, 0.2);
+}
+
+.signature-btn.primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 15px rgba(46, 143, 204, 0.3);
+}
+
+.signature-btn.secondary {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--glass-border);
+}
+
+.signature-btn.secondary:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.signature-status {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  padding: 0.75rem;
+}
+
+.signature-status-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+
+.signature-status-item i {
+  color: var(--logo-blue);
+}
+
+.signature-status.saved .signature-status-item {
+  color: #10B981;
+}
+
+.signature-status.saved .signature-status-item i {
+  color: #10B981;
+}
+
+/* ==== BOTONES DE ACCIÓN ==== */
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.form-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1.75rem;
+  border: none;
+  border-radius: 10px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+  text-decoration: none;
+  font-size: 0.9rem;
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+  border: 1.5px solid transparent;
+  min-width: 140px;
+  justify-content: center;
+}
+
+.btn-shine {
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.6s;
+}
+
+.form-btn:hover .btn-shine {
+  left: 100%;
+}
+
+.form-btn.primary {
+  background: var(--primary-gradient);
+  color: white;
+  box-shadow: var(--shadow-primary);
+}
+
+.form-btn.primary:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+}
+
+.form-btn.outline {
+  background: transparent;
+  color: var(--text-secondary);
+  border-color: var(--glass-border);
+}
+
+.form-btn.outline:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+/* ==== RESPONSIVE ==== */
+@media (max-width: 768px) {
+  .panel-card.form-enhanced {
+    border-radius: 0;
+    height: 100vh;
+    max-height: 100vh;
+  }
+  
+  .form-header {
+    padding: 1.5rem;
+  }
+  
+  .form-header-content {
+    flex-direction: column;
+    text-align: center;
+    gap: 1rem;
+  }
+  
+  .form-title {
+    font-size: 1.3rem;
+  }
+  
+  .tramite-form {
+    padding: 1.5rem;
+  }
+  
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .form-btn {
+    min-width: auto;
+  }
+  
+  .signature-pad--footer {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+  
+  .signature-pad--actions {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .form-header {
+    padding: 1rem;
+  }
+  
+  .form-icon-wrapper {
+    width: 45px;
+    height: 45px;
+  }
+  
+  .form-icon-wrapper i {
+    font-size: 1.3rem;
+  }
+  
+  .form-title {
+    font-size: 1.2rem;
+  }
+  
+  .tramite-form {
+    padding: 1rem;
+  }
+  
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+  
+  .section-icon {
+    width: 35px;
+    height: 35px;
+  }
+  
+  .signature-canvas {
+    height: 150px;
+  }
+}
+
+/* ==== ANIMACIONES ==== */
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+/* ==== MEJORAS DE UX ==== */
+.form-group input:invalid:not(:focus) {
+  border-color: rgba(239, 68, 68, 0.5);
+}
+
+.form-group input:valid:not(:focus) {
+  border-color: rgba(16, 185, 129, 0.5);
+}
+
+/* ==== LOADING STATE ==== */
+.form-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.form-btn.loading {
+  pointer-events: none;
+}
+
+.form-btn.loading::after {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ==== SCROLL PERSONALIZADO ==== */
+.panel-card.form-enhanced::-webkit-scrollbar {
+  width: 6px;
+}
+
+.panel-card.form-enhanced::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+.panel-card.form-enhanced::-webkit-scrollbar-thumb {
+  background: var(--logo-blue);
+  border-radius: 3px;
+}
+
+.panel-card.form-enhanced::-webkit-scrollbar-thumb:hover {
+  background: #1e6fa8;
+}
+
+/* Ocultar campo de firma original */
+#id_firma_cliente {
+  display: none;
+}
+</style>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/signature_pad/1.5.3/signature_pad.min.js"></script>
+
+<script>
+// Mejorar UX del formulario de trámites
+document.addEventListener('DOMContentLoaded', function() {
+  initTramiteFormEnhancements();
+});
+
+// Reinicializar cuando HTMX carga contenido
+document.body.addEventListener('htmx:afterSwap', function(evt) {
+  if (evt.detail.target.id === 'content') {
+    setTimeout(initTramiteFormEnhancements, 50);
+  }
+});
+
+function initTramiteFormEnhancements() {
+  const form = document.querySelector('.tramite-form');
+  if (!form) return;
+
+  // Auto-focus primer campo
+  const firstInput = form.querySelector('input, select, textarea');
+  if (firstInput) {
+    setTimeout(() => firstInput.focus(), 150);
+  }
+
+  // Animación en inputs
+  const inputs = form.querySelectorAll('input, select, textarea');
+  inputs.forEach(input => {
+    input.addEventListener('focus', function() {
+      this.closest('.form-group').style.transform = 'translateY(-1px)';
+      this.closest('.form-group').style.transition = 'all 0.3s ease';
+    });
+    
+    input.addEventListener('blur', function() {
+      this.closest('.form-group').style.transform = 'translateY(0)';
+    });
+  });
+
+  // Inicializar el pad de firma
+  const canvas = document.querySelector(".signature-canvas");
+  if (canvas) {
+    // Ajustar el tamaño del canvas
+    const resizeCanvas = () => {
+      const ratio = Math.max(window.devicePixelRatio || 1, 1);
+      canvas.width = canvas.offsetWidth * ratio;
+      canvas.height = canvas.offsetHeight * ratio;
+      canvas.getContext("2d").scale(ratio, ratio);
+    };
+    
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+    
+    const signaturePad = new SignaturePad(canvas, {
+      backgroundColor: 'rgba(255, 255, 255, 0.02)',
+      penColor: '#2E8FCC',
+      minWidth: 1,
+      maxWidth: 3,
+      throttle: 16,
+      minPointDistance: 3,
+    });
+
+    const signatureInput = document.getElementById("id_firma_cliente");
+    const signatureStatus = document.getElementById("signature-status");
+    
+    // Botón para limpiar
+    const clearBtn = document.querySelector('[data-action="clear"]');
+    if (clearBtn) {
+      clearBtn.addEventListener('click', function() {
+        signaturePad.clear();
+        updateSignatureStatus('empty');
+        if (signatureInput) signatureInput.value = '';
+      });
+    }
+    
+    // Botón para guardar
+    const saveBtn = document.querySelector('[data-action="save"]');
+    if (saveBtn) {
+      saveBtn.addEventListener('click', function() {
+        if (signaturePad.isEmpty()) {
+          showSignatureAlert("Por favor, proporcione una firma primero.", 'warning');
+        } else {
+          if (signatureInput) {
+            signatureInput.value = signaturePad.toDataURL();
+            updateSignatureStatus('saved');
+            showSignatureAlert("Firma guardada correctamente.", 'success');
+          }
+        }
+      });
+    }
+    
+    // Auto-guardar cuando el usuario termina de firmar
+    let signatureTimeout;
+    signaturePad.addEventListener('endStroke', function() {
+      clearTimeout(signatureTimeout);
+      signatureTimeout = setTimeout(() => {
+        if (!signaturePad.isEmpty() && signatureInput) {
+          signatureInput.value = signaturePad.toDataURL();
+          updateSignatureStatus('auto-saved');
+        }
+      }, 1000);
+    });
+    
+    // Si ya hay una firma, cargarla
+    if (signatureInput && signatureInput.value) {
+      signaturePad.fromDataURL(signatureInput.value);
+      updateSignatureStatus('loaded');
+    }
+    
+    // Función para actualizar el estado de la firma
+    function updateSignatureStatus(status) {
+      if (!signatureStatus) return;
+      
+      const statusItem = signatureStatus.querySelector('.signature-status-item');
+      const icon = statusItem.querySelector('i');
+      const text = statusItem.querySelector('span');
+      
+      signatureStatus.className = 'signature-status';
+      
+      switch(status) {
+        case 'empty':
+          icon.className = 'fas fa-info-circle';
+          text.textContent = 'Esperando firma del cliente';
+          break;
+        case 'saved':
+          signatureStatus.classList.add('saved');
+          icon.className = 'fas fa-check-circle';
+          text.textContent = 'Firma guardada correctamente';
+          break;
+        case 'auto-saved':
+          signatureStatus.classList.add('saved');
+          icon.className = 'fas fa-check-circle';
+          text.textContent = 'Firma guardada automáticamente';
+          break;
+        case 'loaded':
+          signatureStatus.classList.add('saved');
+          icon.className = 'fas fa-check-circle';
+          text.textContent = 'Firma cargada desde registro anterior';
+          break;
+      }
+    }
+    
+    // Función para mostrar alertas de firma
+    function showSignatureAlert(message, type) {
+      // Crear elemento de alerta
+      const alert = document.createElement('div');
+      alert.className = `signature-alert ${type}`;
+      alert.innerHTML = `
+        <div class="alert-content">
+          <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle'}"></i>
+          <span>${message}</span>
+        </div>
+      `;
+      
+      // Insertar después del signature-pad
+      const signaturePad = document.getElementById('signature-pad');
+      signaturePad.parentNode.insertBefore(alert, signaturePad.nextSibling);
+      
+      // Animar entrada
+      setTimeout(() => alert.classList.add('show'), 10);
+      
+      // Remover después de 3 segundos
+      setTimeout(() => {
+        alert.classList.remove('show');
+        setTimeout(() => {
+          if (alert.parentNode) {
+            alert.parentNode.removeChild(alert);
+          }
+        }, 300);
+      }, 3000);
+    }
+  }
+
+  // Loading state en submit
+  const submitBtn = form.querySelector('.form-btn.primary');
+  if (submitBtn) {
+    form.addEventListener('submit', function() {
+      submitBtn.classList.add('loading');
+      submitBtn.disabled = true;
+      const originalText = submitBtn.querySelector('span').textContent;
+      submitBtn.querySelector('span').textContent = 'Guardando...';
+      
+      // Reset después de 4 segundos (timeout de seguridad)
+      setTimeout(() => {
+        submitBtn.classList.remove('loading');
+        submitBtn.disabled = false;
+        submitBtn.querySelector('span').textContent = originalText;
+      }, 4000);
+    });
+  }
+
+  // Validación en tiempo real
+  inputs.forEach(input => {
+    input.addEventListener('input', function() {
+      const errorDiv = this.closest('.form-group').querySelector('.field-errors');
+      if (errorDiv && this.value.trim()) {
+        errorDiv.style.opacity = '0';
+        setTimeout(() => {
+          if (errorDiv.style.opacity === '0') {
+            errorDiv.style.display = 'none';
+          }
+        }, 300);
+      }
+    });
+  });
+}
+
+// Estilos adicionales para las alertas de firma
+const additionalStyles = `
+.signature-alert {
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  transform: translateY(-10px);
+  opacity: 0;
+  transition: all 0.3s ease;
+  border: 1px solid;
+}
+
+.signature-alert.show {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.signature-alert.success {
+  background: rgba(16, 185, 129, 0.1);
+  border-color: rgba(16, 185, 129, 0.2);
+  color: #10B981;
+}
+
+.signature-alert.warning {
+  background: rgba(245, 158, 11, 0.1);
+  border-color: rgba(245, 158, 11, 0.2);
+  color: #F59E0B;
+}
+
+.alert-content {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.alert-content i {
+  font-size: 1rem;
+}
+`;
+
+// Agregar estilos adicionales
+if (!document.getElementById('signature-alert-styles')) {
+  const style = document.createElement('style');
+  style.id = 'signature-alert-styles';
+  style.textContent = additionalStyles;
+  document.head.appendChild(style);
+}
+</script>

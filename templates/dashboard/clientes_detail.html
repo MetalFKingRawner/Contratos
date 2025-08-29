@@ -1,0 +1,10 @@
+{# dashboard/cliente_detail.html #}
+{% extends "dashboard/base.html" %}
+{% block title %}Cliente – {{ cliente.nombre_completo }}{% endblock %}
+
+{% block content %}
+  {# Aquí puedes incluir el mismo contenido que en la parcial o mantenerlo simple #}
+  <div id="client-detail-content">
+    {% include "dashboard/partials/cliente_detail.html" %}
+  </div>
+{% endblock %}

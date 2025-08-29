@@ -1,0 +1,31 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Financiamiento – {{ plan.nombre_cliente }}{% endblock %}
+
+{% block content %}
+  <h1 class="gradient-text mb-4">Financiamiento de {{ plan.nombre_cliente }}</h1>
+
+  <div class="card card-glass mb-4">
+    <div class="card-body">
+      <h5 class="card-subtitle mb-3">Datos del Plan</h5>
+      <ul class="list-unstyled">
+        <li><strong>Lote:</strong> {{ plan.lote }}</li>
+        <li><strong>Tipo de pago:</strong> {{ plan.get_tipo_pago_display }}</li>
+        <li><strong>Precio del lote:</strong> ${{ plan.precio_lote|floatformat:2 }}</li>
+        <li><strong>Apartado:</strong> ${{ plan.apartado|floatformat:2 }}</li>
+        {% if plan.tipo_pago == 'contado' %}
+          <li><strong>Pago completo fecha:</strong> {{ plan.fecha_pago_completo }}</li>
+          <li><strong>Monto pago completo:</strong> ${{ plan.monto_pago_completo|floatformat:2 }}</li>
+        {% else %}
+          <li><strong>Enganche:</strong> ${{ plan.enganche|floatformat:2 }}</li>
+          <li><strong>Fecha enganche:</strong> {{ plan.fecha_enganche }}</li>
+          <li><strong>Mensualidades:</strong> {{ plan.num_mensualidades }}</li>
+          <li><strong>Monto mensualidad:</strong> ${{ plan.monto_mensualidad|floatformat:2 }}</li>
+          <li><strong>Fecha primer pago:</strong> {{ plan.fecha_primer_pago }}</li>
+          <li><strong>Fecha último pago:</strong> {{ plan.fecha_ultimo_pago }}</li>
+        {% endif %}
+      </ul>
+      <a href="#" class="btn btn-primary mt-3">Editar Plan</a>
+      <a href="#" class="btn btn-outline-danger mt-3">Eliminar Plan</a>
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,1146 @@
+{% block content %}
+<!-- Header de la sección con estadísticas -->
+<div class="projects-header-section">
+  <div class="projects-header-content">
+    <div class="projects-title-area">
+      <div class="projects-icon-wrapper">
+        <i class="fas fa-building projects-main-icon"></i>
+      </div>
+      <div class="projects-title-text">
+        <h2 class="projects-title">Proyectos Inmobiliarios</h2>
+        <p class="projects-subtitle">Administra y supervisa todos tus desarrollos inmobiliarios</p>
+      </div>
+    </div>
+    <div class="projects-stats">
+      <div class="stat-item">
+        <span class="stat-number">{{ proyectos|length }}</span>
+        <span class="stat-label">Total</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <span class="stat-number">{{ proyectos|length }}</span>
+        <span class="stat-label">Activos</span>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Barra de acciones -->
+  <div class="projects-actions">
+    <div class="search-container">
+      <i class="fas fa-search search-icon"></i>
+      <input type="text" placeholder="Buscar proyecto..." class="search-input" id="proyectoSearch">
+    </div>
+    <div class="filter-container">
+      <i class="fas fa-filter filter-icon"></i>
+      <select class="filter-select" id="tipoProyectoFilter">
+        <option value="">Todos los tipos</option>
+        <option value="ejidal">Ejidal</option>
+        <option value="comunal">Comunal</option>
+        <option value="pequeña propiedad">Pequeña Propiedad</option>
+        <option value="propiedad definitiva">Propiedad Definitiva</option>
+      </select>
+    </div>
+    <button class="btn-add-project" hx-get="{% url 'dashboard:proyecto_create' %}" hx-target="#content" hx-swap="innerHTML">
+      <i class="fas fa-plus"></i>
+      <span>Nuevo Proyecto</span>
+    </button>
+  </div>
+</div>
+
+<!-- Grid de proyectos mejorado -->
+<div class="projects-grid-container">
+  {% if proyectos %}
+    <div class="projects-grid" id="proyectosGrid">
+      {% for p in proyectos %}
+        <div class="project-card" data-proyecto-name="{{ p.nombre|lower }}" 
+             data-tipo-proyecto="{{ p.tipo_contrato|lower }}" data-proyecto-ubicacion="{{ p.ubicacion|lower }}"
+             data-proyecto-autoridad="{{ p.autoridad|default:''|lower }}">
+          <div class="project-card-header">
+            <div class="project-type-badge">
+              <i class="fas fa-file-contract"></i>
+              <span>{{ p.tipo_contrato|title }}</span>
+            </div>
+            <div class="project-status active">
+              <div class="status-dot"></div>
+              <span class="status-text">Activo</span>
+            </div>
+          </div>
+          
+          <div class="project-card-body">
+            <div class="project-main-info">
+              <div class="project-icon">
+                <i class="fas fa-city"></i>
+              </div>
+              <div class="project-title-section">
+                <h4 class="project-name">{{ p.nombre }}</h4>
+                <div class="project-location">
+                  <i class="fas fa-map-marker-alt"></i>
+                  <span>{{ p.ubicacion|truncatechars:40 }}</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="project-details">
+              <div class="detail-row">
+                <div class="detail-item">
+                  <div class="detail-icon document">
+                    <i class="fas fa-file-alt"></i>
+                  </div>
+                  <div class="detail-content">
+                    <span class="detail-label">Documento Emitido</span>
+                    <span class="detail-value">{{ p.fecha_emision_documento|default:"No especificada" }}</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="detail-row">
+                <div class="detail-item">
+                  <div class="detail-icon authority">
+                    <i class="fas fa-gavel"></i>
+                  </div>
+                  <div class="detail-content">
+                    <span class="detail-label">Autoridad</span>
+                    <span class="detail-value">{{ p.autoridad|default:"No especificada"|truncatechars:25 }}</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="detail-row">
+                <div class="detail-item">
+                  <div class="detail-icon contract">
+                    <i class="fas fa-handshake"></i>
+                  </div>
+                  <div class="detail-content">
+                    <span class="detail-label">Contrato Emitido</span>
+                    <span class="detail-value">{{ p.fecha_emision_contrato|default:"No especificada" }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="project-card-footer">
+            <div class="project-actions">
+              <button class="action-btn view" 
+                      hx-get="{% url 'dashboard:proyecto_detail' p.pk %}"
+                      hx-target="#content" 
+                      hx-swap="innerHTML"
+                      title="Ver detalles">
+                <i class="fas fa-eye"></i>
+              </button>
+              <button class="action-btn edit"
+                      hx-get="{% url 'dashboard:proyecto_update' p.pk %}"
+                      hx-target="#content" 
+                      hx-swap="innerHTML"
+                      title="Editar">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button class="action-btn location"
+                      onclick="showLocationModal('{{ p.ubicacion|escapejs }}')"
+                      title="Ver ubicación">
+                <i class="fas fa-map-marked-alt"></i>
+              </button>
+              <button class="action-btn delete"
+                      hx-get="{% url 'dashboard:proyecto_delete' p.pk %}"
+                      hx-target="#content" 
+                      hx-swap="innerHTML"
+                      title="Eliminar">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <div class="empty-icon">
+        <i class="fas fa-building"></i>
+      </div>
+      <h3 class="empty-title">No hay proyectos registrados</h3>
+      <p class="empty-subtitle">Comienza creando tu primer proyecto inmobiliario para gestionar tus desarrollos</p>
+      <button class="btn-empty-action" hx-get="{% url 'dashboard:proyecto_create' %}" hx-target="#content" hx-swap="innerHTML">
+        <i class="fas fa-plus"></i>
+        Crear Primer Proyecto
+      </button>
+    </div>
+  {% endif %}
+</div>
+
+<!-- Paginación mejorada -->
+{% if is_paginated %}
+<div class="pagination-container">
+  <nav class="pagination-nav">
+    <div class="pagination-info">
+      <span>Mostrando {{ page_obj.start_index }}-{{ page_obj.end_index }} de {{ paginator.count }} proyectos</span>
+    </div>
+    <ul class="pagination-list">
+      {% if page_obj.has_previous %}
+        <li class="pagination-item">
+          <button class="pagination-btn prev"
+                  hx-get="{% url 'dashboard:proyecto_list' %}?page={{ page_obj.previous_page_number }}"
+                  hx-target="#content" 
+                  hx-swap="innerHTML">
+            <i class="fas fa-chevron-left"></i>
+          </button>
+        </li>
+      {% endif %}
+      
+      {% for num in paginator.page_range %}
+        <li class="pagination-item">
+          <button class="pagination-btn {% if page_obj.number == num %}active{% endif %}"
+                  hx-get="{% url 'dashboard:proyecto_list' %}?page={{ num }}"
+                  hx-target="#content" 
+                  hx-swap="innerHTML">
+            {{ num }}
+          </button>
+        </li>
+      {% endfor %}
+      
+      {% if page_obj.has_next %}
+        <li class="pagination-item">
+          <button class="pagination-btn next"
+                  hx-get="{% url 'dashboard:proyecto_list' %}?page={{ page_obj.next_page_number }}"
+                  hx-target="#content" 
+                  hx-swap="innerHTML">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </li>
+      {% endif %}
+    </ul>
+  </nav>
+</div>
+{% endif %}
+
+<!-- Modal para mostrar ubicación -->
+<div class="modal fade" id="locationModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content glass-modal">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="fas fa-map-marker-alt"></i>
+          Ubicación del Proyecto
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="location-display">
+          <div class="location-icon">
+            <i class="fas fa-map-marked-alt"></i>
+          </div>
+          <div class="location-text" id="locationText"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+/* ==== HEADER DE PROYECTOS ==== */
+.projects-header-section {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  border-radius: var(--border-radius);
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--glass-border);
+  position: relative;
+  overflow: hidden;
+  animation: fadeInUp 0.6s ease;
+}
+
+.projects-header-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at 20% 20%, rgba(46, 143, 204, 0.08) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.projects-header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+}
+
+.projects-title-area {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.projects-icon-wrapper {
+  width: 60px;
+  height: 60px;
+  background: var(--primary-gradient);
+  border-radius: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-primary);
+  animation: pulse 2s infinite;
+}
+
+.projects-main-icon {
+  font-size: 1.8rem;
+  color: white;
+}
+
+.projects-title {
+  font-size: 2.2rem;
+  font-weight: 700;
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0;
+}
+
+.projects-subtitle {
+  color: var(--text-secondary);
+  margin: 0.5rem 0 0 0;
+  font-size: 1rem;
+}
+
+.projects-stats {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.stat-number {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--logo-blue);
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  margin-top: 0.25rem;
+}
+
+.stat-divider {
+  width: 1px;
+  height: 40px;
+  background: linear-gradient(to bottom, transparent, var(--glass-border), transparent);
+}
+
+/* ==== BARRA DE ACCIONES ==== */
+.projects-actions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.search-container {
+  position: relative;
+  flex: 1;
+  max-width: 300px;
+}
+
+.search-icon {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.75rem 1rem 0.75rem 2.5rem;
+  border: 1px solid var(--glass-border);
+  border-radius: 25px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  transition: var(--transition);
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--logo-blue);
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 0 0 3px rgba(46, 143, 204, 0.1);
+}
+
+.search-input::placeholder {
+  color: var(--text-secondary);
+}
+
+.filter-container {
+  position: relative;
+}
+
+.filter-select {
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--glass-border);
+  border-radius: 25px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  transition: var(--transition);
+  min-width: 160px;
+}
+
+.filter-select:focus {
+  outline: none;
+  border-color: var(--logo-blue);
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 0 0 3px rgba(46, 143, 204, 0.1);
+}
+
+.btn-add-project {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: var(--primary-gradient);
+  color: white;
+  border: none;
+  border-radius: 25px;
+  font-weight: 500;
+  transition: var(--transition);
+  cursor: pointer;
+  box-shadow: var(--shadow-primary);
+  text-decoration: none;
+}
+
+.btn-add-project:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+}
+
+/* ==== GRID DE PROYECTOS ==== */
+.projects-grid-container {
+  position: relative;
+}
+
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  gap: 1.8rem;
+}
+
+.project-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(15px);
+  border-radius: 18px;
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-sm);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  animation: fadeInUp 0.6s ease;
+  animation-fill-mode: both;
+}
+
+.project-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(90deg, #2E8FCC 0%, #10B981 50%, #F59E0B 100%);
+}
+
+.project-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 20px 60px rgba(46, 143, 204, 0.15);
+  background: var(--glass-hover);
+}
+
+/* ==== HEADER DE PROYECTO ==== */
+.project-card-header {
+  padding: 1.5rem 1.5rem 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.project-type-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.8rem;
+  background: rgba(46, 143, 204, 0.1);
+  border: 1px solid rgba(46, 143, 204, 0.2);
+  border-radius: 20px;
+  color: #2E8FCC;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.project-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.project-status.active .status-dot {
+  width: 10px;
+  height: 10px;
+  background: #10B981;
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+  animation: statusPulse 2s infinite;
+}
+
+@keyframes statusPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+.status-text {
+  font-size: 0.8rem;
+  color: #10B981;
+  font-weight: 500;
+}
+
+/* ==== BODY DE PROYECTO ==== */
+.project-card-body {
+  padding: 0 1.5rem 1.5rem;
+}
+
+.project-main-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.project-icon {
+  width: 50px;
+  height: 50px;
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+  box-shadow: var(--shadow-sm);
+}
+
+.project-title-section {
+  flex: 1;
+}
+
+.project-name {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 0.5rem 0;
+  line-height: 1.3;
+}
+
+.project-location {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.project-location i {
+  color: #EF4444;
+  font-size: 0.8rem;
+}
+
+.project-details {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.detail-row {
+  display: flex;
+  width: 100%;
+}
+
+.detail-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+}
+
+.detail-icon {
+  width: 35px;
+  height: 35px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  color: white;
+  flex-shrink: 0;
+}
+
+.detail-icon.document {
+  background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
+}
+
+.detail-icon.authority {
+  background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+}
+
+.detail-icon.contract {
+  background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+}
+
+.detail-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  flex: 1;
+}
+
+.detail-label {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.detail-value {
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+/* ==== FOOTER DE PROYECTO ==== */
+.project-card-footer {
+  padding: 1.2rem 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.project-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.action-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition);
+  position: relative;
+  font-size: 0.85rem;
+}
+
+.action-btn.view {
+  background: rgba(59, 130, 246, 0.1);
+  color: #3B82F6;
+}
+
+.action-btn.view:hover {
+  background: rgba(59, 130, 246, 0.2);
+  transform: scale(1.05);
+}
+
+.action-btn.edit {
+  background: rgba(245, 158, 11, 0.1);
+  color: #F59E0B;
+}
+
+.action-btn.edit:hover {
+  background: rgba(245, 158, 11, 0.2);
+  transform: scale(1.05);
+}
+
+.action-btn.delete {
+  background: rgba(239, 68, 68, 0.1);
+  color: #EF4444;
+}
+
+.action-btn.delete:hover {
+  background: rgba(239, 68, 68, 0.2);
+  transform: scale(1.05);
+}
+
+.action-btn.location {
+  background: rgba(239, 68, 68, 0.1);
+  color: #EF4444;
+}
+
+.action-btn.location:hover {
+  background: rgba(239, 68, 68, 0.2);
+  transform: scale(1.05);
+}
+
+.action-btn.more {
+  background: rgba(107, 114, 128, 0.1);
+  color: #6B7280;
+  margin-left: auto;
+}
+
+.action-btn.more:hover {
+  background: rgba(107, 114, 128, 0.2);
+}
+
+/* ==== ESTADO VACÍO ==== */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+  animation: fadeInUp 0.6s ease;
+}
+
+.empty-icon {
+  width: 80px;
+  height: 80px;
+  background: var(--secondary-gradient);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+  box-shadow: var(--shadow-md);
+}
+
+.empty-icon i {
+  font-size: 2rem;
+  color: white;
+}
+
+.empty-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.empty-subtitle {
+  color: var(--text-secondary);
+  margin-bottom: 2rem;
+  max-width: 400px;
+  line-height: 1.5;
+}
+
+.btn-empty-action {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 2rem;
+  background: var(--primary-gradient);
+  color: white;
+  border: none;
+  border-radius: 25px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+  box-shadow: var(--shadow-primary);
+}
+
+.btn-empty-action:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+}
+
+/* ==== PAGINACIÓN ==== */
+.pagination-container {
+  margin-top: 3rem;
+  animation: fadeInUp 0.6s ease 0.3s both;
+}
+
+.pagination-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--glass-bg);
+  backdrop-filter: blur(15px);
+  border-radius: 15px;
+  padding: 1.5rem 2rem;
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-sm);
+}
+
+.pagination-info {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.pagination-list {
+  display: flex;
+  gap: 0.5rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.pagination-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition);
+  font-weight: 500;
+}
+
+.pagination-btn:hover {
+  background: rgba(46, 143, 204, 0.1);
+  color: var(--logo-blue);
+}
+
+.pagination-btn.active {
+  background: var(--primary-gradient);
+  color: white;
+  box-shadow: var(--shadow-sm);
+}
+
+.pagination-btn.prev,
+.pagination-btn.next {
+  width: 45px;
+}
+
+/* ==== MODAL PERSONALIZADO ==== */
+.glass-modal .modal-content {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: 15px;
+  box-shadow: var(--shadow-lg);
+}
+
+.glass-modal .modal-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 1.5rem;
+}
+
+.glass-modal .modal-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.glass-modal .modal-title i {
+  color: #EF4444;
+}
+
+.location-display {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 2rem;
+  background: rgba(239, 68, 68, 0.05);
+  border-radius: 10px;
+  border: 1px solid rgba(239, 68, 68, 0.1);
+}
+
+.location-icon {
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+  border-radius: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.location-text {
+  font-size: 1.1rem;
+  color: var(--text-primary);
+  line-height: 1.5;
+}
+
+/* ==== ANIMACIONES PERSONALIZADAS ==== */
+.project-card:nth-child(1) { animation-delay: 0.1s; }
+.project-card:nth-child(2) { animation-delay: 0.2s; }
+.project-card:nth-child(3) { animation-delay: 0.3s; }
+.project-card:nth-child(4) { animation-delay: 0.4s; }
+
+/* ==== RESPONSIVE ==== */
+@media (max-width: 768px) {
+  .projects-header-content {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .projects-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .search-container,
+  .filter-container {
+    width: 100%;
+    max-width: none;
+  }
+  
+  .projects-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .projects-title {
+    font-size: 2rem;
+  }
+  
+  .pagination-nav {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .pagination-info {
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .projects-header-section {
+    padding: 1.5rem;
+  }
+  
+  .project-card {
+    margin: 0 -0.5rem;
+  }
+  
+  .projects-title {
+    font-size: 1.8rem;
+  }
+}
+</style>
+
+<script>
+// Funcionalidad del buscador y filtro para proyectos - Versión mejorada
+function initProyectoSearch() {
+  const searchInput = document.getElementById('proyectoSearch');
+  const tipoFilter = document.getElementById('tipoProyectoFilter');
+  const projectCards = document.querySelectorAll('.project-card[data-proyecto-name]');
+  
+  function filterProjects() {
+    const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
+    const selectedTipo = tipoFilter ? tipoFilter.value.toLowerCase() : '';
+    
+    let visibleCount = 0;
+    
+    projectCards.forEach(card => {
+      const projectName = card.getAttribute('data-proyecto-name');
+      const projectTipo = card.getAttribute('data-tipo-proyecto');
+      const projectUbicacion = card.getAttribute('data-proyecto-ubicacion');
+      const projectAutoridad = card.getAttribute('data-proyecto-autoridad');
+      
+      const matchesSearch = searchTerm === '' || 
+                           projectName.includes(searchTerm) || 
+                           projectUbicacion.includes(searchTerm) ||
+                           projectAutoridad.includes(searchTerm);
+      const matchesTipo = selectedTipo === '' || projectTipo.includes(selectedTipo);
+      
+      if (matchesSearch && matchesTipo) {
+        card.style.display = 'block';
+        card.style.animation = 'fadeInUp 0.3s ease';
+        visibleCount++;
+      } else {
+        card.style.display = 'none';
+      }
+    });
+    
+    // Mostrar mensaje si no hay resultados
+    let noResultsMsg = document.querySelector('.no-results-message');
+    if (visibleCount === 0 && (searchTerm !== '' || selectedTipo !== '')) {
+      if (!noResultsMsg) {
+        noResultsMsg = document.createElement('div');
+        noResultsMsg.className = 'no-results-message empty-state';
+        noResultsMsg.innerHTML = `
+          <div class="empty-icon">
+            <i class="fas fa-search"></i>
+          </div>
+          <h3 class="empty-title">No se encontraron proyectos</h3>
+          <p class="empty-subtitle">Intenta con otros filtros o términos de búsqueda</p>
+        `;
+        document.querySelector('.projects-grid-container').appendChild(noResultsMsg);
+      }
+      noResultsMsg.style.display = 'flex';
+    } else if (noResultsMsg) {
+      noResultsMsg.style.display = 'none';
+    }
+  }
+  
+  if (searchInput) {
+    // Limpiar event listeners previos para evitar duplicados
+    searchInput.removeEventListener('input', filterProjects);
+    searchInput.addEventListener('input', filterProjects);
+  }
+  
+  if (tipoFilter) {
+    tipoFilter.removeEventListener('change', filterProjects);
+    tipoFilter.addEventListener('change', filterProjects);
+  }
+  
+  // Filtrar inicialmente
+  filterProjects();
+}
+
+// Inicializar la búsqueda cuando el contenido se carga
+initProyectoSearch();
+
+// También inicializar cuando HTMX carga nuevo contenido
+document.body.addEventListener('htmx:afterSwap', function(evt) {
+  if (evt.detail.target.id === 'content') {
+    // Pequeña pausa para permitir que el DOM se actualice completamente
+    setTimeout(initProyectoSearch, 50);
+  }
+});
+
+// Modal de ubicación
+function showLocationModal(location) {
+  document.getElementById('locationText').textContent = location;
+  const modal = new bootstrap.Modal(document.getElementById('locationModal'));
+  modal.show();
+}
+
+// Animaciones escalonadas para las tarjetas (mejorada para HTMX)
+function initCardAnimations() {
+  const cards = document.querySelectorAll('.project-card');
+  cards.forEach((card, index) => {
+    card.style.animationDelay = `${index * 0.1}s`;
+  });
+}
+
+// Efecto de hover mejorado (mejorada para HTMX)
+function initCardHover() {
+  document.querySelectorAll('.project-card').forEach(card => {
+    card.addEventListener('mouseenter', function() {
+      this.style.transform = 'translateY(-10px) scale(1.02)';
+    });
+    
+    card.addEventListener('mouseleave', function() {
+      this.style.transform = 'translateY(0) scale(1)';
+    });
+  });
+}
+
+// Inicializar animaciones y efectos
+document.addEventListener('DOMContentLoaded', function() {
+  initProyectoSearch();
+  initCardAnimations();
+  initCardHover();
+});
+
+// Reinicializar cuando HTMX carga contenido
+document.body.addEventListener('htmx:afterSwap', function(evt) {
+  if (evt.detail.target.id === 'content') {
+    setTimeout(function() {
+      initProyectoSearch();
+      initCardAnimations();
+      initCardHover();
+    }, 50);
+  }
+});
+
+// Limpiar filtros
+function clearFilters() {
+  const searchInput = document.getElementById('proyectoSearch');
+  const tipoFilter = document.getElementById('tipoProyectoFilter');
+  
+  if (searchInput) searchInput.value = '';
+  if (tipoFilter) tipoFilter.value = '';
+  
+  // Disparar eventos para actualizar la vista
+  if (searchInput) searchInput.dispatchEvent(new Event('input'));
+  if (tipoFilter) tipoFilter.dispatchEvent(new Event('change'));
+}
+
+// Resaltar términos de búsqueda
+function highlightSearchTerms(searchTerm) {
+  if (!searchTerm) return;
+  
+  const cards = document.querySelectorAll('.project-card');
+  
+  cards.forEach(card => {
+    const projectNameEl = card.querySelector('.project-name');
+    const projectLocationEl = card.querySelector('.project-location span');
+    const projectAuthorityEl = card.querySelector('.detail-content .detail-value');
+    
+    if (projectNameEl) {
+      const originalText = projectNameEl.getAttribute('data-original-text') || projectNameEl.textContent;
+      if (!projectNameEl.getAttribute('data-original-text')) {
+        projectNameEl.setAttribute('data-original-text', originalText);
+      }
+      
+      if (searchTerm.length > 2) {
+        const regex = new RegExp(`(${searchTerm})`, 'gi');
+        const highlightedText = originalText.replace(regex, '<mark class="search-highlight">$1</mark>');
+        projectNameEl.innerHTML = highlightedText;
+      }
+    }
+  });
+}
+</script>
+
+<style>
+/* Estilos para resaltar búsqueda */
+.search-highlight {
+  background: rgba(46, 143, 204, 0.3);
+  padding: 0.1rem 0.3rem;
+  border-radius: 4px;
+  font-weight: 600;
+  color: var(--logo-blue);
+}
+
+/* Animación fadeInUp */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Animación pulse */
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+</style>
+{% endblock %}

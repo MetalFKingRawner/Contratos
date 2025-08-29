@@ -1,0 +1,723 @@
+<div class="container-fluid py-4">
+  <!-- Header con información principal del proyecto -->
+  <div class="project-detail-header">
+    <div class="project-header-content">
+      <div class="project-avatar-section">
+        <div class="project-main-avatar">
+          <span class="avatar-initials-large">{{ proyecto.nombre|slice:":2"|upper }}</span>
+        </div>
+        <div class="project-status active">
+          <div class="status-dot"></div>
+          <span class="status-label">Activo</span>
+        </div>
+      </div>
+      
+      <div class="project-title-section">
+        <h1 class="project-detail-title">{{ proyecto.nombre }}</h1>
+        <p class="project-detail-subtitle">{{ proyecto.tipo_contrato }}</p>
+        
+        <div class="project-quick-actions">
+          <div class="quick-action-btn location">
+            <i class="fas fa-map-marker-alt"></i>
+            <span>{{ proyecto.ubicacion }}</span>
+          </div>
+          <div class="quick-action-btn authority">
+            <i class="fas fa-building"></i>
+            <span>{{ proyecto.autoridad }}</span>
+          </div>
+          <div class="quick-action-btn date-info">
+            <i class="fas fa-calendar-alt"></i>
+            <span>Creado hace {{ proyecto.creado_en|timesince }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Información detallada del proyecto -->
+  <div class="project-info-grid">
+    <!-- Información Principal del Proyecto -->
+    <div class="info-card project-data full-width">
+      <div class="info-card-header">
+        <div class="info-card-icon project">
+          <i class="fas fa-project-diagram"></i>
+        </div>
+        <h3 class="info-card-title">Información del Proyecto</h3>
+        <span class="project-type-badge">{{ proyecto.tipo_contrato }}</span>
+      </div>
+      
+      <div class="info-card-body">
+        <div class="info-grid expanded">
+          <div class="info-item">
+            <div class="info-icon">
+              <i class="fas fa-signature"></i>
+            </div>
+            <div class="info-content">
+              <span class="info-label">Nombre</span>
+              <span class="info-value">{{ proyecto.nombre }}</span>
+            </div>
+          </div>
+          <div class="info-item">
+            <div class="info-icon">
+              <i class="fas fa-file-contract"></i>
+            </div>
+            <div class="info-content">
+              <span class="info-label">Tipo de Contrato</span>
+              <span class="info-value">{{ proyecto.tipo_contrato }}</span>
+            </div>
+          </div>
+          <div class="info-item">
+            <div class="info-icon">
+              <i class="fas fa-map-marked-alt"></i>
+            </div>
+            <div class="info-content">
+              <span class="info-label">Ubicación</span>
+              <span class="info-value">{{ proyecto.ubicacion }}</span>
+            </div>
+          </div>
+          <div class="info-item">
+            <div class="info-icon">
+              <i class="fas fa-landmark"></i>
+            </div>
+            <div class="info-content">
+              <span class="info-label">Autoridad</span>
+              <span class="info-value">{{ proyecto.autoridad }}</span>
+            </div>
+          </div>
+          <div class="info-item">
+            <div class="info-icon">
+              <i class="fas fa-file-export"></i>
+            </div>
+            <div class="info-content">
+              <span class="info-label">Fecha Emisión Documento</span>
+              <span class="info-value">{{ proyecto.fecha_emision_documento }}</span>
+            </div>
+          </div>
+          <div class="info-item">
+            <div class="info-icon">
+              <i class="fas fa-handshake"></i>
+            </div>
+            <div class="info-content">
+              <span class="info-label">Fecha Emisión Contrato</span>
+              <span class="info-value">{{ proyecto.fecha_emision_contrato }}</span>
+            </div>
+          </div>
+          <!-- Campos adicionales para llenar el espacio -->
+          <div class="info-item">
+            <div class="info-icon">
+              <i class="fas fa-code-branch"></i>
+            </div>
+            <div class="info-content">
+              <span class="info-label">Estado</span>
+              <span class="info-value">Activo</span>
+            </div>
+          </div>
+          <div class="info-item">
+            <div class="info-icon">
+              <i class="fas fa-tasks"></i>
+            </div>
+            <div class="info-content">
+              <span class="info-label">Progreso</span>
+              <span class="info-value">75% Completado</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Botones de acción -->
+  <div class="project-actions-section">
+    <div class="actions-container">
+      <button class="action-btn primary" 
+              hx-get="{% url 'dashboard:proyecto_update' proyecto.id %}"
+              hx-target="#content"
+              hx-swap="innerHTML">
+        <i class="fas fa-edit"></i>
+        <span>Editar Proyecto</span>
+      </button>
+      
+      <button class="action-btn secondary"
+              hx-get="{% url 'dashboard:proyecto_list' %}"
+              hx-target="#content"
+              hx-swap="innerHTML">
+        <i class="fas fa-arrow-left"></i>
+        <span>Volver a Lista</span>
+      </button>
+      
+      <button class="action-btn danger"
+              hx-get="{% url 'dashboard:proyecto_delete' proyecto.id %}"
+              hx-target="#content"
+              hx-swap="innerHTML">
+        <i class="fas fa-trash"></i>
+        <span>Eliminar Proyecto</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<style>
+/* Variables CSS mejoradas */
+:root {
+  --glass-bg: rgba(255, 255, 255, 0.08);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --primary-gradient: linear-gradient(135deg, #2E8FCC 0%, #87CEEB 100%);
+  --secondary-gradient: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  --accent-gradient: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+  --danger-gradient: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+  --text-primary: #1F2937;
+  --text-secondary: #6B7280;
+  --logo-blue: #2E8FCC;
+  --border-radius: 16px;
+  --shadow-sm: 0 4px 15px rgba(46, 143, 204, 0.08);
+  --shadow-md: 0 10px 25px rgba(46, 143, 204, 0.1), 0 4px 10px rgba(135, 206, 235, 0.05);
+  --shadow-primary: 0 8px 25px rgba(46, 143, 204, 0.25);
+  --shadow-hover: 0 15px 35px rgba(46, 143, 204, 0.35);
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ==== HEADER DEL PROYECTO ==== */
+.project-detail-header {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  border-radius: var(--border-radius);
+  padding: 2.5rem;
+  margin-bottom: 2rem;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--glass-border);
+  position: relative;
+  overflow: hidden;
+  animation: fadeInUp 0.6s ease;
+}
+
+.project-detail-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at 30% 20%, rgba(46, 143, 204, 0.08) 0%, transparent 60%);pointer-events: none;
+}
+
+.project-header-content {
+  display: flex;
+  gap: 2rem;
+  align-items: flex-start;
+  position: relative;
+}
+
+.project-avatar-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.project-main-avatar {
+  width: 100px;
+  height: 100px;
+  background: var(--primary-gradient);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-primary);
+  animation: pulse 3s infinite;
+  position: relative;
+  overflow: hidden;
+}
+
+.project-main-avatar::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transform: rotate(45deg);
+  animation: shimmer 3s infinite;
+}
+
+.avatar-initials-large {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: white;
+  text-transform: uppercase;
+  z-index: 1;
+}
+
+.project-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(16, 185, 129, 0.1);
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  backdrop-filter: blur(10px);
+}
+
+.project-status .status-dot {
+  width: 8px;
+  height: 8px;
+  background: #10B981;
+  border-radius: 50%;
+  animation: statusPulse 2s infinite;
+}
+
+.status-label {
+  font-size: 0.85rem;
+  color: #10B981;
+  font-weight: 500;
+}
+
+.project-title-section {
+  flex: 1;
+}
+
+.project-detail-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0 0 0.5rem 0;
+  line-height: 1.2;
+}
+
+.project-detail-subtitle {
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+  margin: 0 0 2rem 0;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  background: rgba(245, 158, 11, 0.1);
+  border-radius: 8px;
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  display: inline-block;
+}
+
+.project-quick-actions {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.quick-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  font-weight: 500;
+  backdrop-filter: blur(10px);
+  border: 1px solid transparent;
+  transition: var(--transition);
+}
+
+.quick-action-btn.location {
+  background: rgba(245, 158, 11, 0.1);
+  color: #F59E0B;
+  border-color: rgba(245, 158, 11, 0.2);
+}
+
+.quick-action-btn.location:hover {
+  background: rgba(245, 158, 11, 0.2);
+  transform: translateY(-2px);
+}
+
+.quick-action-btn.authority {
+  background: rgba(139, 69, 19, 0.1);
+  color: #8B4513;
+  border-color: rgba(139, 69, 19, 0.2);
+}
+
+.quick-action-btn.authority:hover {
+  background: rgba(139, 69, 19, 0.2);
+  transform: translateY(-2px);
+}
+
+.quick-action-btn.date-info {
+  background: rgba(46, 143, 204, 0.1);
+  color: #2E8FCC;
+  border-color: rgba(46, 143, 204, 0.2);
+}
+
+.quick-action-btn.date-info:hover {
+  background: rgba(46, 143, 204, 0.2);
+  transform: translateY(-2px);
+}
+
+/* ==== GRID DE INFORMACIÓN ==== */
+.project-info-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.info-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(15px);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  animation: fadeInUp 0.6s ease;
+  animation-fill-mode: both;
+  transition: var(--transition);
+}
+
+.info-card.full-width {
+  width: 100%;
+}
+
+.info-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-md);
+}
+
+.info-card.project-data {
+  animation-delay: 0.1s;
+}
+
+.info-card-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.02);
+  position: relative;
+}
+
+.info-card-icon {
+  width: 45px;
+  height: 45px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.info-card-icon::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transform: rotate(45deg);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.info-card:hover .info-card-icon::before {
+  opacity: 1;
+  animation: shimmer 1s ease-in-out;
+}
+
+.info-card-icon.project {
+  background: var(--primary-gradient);
+}
+
+.info-card-title {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+  flex: 1;
+}
+
+.project-type-badge {
+  background: var(--primary-gradient);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
+}
+
+.info-card-body {
+  padding: 1.5rem;
+}
+
+/* ==== GRID DE DATOS DEL PROYECTO - EXPANDIDO ==== */
+.info-grid.expanded {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+
+.info-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 2px;
+  background: var(--primary-gradient);
+  transition: left 0.3s ease;
+}
+
+.info-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.info-item:hover::before {
+  left: 0;
+}
+
+.info-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(46, 143, 204, 0.1);
+  color: var(--logo-blue);
+  flex-shrink: 0;
+  font-size: 1.1rem;
+}
+
+.info-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.info-label {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.info-value {
+  font-size: 1.1rem;
+  color: var(--text-primary);
+  font-weight: 600;
+  word-break: break-word;
+}
+
+/* ==== SECCIÓN DE ACCIONES ==== */
+.project-actions-section {
+  animation: fadeInUp 0.6s ease 0.3s both;
+  margin-top: 2rem;
+}
+
+.actions-container {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 2rem;
+  border: none;
+  border-radius: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+  text-decoration: none;
+  font-size: 0.95rem;
+  backdrop-filter: blur(10px);
+  border: 1px solid transparent;
+  position: relative;
+  overflow: hidden;
+}
+
+.action-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.5s;
+}
+
+.action-btn:hover::before {
+  left: 100%;
+}
+
+.action-btn.primary {
+  background: var(--primary-gradient);
+  color: white;
+  box-shadow: var(--shadow-primary);
+}
+
+.action-btn.primary:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-hover);
+}
+
+.action-btn.secondary {
+  background: rgba(108, 117, 125, 0.1);
+  color: #6C757D;
+  border-color: rgba(108, 117, 125, 0.2);
+}
+
+.action-btn.secondary:hover {
+  background: rgba(108, 117, 125, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(108, 117, 125, 0.15);
+}
+
+.action-btn.danger {
+  background: rgba(239, 68, 68, 0.1);
+  color: #EF4444;
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+.action-btn.danger:hover {
+  background: rgba(239, 68, 68, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(239, 68, 68, 0.15);
+}
+
+/* ==== RESPONSIVE ==== */
+@media (max-width: 1024px) {
+  .project-info-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .project-header-content {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  
+  .project-avatar-section {
+    align-items: center;
+  }
+  
+  .info-grid.expanded {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .project-detail-header {
+    padding: 2rem;
+  }
+  
+  .project-detail-title {
+    font-size: 2rem;
+  }
+  
+  .info-grid.expanded {
+    grid-template-columns: 1fr;
+  }
+  
+  .actions-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .quick-action-btn {
+    justify-content: center;
+  }
+  
+  .project-quick-actions {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .project-detail-header {
+    padding: 1.5rem;
+  }
+  
+  .project-main-avatar {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .avatar-initials-large {
+    font-size: 2rem;
+  }
+  
+  .project-detail-title {
+    font-size: 1.8rem;
+  }
+  
+  .project-quick-actions {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .info-card-header,
+  .info-card-body {
+    padding: 1rem;
+  }
+  
+  .info-item {
+    padding: 1rem;
+  }
+  
+  .action-btn {
+    justify-content: center;
+    padding: 0.875rem 1.5rem;
+  }
+}
+
+/* ==== ANIMACIONES ==== */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+@keyframes statusPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.1); }
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%) rotate(45deg); }
+  100% { transform: translateX(100%) rotate(45deg); }
+}
+</style>

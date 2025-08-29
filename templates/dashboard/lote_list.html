@@ -1,0 +1,104 @@
+{% extends "dashboard/base.html" %}
+{% block content %}
+<style>
+  .lotes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.25rem;
+  margin-top: 1rem;
+}
+
+.lote-card {
+  background: #fff;
+  border-radius: 14px;
+  padding: 1rem;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+
+.lote-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 14px 30px rgba(0,0,0,0.08);
+}
+
+.lote-inactivo {
+  opacity: 0.75;
+  border: 1px dashed #999;
+}
+
+.lote-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.lote-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: .5rem;
+  margin-top: .5rem;
+}
+
+</style>
+{% include "dashboard/partials/lote_list_partial.html" %}
+<div class="download-container">
+  <h2 class="download-title">Lotes</h2>
+
+  <!-- Barra de filtro -->
+  <form id="filter-form" method="get" hx-get="{% url 'dashboard:lote_list' %}" hx-target="#content" hx-swap="innerHTML">
+    <label for="proyecto" class="form-label">Filtrar por proyecto:</label>
+    <select name="proyecto" id="proyecto" class="form-select" onchange="this.form.submit()">
+      <option value="">Todos</option>
+      {% for p in proyectos %}
+        <option value="{{ p.id }}" {% if proyecto_id|default:'' == p.id|stringformat:'s' %}selected{% endif %}>
+          {{ p.nombre }}
+        </option>
+      {% endfor %}
+    </select>
+  </form>
+
+  <!-- Grid de lotes -->
+  <div class="lotes-grid">
+    {% for lote in lotes %}
+      <div class="lote-card {% if not lote.activo %}lote-inactivo{% endif %}">
+        <div class="lote-header">
+          <h4>Lote {{ lote.numero }}</h4>
+          <span class="badge {% if lote.activo %}bg-success{% else %}bg-secondary{% endif %}">
+            {% if lote.activo %}Activo{% else %}Inactivo{% endif %}
+          </span>
+        </div>
+        <p><strong>Proyecto:</strong> {{ lote.proyecto.nombre }}</p>
+        <p><strong>Superficie:</strong> {{ lote.superficie }} m²</p>
+        <p><strong>Régimen:</strong> {{ lote.regimen }}</p>
+        <p><strong>Valor de venta:</strong> ${{ lote.valor_venta|floatformat:2 }}</p>
+        <div class="lote-footer">
+          <a hx-get="{% url 'dashboard:lote_detail' lote.id %}" hx-target="#content" hx-swap="innerHTML" class="btn btn-sm">Ver</a>
+          <a hx-get="{% url 'dashboard:lote_edit' lote.id %}" hx-target="#content" hx-swap="innerHTML" class="btn btn-sm">Editar</a>
+          <a hx-get="{% url 'dashboard:lote_delete' lote.id %}" hx-target="#content" hx-swap="innerHTML" class="btn btn-sm btn-danger">Eliminar</a>
+        </div>
+      </div>
+    {% empty %}
+      <p>No hay lotes para este proyecto.</p>
+    {% endfor %}
+  </div>
+
+  <!-- Paginación -->
+  {% if page_obj %}
+  <nav>
+    <ul class="pagination">
+      {% if page_obj.has_previous %}
+        <li class="page-item"><a class="page-link" hx-get="?page={{ page_obj.previous_page_number }}&proyecto={{ proyecto_id }}" hx-target="#content" hx-swap="innerHTML">«</a></li>
+      {% endif %}
+      {% for n in page_obj.paginator.page_range %}
+        <li class="page-item {% if n == page_obj.number %}active{% endif %}">
+          <a class="page-link" hx-get="?page={{ n }}&proyecto={{ proyecto_id }}" hx-target="#content" hx-swap="innerHTML">{{ n }}</a>
+        </li>
+      {% endfor %}
+      {% if page_obj.has_next %}
+        <li class="page-item"><a class="page-link" hx-get="?page={{ page_obj.next_page_number }}&proyecto={{ proyecto_id }}" hx-target="#content" hx-swap="innerHTML">»</a></li>
+      {% endif %}
+    </ul>
+  </nav>
+  {% endif %}
+</div>
+{% endblock %}

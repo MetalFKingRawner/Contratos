@@ -1,0 +1,22 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Proyectos – Dashboard{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h2>Proyectos</h2>
+  <div class="actions">
+    <button hx-get="{% url 'dashboard:proyecto_create' %}" hx-target="#side-panel" hx-swap="innerHTML" class="btn btn-primary">Nuevo Proyecto</button>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-8">
+    {% include "dashboard/partials/proyecto_list_partial.html" %}
+  </div>
+
+  <div class="col-4">
+    <div id="side-panel" class="side-panel">
+      <p class="text-muted">Selecciona un proyecto para ver detalles o editar aquí.</p>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,1018 @@
+<div class="container-fluid py-4">
+  <!-- Header con información principal del lote -->
+  <div class="tramite-detail-header">
+    <div class="tramite-header-content">
+      <div class="tramite-avatar-section">
+        <div class="tramite-main-avatar">
+          <span class="avatar-initials-large">L{{ object.identificador|slice:":2"|upper }}</span>
+        </div>
+        <div class="tramite-status {% if object.activo %}active{% else %}inactive{% endif %}">
+          <div class="status-dot"></div>
+          <span class="status-label">{% if object.activo %}Activo{% else %}Inactivo{% endif %}</span>
+        </div>
+      </div>
+      
+      <div class="tramite-title-section">
+        <h1 class="tramite-detail-title">Lote {{ object.identificador }}</h1>
+        <p class="tramite-detail-subtitle">{{ object.proyecto.nombre }}</p>
+        
+        <div class="tramite-quick-actions">
+          <div class="quick-action-btn client">
+            <i class="fas fa-building"></i>
+            <span>{{ object.proyecto.nombre }}</span>
+          </div>
+          <div class="quick-action-btn date">
+            <i class="fas fa-th-large"></i>
+            <span>{% if object.manzana %}Manzana {{ object.manzana }}{% else %}Sin manzana{% endif %}</span>
+          </div>
+          <div class="quick-action-btn price">
+            <i class="fas fa-compass"></i>
+            <span>Colindancias definidas</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Información detallada del lote -->
+  <div class="tramite-info-grid">
+    <!-- Información General -->
+    <div class="info-card general-data">
+      <div class="info-card-header">
+        <div class="info-card-icon general">
+          <i class="fas fa-info-circle"></i>
+        </div>
+        <h3 class="info-card-title">Información General</h3>
+      </div>
+      
+      <div class="info-card-body">
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-label">Identificador</span>
+            <span class="info-value">{{ object.identificador }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Estado</span>
+            <span class="info-value status-badge {% if object.activo %}active{% else %}inactive{% endif %}">
+              {% if object.activo %}Activo{% else %}Inactivo{% endif %}
+            </span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Manzana</span>
+            <span class="info-value">{% if object.manzana %}{{ object.manzana }}{% else %}No especificada{% endif %}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Información del Proyecto -->
+    <div class="info-card client-data">
+      <div class="info-card-header">
+        <div class="info-card-icon client">
+          <i class="fas fa-building"></i>
+        </div>
+        <h3 class="info-card-title">Información del Proyecto</h3>
+      </div>
+      
+      <div class="info-card-body">
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-label">Nombre del Proyecto</span>
+            <span class="info-value">{{ object.proyecto.nombre }}</span>
+          </div>
+          {% if object.proyecto.descripcion %}
+          <div class="info-item">
+            <span class="info-label">Descripción</span>
+            <span class="info-value">{{ object.proyecto.descripcion }}</span>
+          </div>
+          {% endif %}
+          {% if object.proyecto.ubicacion %}
+          <div class="info-item">
+            <span class="info-label">Ubicación</span>
+            <span class="info-value">{{ object.proyecto.ubicacion }}</span>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Colindancias -->
+    <div class="info-card financing-data">
+      <div class="info-card-header">
+        <div class="info-card-icon financing">
+          <i class="fas fa-compass"></i>
+        </div>
+        <h3 class="info-card-title">Colindancias</h3>
+      </div>
+      
+      <div class="info-card-body">
+        <div class="colindancias-detail">
+          <div class="colindancia-item">
+            <div class="colindancia-icon north">
+              <i class="fas fa-arrow-up"></i>
+            </div>
+            <div class="colindancia-content">
+              <span class="colindancia-label">Norte</span>
+              <span class="colindancia-value">{{ object.norte }}</span>
+            </div>
+          </div>
+          
+          <div class="colindancia-item">
+            <div class="colindancia-icon south">
+              <i class="fas fa-arrow-down"></i>
+            </div>
+            <div class="colindancia-content">
+              <span class="colindancia-label">Sur</span>
+              <span class="colindancia-value">{{ object.sur }}</span>
+            </div>
+          </div>
+          
+          <div class="colindancia-item">
+            <div class="colindancia-icon east">
+              <i class="fas fa-arrow-right"></i>
+            </div>
+            <div class="colindancia-content">
+              <span class="colindancia-label">Este</span>
+              <span class="colindancia-value">{{ object.este }}</span>
+            </div>
+          </div>
+          
+          <div class="colindancia-item">
+            <div class="colindancia-icon west">
+              <i class="fas fa-arrow-left"></i>
+            </div>
+            <div class="colindancia-content">
+              <span class="colindancia-label">Oeste</span>
+              <span class="colindancia-value">{{ object.oeste }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Timeline del Lote -->
+    <div class="info-card timeline-data">
+      <div class="info-card-header">
+        <div class="info-card-icon timeline">
+          <i class="fas fa-history"></i>
+        </div>
+        <h3 class="info-card-title">Historial del Lote</h3>
+      </div>
+      
+      <div class="info-card-body">
+        <div class="timeline-list">
+          <div class="timeline-item">
+            <div class="timeline-icon">
+              <i class="fas fa-plus-circle"></i>
+            </div>
+            <div class="timeline-content">
+              <span class="timeline-title">Lote Registrado</span>
+              <span class="timeline-date">En proyecto {{ object.proyecto.nombre }}</span>
+            </div>
+            <div class="timeline-status completed">
+              <i class="fas fa-check"></i>
+            </div>
+          </div>
+          
+          <div class="timeline-item">
+            <div class="timeline-icon">
+              <i class="fas fa-compass"></i>
+            </div>
+            <div class="timeline-content">
+              <span class="timeline-title">Colindancias Definidas</span>
+              <span class="timeline-date">Norte, Sur, Este y Oeste</span>
+            </div>
+            <div class="timeline-status completed">
+              <i class="fas fa-check"></i>
+            </div>
+          </div>
+          
+          {% if object.manzana %}
+          <div class="timeline-item">
+            <div class="timeline-icon">
+              <i class="fas fa-th-large"></i>
+            </div>
+            <div class="timeline-content">
+              <span class="timeline-title">Asignado a Manzana</span>
+              <span class="timeline-date">Manzana {{ object.manzana }}</span>
+            </div>
+            <div class="timeline-status completed">
+              <i class="fas fa-check"></i>
+            </div>
+          </div>
+          {% endif %}
+          
+          <div class="timeline-item">
+            <div class="timeline-icon">
+              <i class="fas {% if object.activo %}fa-check-circle{% else %}fa-pause-circle{% endif %}"></i>
+            </div>
+            <div class="timeline-content">
+              <span class="timeline-title">Estado Actual</span>
+              <span class="timeline-date">{% if object.activo %}Lote activo y disponible{% else %}Lote inactivo{% endif %}</span>
+            </div>
+            <div class="timeline-status {% if object.activo %}completed{% else %}inactive{% endif %}">
+              <i class="fas {% if object.activo %}fa-check{% else %}fa-pause{% endif %}"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Detalles adicionales del lote -->
+  <div class="info-card documents-data">
+    <div class="info-card-header">
+      <div class="info-card-icon documents">
+        <i class="fas fa-file-alt"></i>
+      </div>
+      <h3 class="info-card-title">Detalles del Lote</h3>
+    </div>
+    
+    <div class="info-card-body">
+      <div class="documents-grid">
+        <div class="document-section">
+          <h4 class="section-title">Información de Identificación</h4>
+          <div class="document-content">
+            <p><strong>Identificador:</strong> {{ object.identificador }}</p>
+            <p><strong>Proyecto:</strong> {{ object.proyecto.nombre }}</p>
+            {% if object.manzana %}
+            <p><strong>Manzana:</strong> {{ object.manzana }}</p>
+            {% endif %}
+            <p><strong>Estado:</strong> {% if object.activo %}Activo{% else %}Inactivo{% endif %}</p>
+          </div>
+        </div>
+        
+        <div class="document-section">
+          <h4 class="section-title">Medidas y Colindancias</h4>
+          <div class="document-content">
+            <p><strong>Al Norte:</strong> {{ object.norte }}</p>
+            <p><strong>Al Sur:</strong> {{ object.sur }}</p>
+            <p><strong>Al Este:</strong> {{ object.este }}</p>
+            <p><strong>Al Oeste:</strong> {{ object.oeste }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Botones de acción -->
+  <div class="tramite-actions-section">
+    <div class="actions-container">
+      <button class="action-btn primary" 
+              hx-get="{% url 'dashboard:lote_edit' object.id %}"
+              hx-target="#content"
+              hx-swap="innerHTML">
+        <i class="fas fa-edit"></i>
+        <span>Editar Lote</span>
+      </button>
+      
+      <button class="action-btn secondary"
+              hx-get="{% url 'dashboard:lote_list' %}"
+              hx-target="#content"
+              hx-swap="innerHTML">
+        <i class="fas fa-arrow-left"></i>
+        <span>Volver a lista</span>
+      </button>
+      
+      <button class="action-btn success"
+              title="Generar Reporte">
+        <i class="fas fa-file-pdf"></i>
+        <span>Generar Reporte</span>
+      </button>
+      
+      <button class="action-btn danger"
+              hx-get="{% url 'dashboard:lote_delete' object.id %}"
+              hx-target="#content"
+              hx-swap="innerHTML">
+        <i class="fas fa-trash"></i>
+        <span>Eliminar Lote</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<style>
+/* Variables CSS personalizadas - reutilizando las mismas de financiamientos */
+:root {
+  --glass-bg: rgba(255, 255, 255, 0.1);
+  --glass-border: rgba(255, 255, 255, 0.2);
+  --glass-hover: rgba(255, 255, 255, 0.15);
+  --primary-gradient: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+  --secondary-gradient: linear-gradient(135deg, #10B981 0%, #34D399 100%);
+  --accent-gradient: linear-gradient(135deg, #F59E0B 0%, #FBBF24 100%);
+  --danger-gradient: linear-gradient(135deg, #EF4444 0%, #F87171 100%);
+  --success-gradient: linear-gradient(135deg, #10B981 0%, #34D399 100%);
+  --text-primary: #333;
+  --text-secondary: #666;
+  --logo-blue: #8B5CF6;
+  --border-radius: 16px;
+  --shadow-sm: 0 4px 15px rgba(139, 92, 246, 0.1);
+  --shadow-md: 0 8px 25px rgba(139, 92, 246, 0.15);
+  --shadow-primary: 0 6px 20px rgba(139, 92, 246, 0.25);
+  --shadow-hover: 0 12px 35px rgba(139, 92, 246, 0.3);
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ==== HEADER DEL LOTE - USANDO MISMOS ESTILOS QUE FINANCIAMIENTO ==== */
+.tramite-detail-header {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  border-radius: var(--border-radius);
+  padding: 2.5rem;
+  margin-bottom: 2rem;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--glass-border);
+  position: relative;
+  overflow: hidden;
+  animation: fadeInUp 0.6s ease;
+}
+
+.tramite-detail-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at 30% 20%, rgba(139, 92, 246, 0.08) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.tramite-header-content {
+  display: flex;
+  gap: 2rem;
+  align-items: flex-start;
+  position: relative;
+}
+
+.tramite-avatar-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.tramite-main-avatar {
+  width: 100px;
+  height: 100px;
+  background: var(--primary-gradient);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-primary);
+  animation: pulse 3s infinite;
+}
+
+.avatar-initials-large {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: white;
+  text-transform: uppercase;
+}
+
+.tramite-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  border: 1px solid transparent;
+}
+
+.tramite-status.active {
+  background: rgba(16, 185, 129, 0.1);
+  border-color: rgba(16, 185, 129, 0.2);
+}
+
+.tramite-status.active .status-dot {
+  background: #10B981;
+}
+
+.tramite-status.active .status-label {
+  color: #10B981;
+}
+
+.tramite-status.inactive {
+  background: rgba(107, 114, 128, 0.1);
+  border-color: rgba(107, 114, 128, 0.2);
+}
+
+.tramite-status.inactive .status-dot {
+  background: #6B7280;
+}
+
+.tramite-status.inactive .status-label {
+  color: #6B7280;
+}
+
+.tramite-status .status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  animation: statusPulse 2s infinite;
+}
+
+.status-label {
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.tramite-title-section {
+  flex: 1;
+}
+
+.tramite-detail-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0 0 0.5rem 0;
+  line-height: 1.2;
+}
+
+.tramite-detail-subtitle {
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+  margin: 0 0 2rem 0;
+  font-weight: 500;
+}
+
+.tramite-quick-actions {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.quick-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  font-weight: 500;
+  backdrop-filter: blur(10px);
+  border: 1px solid transparent;
+}
+
+.quick-action-btn.client {
+  background: rgba(239, 68, 68, 0.1);
+  color: #EF4444;
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+.quick-action-btn.date {
+  background: rgba(59, 130, 246, 0.1);
+  color: #3B82F6;
+  border-color: rgba(59, 130, 246, 0.2);
+}
+
+.quick-action-btn.price {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10B981;
+  border-color: rgba(16, 185, 129, 0.2);
+}
+
+/* ==== GRID DE INFORMACIÓN - REUTILIZANDO ESTILOS ==== */
+.tramite-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.info-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(15px);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  animation: fadeInUp 0.6s ease;
+  animation-fill-mode: both;
+}
+
+.info-card.general-data {
+  animation-delay: 0.1s;
+}
+
+.info-card.client-data {
+  animation-delay: 0.2s;
+}
+
+.info-card.financing-data {
+  animation-delay: 0.3s;
+}
+
+.info-card.timeline-data {
+  animation-delay: 0.4s;
+}
+
+.info-card.documents-data {
+  animation-delay: 0.5s;
+}
+
+.info-card-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.info-card-icon {
+  width: 45px;
+  height: 45px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.2rem;
+}
+
+.info-card-icon.general {
+  background: var(--primary-gradient);
+}
+
+.info-card-icon.client {
+  background: linear-gradient(135deg, #8B4513 0%, #A0522D 100%);
+}
+
+.info-card-icon.financing {
+  background: var(--secondary-gradient);
+}
+
+.info-card-icon.timeline {
+  background: var(--accent-gradient);
+}
+
+.info-card-icon.documents {
+  background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+}
+
+.info-card-title {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+  flex: 1;
+}
+
+.info-card-body {
+  padding: 1.5rem;
+}
+
+/* ==== GRID DE DATOS - REUTILIZANDO ESTILOS ==== */
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.25rem;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: var(--transition);
+}
+
+.info-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+  transform: translateY(-2px);
+}
+
+.info-label {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.info-value {
+  font-size: 1rem;
+  color: var(--text-primary);
+  font-weight: 500;
+  word-break: break-word;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.status-badge.active {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10B981;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.status-badge.inactive {
+  background: rgba(107, 114, 128, 0.1);
+  color: #6B7280;
+  border: 1px solid rgba(107, 114, 128, 0.2);
+}
+
+/* ==== COLINDANCIAS - ESTILOS ESPECÍFICOS PARA LOTES ==== */
+.colindancias-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.colindancia-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: var(--transition);
+}
+
+.colindancia-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+  transform: translateX(5px);
+}
+
+.colindancia-icon {
+  width: 35px;
+  height: 35px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.colindancia-icon.north {
+  background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
+}
+
+.colindancia-icon.south {
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+}
+
+.colindancia-icon.east {
+  background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+}
+
+.colindancia-icon.west {
+  background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+}
+
+.colindancia-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.colindancia-label {
+  font-weight: 500;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+}
+
+.colindancia-value {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+/* ==== TIMELINE - REUTILIZANDO ESTILOS ==== */
+.timeline-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.timeline-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: var(--transition);
+  position: relative;
+}
+
+.timeline-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+  transform: translateX(5px);
+}
+
+.timeline-item:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  left: 22px;
+  bottom: -16px;
+  width: 2px;
+  height: 16px;
+  background: linear-gradient(to bottom, var(--logo-blue), transparent);
+}
+
+.timeline-icon {
+  width: 35px;
+  height: 35px;
+  background: var(--primary-gradient);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.timeline-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.timeline-title {
+  font-weight: 500;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+}
+
+.timeline-date {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.timeline-status {
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+}
+
+.timeline-status.completed {
+  background: rgba(16, 185, 129, 0.2);
+  color: #10B981;
+}
+
+.timeline-status.inactive {
+  background: rgba(107, 114, 128, 0.2);
+  color: #6B7280;
+}
+
+/* ==== DOCUMENTOS - REUTILIZANDO ESTILOS ==== */
+.documents-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+}
+
+.document-section {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 1.5rem;
+  transition: var(--transition);
+}
+
+.document-section:hover {
+  background: rgba(255, 255, 255, 0.06);
+  transform: translateY(-2px);
+}
+
+.section-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 1rem 0;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.document-content p {
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin: 0 0 0.5rem 0;
+}
+
+.document-content p:last-child {
+  margin-bottom: 0;
+}
+
+/* ==== SECCIÓN DE ACCIONES - REUTILIZANDO ESTILOS ==== */
+.tramite-actions-section {
+  animation: fadeInUp 0.6s ease 0.7s both;
+}
+
+.actions-container {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 2rem;
+  border: none;
+  border-radius: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+  text-decoration: none;
+  font-size: 0.95rem;
+  backdrop-filter: blur(10px);
+  border: 1px solid transparent;
+  position: relative;
+  overflow: hidden;
+}
+
+.action-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.5s;
+}
+
+.action-btn:hover::before {
+  left: 100%;
+}
+
+.action-btn.primary {
+  background: var(--primary-gradient);
+  color: white;
+  box-shadow: var(--shadow-primary);
+}
+
+.action-btn.primary:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-hover);
+}
+
+.action-btn.secondary {
+  background: rgba(108, 117, 125, 0.1);
+  color: #6C757D;
+  border-color: rgba(108, 117, 125, 0.2);
+}
+
+.action-btn.secondary:hover {
+  background: rgba(108, 117, 125, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(108, 117, 125, 0.15);
+}
+
+.action-btn.success {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10B981;
+  border-color: rgba(16, 185, 129, 0.2);
+}
+
+.action-btn.success:hover {
+  background: rgba(16, 185, 129, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.15);
+}
+
+.action-btn.danger {
+  background: rgba(239, 68, 68, 0.1);
+  color: #EF4444;
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+.action-btn.danger:hover {
+  background: rgba(239, 68, 68, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(239, 68, 68, 0.15);
+}
+
+/* ==== RESPONSIVE ==== */
+@media (max-width: 1024px) {
+  .tramite-info-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .tramite-header-content {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  
+  .tramite-avatar-section {
+    align-items: center;
+  }
+  
+  .documents-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .tramite-detail-header {
+    padding: 2rem;
+  }
+  
+  .tramite-detail-title {
+    font-size: 2rem;
+  }
+  
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .actions-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .quick-action-btn {
+    justify-content: center;
+  }
+  
+  .tramite-quick-actions {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .tramite-detail-header {
+    padding: 1.5rem;
+  }
+  
+  .tramite-main-avatar {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .avatar-initials-large {
+    font-size: 1.5rem;
+  }
+  
+  .tramite-detail-title {
+    font-size: 1.8rem;
+  }
+  
+  .tramite-quick-actions {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .info-card-header,
+  .info-card-body {
+    padding: 1rem;
+  }
+  
+  .action-btn {
+    justify-content: center;
+  }
+  
+  .document-section {
+    padding: 1rem;
+  }
+}
+
+/* ==== ANIMACIONES ==== */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+@keyframes statusPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.1); }
+}

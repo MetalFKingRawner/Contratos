@@ -1,0 +1,21 @@
+{# templates/dashboard/partials/home_content.html #}
+<div class="welcome-section">
+  <h1 class="welcome-title">Bienvenido al Panel de Administración</h1>
+  <p class="welcome-subtitle">
+    Gestiona todos los aspectos de tu negocio desde un solo lugar
+  </p>
+  
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon"><i class="fas fa-users"></i></div>
+      <div class="stat-number">{{ num_clientes }}</div>
+      <div class="stat-label">Clientes Activos</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon"><i class="fas fa-building"></i></div>
+      <div class="stat-number">{{ num_proyectos }}</div>
+      <div class="stat-label">Proyectos</div>
+    </div>
+    <!-- añade más tarjetas si quieres -->
+  </div>
+</div>

@@ -1,0 +1,688 @@
+<!-- templates/dashboard/partials/vendedor_detail.html -->
+<div class="container-fluid py-4">
+  <!-- Header con información principal del vendedor -->
+  <div class="client-detail-header">
+    <div class="client-header-content">
+      <div class="client-avatar-section">
+        <div class="client-main-avatar">
+          <span class="avatar-initials-large">{{ vendedor.nombre_completo|slice:":2"|upper }}</span>
+        </div>
+        <div class="client-status active">
+          <div class="status-dot"></div>
+          <span class="status-label">Activo</span>
+        </div>
+      </div>
+      
+      <div class="client-title-section">
+        <h1 class="client-detail-title">{{ vendedor.nombre_completo }}</h1>
+        <p class="client-detail-subtitle">Información completa del vendedor</p>
+        
+        <div class="client-quick-actions">
+          <a href="tel:{{ vendedor.telefono }}" class="quick-action-btn phone">
+            <i class="fas fa-phone"></i>
+            <span>Llamar</span>
+          </a>
+          <a href="mailto:{{ vendedor.email }}" class="quick-action-btn email">
+            <i class="fas fa-envelope"></i>
+            <span>Email</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Información detallada del vendedor -->
+  <div class="client-info-grid">
+    <div class="info-card personal-data">
+      <div class="info-card-header">
+        <div class="info-card-icon personal">
+          <i class="fas fa-user-tie"></i>
+        </div>
+        <h3 class="info-card-title">Datos Personales</h3>
+      </div>
+      
+      <div class="info-card-body">
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-label">Tipo</span>
+            <span class="info-value">{{ vendedor.get_tipo_display }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Sexo</span>
+            <span class="info-value">{{ vendedor.get_sexo_display }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">INE</span>
+            <span class="info-value">{{ vendedor.ine }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Teléfono</span>
+            <span class="info-value">{{ vendedor.telefono }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Email</span>
+            <span class="info-value">{{ vendedor.email }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Nacionalidad</span>
+            <span class="info-value">{{ vendedor.nacionalidad }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Domicilio</span>
+            <span class="info-value">{{ vendedor.domicilio }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Proyectos del vendedor -->
+    <div class="info-card tramites-data">
+      <div class="info-card-header">
+        <div class="info-card-icon tramites">
+          <i class="fas fa-building"></i>
+        </div>
+        <h3 class="info-card-title">Proyectos</h3>
+        <span class="tramites-count">{{ vendedor.proyectos.all|length }}</span>
+      </div>
+      
+      <div class="info-card-body">
+        <div class="tramites-list">
+          {% for proyecto in vendedor.proyectos.all %}
+            <div class="tramite-item">
+              <div class="tramite-icon">
+                <i class="fas fa-building"></i>
+              </div>
+              <div class="tramite-content">
+                <span class="tramite-title">{{ proyecto.nombre }}</span>
+                <span class="tramite-date">{{ proyecto.creado_en|date:"d/m/Y" }}</span>
+              </div>
+              <button class="tramite-action" 
+                      hx-get="{% url 'dashboard:proyecto_detail' proyecto.pk %}"
+                      hx-target="#content"
+                      hx-swap="innerHTML"
+                      title="Ver proyecto">
+                <i class="fas fa-arrow-right"></i>
+              </button>
+            </div>
+          {% empty %}
+            <div class="empty-tramites">
+              <div class="empty-tramites-icon">
+                <i class="fas fa-building"></i>
+              </div>
+              <p class="empty-tramites-text">Este vendedor no tiene proyectos asignados</p>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Botones de acción -->
+  <div class="client-actions-section">
+    <div class="actions-container">
+      <button class="action-btn primary" 
+              hx-get="{% url 'dashboard:vendedor_update' vendedor.pk %}"
+              hx-target="#content"
+              hx-swap="innerHTML">
+        <i class="fas fa-edit"></i>
+        <span>Editar Vendedor</span>
+      </button>
+      
+      <button class="action-btn secondary"
+              hx-get="{% url 'dashboard:vendedor_list' %}"
+              hx-target="#content"
+              hx-swap="innerHTML">
+        <i class="fas fa-arrow-left"></i>
+        <span>Volver a Lista</span>
+      </button>
+      
+      <button class="action-btn danger"
+              hx-get="{% url 'dashboard:vendedor_delete' vendedor.pk %}"
+              hx-target="#content"
+              hx-swap="innerHTML">
+        <i class="fas fa-trash"></i>
+        <span>Eliminar Vendedor</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<style>
+/* ==== HEADER DEL CLIENTE ==== */
+.client-detail-header {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  border-radius: var(--border-radius);
+  padding: 2.5rem;
+  margin-bottom: 2rem;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--glass-border);
+  position: relative;
+  overflow: hidden;
+  animation: fadeInUp 0.6s ease;
+}
+
+.client-detail-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at 30% 20%, rgba(135, 206, 235, 0.08) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.client-header-content {
+  display: flex;
+  gap: 2rem;
+  align-items: flex-start;
+  position: relative;
+}
+
+.client-avatar-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.client-main-avatar {
+  width: 100px;
+  height: 100px;
+  background: var(--primary-gradient);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-primary);
+  animation: pulse 3s infinite;
+}
+
+.avatar-initials-large {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: white;
+  text-transform: uppercase;
+}
+
+.client-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(16, 185, 129, 0.1);
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.client-status .status-dot {
+  width: 8px;
+  height: 8px;
+  background: #10B981;
+  border-radius: 50%;
+  animation: statusPulse 2s infinite;
+}
+
+.status-label {
+  font-size: 0.85rem;
+  color: #10B981;
+  font-weight: 500;
+}
+
+.client-title-section {
+  flex: 1;
+}
+
+.client-detail-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0 0 0.5rem 0;
+  line-height: 1.2;
+}
+
+.client-detail-subtitle {
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+  margin: 0 0 2rem 0;
+}
+
+.client-quick-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.quick-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: var(--transition);
+  backdrop-filter: blur(10px);
+  border: 1px solid transparent;
+}
+
+.quick-action-btn.phone {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10B981;
+  border-color: rgba(16, 185, 129, 0.2);
+}
+
+.quick-action-btn.phone:hover {
+  background: rgba(16, 185, 129, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.15);
+}
+
+.quick-action-btn.email {
+  background: rgba(59, 130, 246, 0.1);
+  color: #3B82F6;
+  border-color: rgba(59, 130, 246, 0.2);
+}
+
+.quick-action-btn.email:hover {
+  background: rgba(59, 130, 246, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.15);
+}
+
+/* ==== GRID DE INFORMACIÓN ==== */
+.client-info-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.info-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(15px);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  animation: fadeInUp 0.6s ease;
+  animation-fill-mode: both;
+}
+
+.info-card.personal-data {
+  animation-delay: 0.1s;
+}
+
+.info-card.tramites-data {
+  animation-delay: 0.2s;
+}
+
+.info-card-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.02);
+  position: relative;
+}
+
+.info-card-icon {
+  width: 45px;
+  height: 45px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.2rem;
+}
+
+.info-card-icon.personal {
+  background: var(--accent-gradient);
+}
+
+.info-card-icon.tramites {
+  background: var(--secondary-gradient);
+}
+
+.info-card-title {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+  flex: 1;
+}
+
+.tramites-count {
+  background: var(--primary-gradient);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
+}
+
+.info-card-body {
+  padding: 1.5rem;
+}
+
+/* ==== GRID DE DATOS PERSONALES ==== */
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.25rem;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: var(--transition);
+}
+
+.info-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+  transform: translateY(-2px);
+}
+
+.info-label {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.info-value {
+  font-size: 1rem;
+  color: var(--text-primary);
+  font-weight: 500;
+  word-break: break-word;
+}
+
+/* ==== LISTA DE TRÁMITES ==== */
+.tramites-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.tramite-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: var(--transition);
+}
+
+.tramite-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+  transform: translateX(5px);
+}
+
+.tramite-icon {
+  width: 35px;
+  height: 35px;
+  background: var(--primary-gradient);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.tramite-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.tramite-title {
+  font-weight: 500;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+}
+
+.tramite-date {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.tramite-action {
+  width: 30px;
+  height: 30px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tramite-action:hover {
+  background: rgba(46, 143, 204, 0.1);
+  color: var(--logo-blue);
+  transform: scale(1.1);
+}
+
+/* ==== ESTADO VACÍO DE TRÁMITES ==== */
+.empty-tramites {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem;
+  text-align: center;
+}
+
+.empty-tramites-icon {
+  width: 50px;
+  height: 50px;
+  background: var(--secondary-gradient);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+  color: white;
+  font-size: 1.2rem;
+}
+
+.empty-tramites-text {
+  color: var(--text-secondary);
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+/* ==== SECCIÓN DE ACCIONES ==== */
+.client-actions-section {
+  animation: fadeInUp 0.6s ease 0.3s both;
+}
+
+.actions-container {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 2rem;
+  border: none;
+  border-radius: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+  text-decoration: none;
+  font-size: 0.95rem;
+  backdrop-filter: blur(10px);
+  border: 1px solid transparent;
+  position: relative;
+  overflow: hidden;
+}
+
+.action-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.5s;
+}
+
+.action-btn:hover::before {
+  left: 100%;
+}
+
+.action-btn.primary {
+  background: var(--primary-gradient);
+  color: white;
+  box-shadow: var(--shadow-primary);
+}
+
+.action-btn.primary:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-hover);
+}
+
+.action-btn.secondary {
+  background: rgba(108, 117, 125, 0.1);
+  color: #6C757D;
+  border-color: rgba(108, 117, 125, 0.2);
+}
+
+.action-btn.secondary:hover {
+  background: rgba(108, 117, 125, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(108, 117, 125, 0.15);
+}
+
+.action-btn.danger {
+  background: rgba(239, 68, 68, 0.1);
+  color: #EF4444;
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+.action-btn.danger:hover {
+  background: rgba(239, 68, 68, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(239, 68, 68, 0.15);
+}
+
+/* ==== RESPONSIVE ==== */
+@media (max-width: 1024px) {
+  .client-info-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .client-header-content {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  
+  .client-avatar-section {
+    align-items: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .client-detail-header {
+    padding: 2rem;
+  }
+  
+  .client-detail-title {
+    font-size: 2rem;
+  }
+  
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .actions-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .quick-action-btn {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .client-detail-header {
+    padding: 1.5rem;
+  }
+  
+  .client-main-avatar {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .avatar-initials-large {
+    font-size: 2rem;
+  }
+  
+  .client-detail-title {
+    font-size: 1.8rem;
+  }
+  
+  .client-quick-actions {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .info-card-header,
+  .info-card-body {
+    padding: 1rem;
+  }
+  
+  .action-btn {
+    justify-content: center;
+  }
+}
+
+/* ==== ANIMACIONES ==== */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+@keyframes statusPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.1); }
+}
+</style>

@@ -1,0 +1,849 @@
+<!-- Modal de confirmación de eliminación de plan de financiamiento -->
+<div class="modal-overlay">
+  <div class="delete-modal-container">
+    <div class="delete-modal">
+      
+      <!-- Header del modal -->
+      <div class="modal-header">
+        <div class="warning-icon-wrapper">
+          <div class="warning-icon-bg">
+            <i class="fas fa-exclamation-triangle warning-icon"></i>
+          </div>
+          <div class="warning-pulses">
+            <div class="pulse pulse-1"></div>
+            <div class="pulse pulse-2"></div>
+            <div class="pulse pulse-3"></div>
+          </div>
+        </div>
+        
+        <div class="modal-title-section">
+          <h3 class="modal-title">Confirmar Eliminación</h3>
+          <p class="modal-subtitle">Esta acción no se puede deshacer</p>
+        </div>
+        
+        <button type="button" 
+                class="modal-close-btn"
+                hx-get="{% url 'dashboard:financiamiento_list' %}"
+                hx-target="#content"
+                hx-swap="innerHTML"
+                title="Cerrar">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      
+      <!-- Cuerpo del modal -->
+      <div class="modal-body">
+        <div class="project-preview">
+          <div class="project-avatar-preview">
+            <span class="avatar-initials">{{ object.nombre_cliente|slice:":2"|upper }}</span>
+          </div>
+          <div class="project-info-preview">
+            <h4 class="project-name-preview">{{ object.tipo_pago }}</h4>
+            <div class="project-details-preview">
+              <span class="detail-item">
+                <i class="fas fa-dollar"></i>
+                Precio del lote: {{ object.precio_lote }}
+              </span>
+              <span class="detail-item">
+                <i class="fas fa-hand-holding-usd"></i>
+                Apartado: {{ object.apartado }}
+              </span>
+              <span class="detail-item">
+                <i class="fas fa-building"></i>
+                Lote: {{ object.lote }}
+              </span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="warning-message">
+          <div class="warning-content">
+            <h5 class="warning-title">¿Estás completamente seguro?</h5>
+            <p class="warning-text">
+              Al eliminar este plan de financiamiento se perderá toda su información, incluyendo 
+              <strong>tasas, plazos y condiciones especiales</strong>. Esta acción es permanente y no se puede revertir.
+            </p>
+            
+            <!-- Información adicional sobre clientes relacionados -->
+            <div class="documents-warning">
+              <div class="documents-warning-icon">
+                <i class="fas fa-users"></i>
+              </div>
+              <div class="documents-warning-content">
+                <span class="documents-count-warning">
+                  Clientes con este plan
+                </span>
+                <span class="documents-text-warning">podrían verse afectados</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Footer con acciones -->
+      <div class="modal-footer">
+        <div class="modal-actions">
+          
+          <!-- Botón cancelar -->
+          <button type="button" 
+                  class="modal-btn cancel"
+                  hx-get="{% url 'dashboard:financiamiento_list' %}"
+                  hx-target="#content"
+                  hx-swap="innerHTML">
+            <i class="fas fa-arrow-left"></i>
+            <span>Cancelar</span>
+          </button>
+          
+          <!-- Botón eliminar -->
+          <form method="post" class="delete-form">
+            {% csrf_token %}
+            <button type="submit" class="modal-btn danger delete-confirm-btn"
+                    hx-post="{% url 'dashboard:financiamiento_delete' object.id %}"
+                    hx-target="#content"
+                    hx-swap="innerHTML">
+              <i class="fas fa-trash-alt"></i>
+              <span>Sí, Eliminar Definitivamente</span>
+              <div class="btn-shine"></div>
+            </button>
+          </form>
+          
+        </div>
+        
+        <div class="security-note">
+          <i class="fas fa-shield-alt"></i>
+          <span>Para confirmar, haz clic en "Sí, Eliminar Definitivamente"</span>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+</div>
+
+<style>
+/* ==== VARIABLES CSS ==== */
+:root {
+  --glass-bg: rgba(255, 255, 255, 0.1);
+  --glass-border: rgba(255, 255, 255, 0.2);
+  --primary-gradient: linear-gradient(135deg, #2E8FCC 0%, #87CEEB 100%);
+  --secondary-gradient: linear-gradient(135deg, #10B981 0%, #34D399 100%);
+  --accent-gradient: linear-gradient(135deg, #F59E0B 0%, #FBBF24 100%);
+  --text-primary: #333;
+  --text-secondary: #666;
+  --logo-blue: #2E8FCC;
+  --border-radius: 16px;
+  --shadow-sm: 0 4px 15px rgba(46, 143, 204, 0.1);
+  --shadow-md: 0 8px 25px rgba(46, 143, 204, 0.15);
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ==== OVERLAY DEL MODAL ==== */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(46, 143, 204, 0.15);
+  backdrop-filter: blur(12px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1050;
+  padding: 1rem;
+  animation: fadeIn 0.3s ease;
+}
+
+.delete-modal-container {
+  width: 100%;
+  max-width: 450px;
+  animation: modalSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.delete-modal {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 20px 40px rgba(46, 143, 204, 0.15), 0 8px 25px rgba(135, 206, 235, 0.1);
+  overflow: hidden;
+  position: relative;
+}
+
+.delete-modal::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at 30% 30%, rgba(239, 68, 68, 0.05) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* ==== HEADER DEL MODAL ==== */
+.modal-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.25rem;
+  padding: 1.75rem;
+  border-bottom: 1px solid rgba(239, 68, 68, 0.1);
+  background: rgba(239, 68, 68, 0.02);
+  position: relative;
+}
+
+.warning-icon-wrapper {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.warning-icon-bg {
+  width: 50px;
+  height: 50px;
+  background: linear-gradient(135deg, #FEF3C7 0%, #FCD34D 100%);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 2;
+  box-shadow: 0 6px 20px rgba(245, 158, 11, 0.25);
+}
+
+.warning-icon {
+  font-size: 1.5rem;
+  color: #D97706;
+  animation: warningPulse 2s infinite;
+}
+
+.warning-pulses {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.pulse {
+  position: absolute;
+  width: 50px;
+  height: 50px;
+  border: 2px solid rgba(245, 158, 11, 0.3);
+  border-radius: 12px;
+  animation: pulseExpand 2s infinite;
+}
+
+.pulse-1 { animation-delay: 0s; }
+.pulse-2 { animation-delay: 0.7s; }
+.pulse-3 { animation-delay: 1.4s; }
+
+.modal-title-section {
+  flex: 1;
+}
+
+.modal-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 0.4rem 0;
+  line-height: 1.3;
+}
+
+.modal-subtitle {
+  color: var(--text-secondary);
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.modal-close-btn {
+  width: 32px;
+  height: 32px;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 7px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 0.9rem;
+}
+
+.modal-close-btn:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: #EF4444;
+  transform: scale(1.1);
+}
+
+/* ==== CUERPO DEL MODAL ==== */
+.modal-body {
+  padding: 1.5rem;
+}
+
+.project-preview {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  padding: 1.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  margin-bottom: 1.5rem;
+}
+
+.project-avatar-preview {
+  width: 45px;
+  height: 45px;
+  background: var(--primary-gradient);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: var(--shadow-sm);
+}
+
+.avatar-initials {
+  font-size: 1rem;
+  font-weight: 600;
+  color: white;
+  text-transform: uppercase;
+}
+
+.project-info-preview {
+  flex: 1;
+}
+
+.project-name-preview {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 0.4rem 0;
+}
+
+.project-details-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.detail-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.detail-item i {
+  width: 12px;
+  font-size: 0.8rem;
+  color: var(--logo-blue);
+}
+
+/* ==== MENSAJE DE ADVERTENCIA ==== */
+.warning-message {
+  background: rgba(239, 68, 68, 0.05);
+  border: 1px solid rgba(239, 68, 68, 0.1);
+  border-radius: 10px;
+  padding: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.warning-content {
+  text-align: center;
+}
+
+.warning-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #DC2626;
+  margin: 0 0 0.6rem 0;
+}
+
+.warning-text {
+  color: var(--text-secondary);
+  margin: 0 0 0.85rem 0;
+  line-height: 1.5;
+  font-size: 0.85rem;
+}
+
+.warning-text strong {
+  color: #EF4444;
+  font-weight: 600;
+}
+
+/* ==== ADVERTENCIA DE DOCUMENTOS ==== */
+.documents-warning {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  background: rgba(245, 158, 11, 0.08);
+  border-radius: 7px;
+  padding: 0.6rem;
+  margin-top: 0.85rem;
+}
+
+.documents-warning-icon {
+  width: 26px;
+  height: 26px;
+  background: rgba(245, 158, 11, 0.15);
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #F59E0B;
+  font-size: 0.8rem;
+}
+
+.documents-warning-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  text-align: left;
+}
+
+.documents-count-warning {
+  font-weight: 600;
+  color: #D97706;
+  font-size: 0.8rem;
+}
+
+.documents-text-warning {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+/* ==== FOOTER DEL MODAL ==== */
+.modal-footer {
+  padding: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.modal-actions {
+  display: flex;
+  gap: 0.85rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 0.85rem;
+}
+
+.modal-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.75rem 1.25rem;
+  border: none;
+  border-radius: 9px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  text-decoration: none;
+  font-size: 0.85rem;
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+  border: 1.5px solid transparent;
+}
+
+.btn-shine {
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.6s;
+}
+
+.modal-btn:hover .btn-shine {
+  left: 100%;
+}
+
+.modal-btn.cancel {
+  background: rgba(108, 117, 125, 0.1);
+  color: #6C757D;
+  border-color: rgba(108, 117, 125, 0.2);
+}
+
+.modal-btn.cancel:hover {
+  background: rgba(108, 117, 125, 0.2);
+  color: #495057;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(108, 117, 125, 0.15);
+}
+
+.modal-btn.danger {
+  background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+  color: white;
+  box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+  position: relative;
+  font-weight: 600;
+  animation: dangerPulse 3s infinite;
+}
+
+.modal-btn.danger:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 35px rgba(239, 68, 68, 0.4);
+  animation: none;
+}
+
+.modal-btn.danger:active {
+  transform: scale(0.98);
+}
+
+.delete-form {
+  display: contents;
+}
+
+/* ==== NOTA DE SEGURIDAD ==== */
+.security-note {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  text-align: center;
+  padding: 0.6rem;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 7px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.security-note i {
+  color: var(--logo-blue);
+  font-size: 0.8rem;
+}
+
+/* ==== RESPONSIVE ==== */
+@media (max-width: 768px) {
+  .modal-overlay {
+    padding: 0.5rem;
+  }
+  
+  .modal-header {
+    padding: 1.5rem;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 1rem;
+  }
+  
+  .modal-close-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+  }
+  
+  .modal-body {
+    padding: 1.5rem;
+  }
+  
+  .modal-footer {
+    padding: 1.5rem;
+  }
+  
+  .modal-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .modal-btn {
+    justify-content: center;
+  }
+  
+  .project-preview {
+    flex-direction: column;
+    text-align: center;
+    gap: 1rem;
+  }
+  
+  .project-details-preview {
+    align-items: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .delete-modal-container {
+    max-width: none;
+    margin: 0.5rem;
+  }
+  
+  .modal-header {
+    padding: 1rem;
+  }
+  
+  .warning-icon-bg {
+    width: 45px;
+    height: 45px;
+  }
+  
+  .warning-icon {
+    font-size: 1.3rem;
+  }
+  
+  .modal-title {
+    font-size: 1.2rem;
+  }
+  
+  .modal-body {
+    padding: 1rem;
+  }
+  
+  .modal-footer {
+    padding: 1rem;
+  }
+  
+  .modal-btn {
+    padding: 0.75rem 1rem;
+    font-size: 0.8rem;
+  }
+  
+  .warning-message {
+    padding: 1rem;
+  }
+  
+  .project-preview {
+    padding: 1rem;
+  }
+}
+
+/* ==== ANIMACIONES ==== */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-50px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes warningPulse {
+  0%, 100% { 
+    transform: scale(1); 
+    filter: drop-shadow(0 0 5px rgba(245, 158, 11, 0.3));
+  }
+  50% { 
+    transform: scale(1.05); 
+    filter: drop-shadow(0 0 15px rgba(245, 158, 11, 0.5));
+  }
+}
+
+@keyframes pulseExpand {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1.8);
+    opacity: 0;
+  }
+}
+
+@keyframes dangerPulse {
+  0%, 100% { 
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+  }
+  50% { 
+    box-shadow: 0 4px 25px rgba(239, 68, 68, 0.5);
+  }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-3px); }
+  75% { transform: translateX(3px); }
+}
+
+/* ==== ESTADOS ESPECIALES ==== */
+.delete-confirm-btn:hover {
+  animation: none;
+}
+
+.delete-confirm-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.3);
+}
+
+/* ==== LOADING STATE ==== */
+.modal-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.modal-btn.loading {
+  pointer-events: none;
+}
+
+.modal-btn.loading::after {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ==== EFECTOS ADICIONALES ==== */
+.modal-overlay:hover .delete-modal {
+  box-shadow: 0 25px 45px rgba(46, 143, 204, 0.2), 0 10px 30px rgba(135, 206, 235, 0.12);
+}
+
+.warning-message {
+  animation: warningGlow 4s infinite;
+}
+
+@keyframes warningGlow {
+  0%, 100% { 
+    border-color: rgba(239, 68, 68, 0.1);
+    background: rgba(239, 68, 68, 0.05);
+  }
+  50% { 
+    border-color: rgba(239, 68, 68, 0.2);
+    background: rgba(239, 68, 68, 0.08);
+  }
+}
+
+/* ==== MEJORAS DE ACCESIBILIDAD ==== */
+.modal-btn:focus-visible {
+  outline: 2px solid var(--logo-blue);
+  outline-offset: 2px;
+}
+
+.delete-confirm-btn:focus-visible {
+  outline-color: #EF4444;
+}
+
+/* ==== TRANSICIONES SUAVES ==== */
+* {
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+</style>
+
+<script>
+// Mejorar UX del modal de eliminación de financiamiento
+document.addEventListener('DOMContentLoaded', function() {
+  initDeleteFinanciamientoModal();
+});
+
+// Reinicializar cuando HTMX carga contenido
+document.body.addEventListener('htmx:afterSwap', function(evt) {
+  if (evt.detail.target.id === 'content') {
+    setTimeout(initDeleteFinanciamientoModal, 50);
+  }
+});
+
+function initDeleteFinanciamientoModal() {
+  const modal = document.querySelector('.delete-modal');
+  const overlay = document.querySelector('.modal-overlay');
+  const deleteForm = document.querySelector('.delete-form');
+  const deleteBtn = document.querySelector('.delete-confirm-btn');
+  
+  if (!modal || !overlay) return;
+
+  // Cerrar modal al hacer clic en el overlay
+  overlay.addEventListener('click', function(e) {
+    if (e.target === overlay) {
+      htmx.trigger(document.querySelector('.modal-close-btn'), 'click');
+    }
+  });
+
+  // Cerrar modal con ESC
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      htmx.trigger(document.querySelector('.modal-close-btn'), 'click');
+    }
+  });
+
+  // Doble confirmación para eliminación
+  let confirmClicks = 0;
+  const originalText = deleteBtn.querySelector('span').textContent;
+  
+  if (deleteBtn) {
+    deleteBtn.addEventListener('click', function(e) {
+      confirmClicks++;
+      
+      if (confirmClicks === 1) {
+        e.preventDefault();
+        this.style.animation = 'shake 0.5s ease-in-out';
+        this.querySelector('span').textContent = '¿Estás seguro? Haz clic de nuevo';
+        this.style.background = 'linear-gradient(135deg, #DC2626 0%, #B91C1C 100%)';
+        
+        // Reset después de 3 segundos
+        setTimeout(() => {
+          if (confirmClicks === 1) {
+            resetDeleteButton();
+          }
+        }, 3000);
+        
+        return false;
+      }
+    });
+  }
+
+  // Loading state en submit
+  if (deleteBtn) {
+    deleteBtn.addEventListener('click', function() {
+      this.classList.add('loading');
+      this.disabled = true;
+      this.querySelector('span').textContent = 'Eliminando plan...';
+    });
+  }
+
+  function resetDeleteButton() {
+    confirmClicks = 0;
+    deleteBtn.querySelector('span').textContent = originalText;
+    deleteBtn.style.background = 'linear-gradient(135deg, #EF4444 0%, #DC2626 100%)';
+    deleteBtn.style.animation = 'dangerPulse 3s infinite';
+  }
+
+  // Efectos de hover mejorados
+  const modalBtns = document.querySelectorAll('.modal-btn');
+  modalBtns.forEach(btn => {
+    btn.addEventListener('mouseenter', function() {
+      this.style.transform = 'translateY(-2px) scale(1.02)';
+    });
+    
+    btn.addEventListener('mouseleave', function() {
+      if (!this.classList.contains('danger')) {
+        this.style.transform = 'translateY(0) scale(1)';
+      }
+    });
+  });
+
+  // Efecto de aparición del modal
+  setTimeout(() => {
+    modal.style.transform = 'scale(1)';
+    modal.style.opacity = '1';
+  }, 50);
+}
+
+// Prevenir cierre accidental
+window.addEventListener('beforeunload', function(e) {
+  const deleteModal = document.querySelector('.delete-modal');
+  if (deleteModal) {
+    e.preventDefault();
+    e.returnValue = '';
+    return '';
+  }
+});
+</script>

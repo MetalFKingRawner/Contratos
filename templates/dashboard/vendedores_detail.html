@@ -1,0 +1,10 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Vendedor – {{ vendedor.nombre_completo }}{% endblock %}
+
+
+{% block content %}
+  {# Aquí puedes incluir el mismo contenido que en la parcial o mantenerlo simple #}
+  <div id="client-detail-content">
+    {% include "dashboard/partials/vendedor_detail.html" %}
+  </div>
+{% endblock %}

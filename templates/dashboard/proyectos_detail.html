@@ -1,0 +1,9 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Proyecto – {{ proyecto.nombre }}{% endblock %}
+
+{% block content %}
+  {# Aquí puedes incluir el mismo contenido que en la parcial o mantenerlo simple #}
+  <div id="client-detail-content">
+    {% include "dashboard/partials/proyecto_detail.html" %}
+  </div>
+{% endblock %}

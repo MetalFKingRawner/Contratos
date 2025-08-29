@@ -1,0 +1,1099 @@
+<div class="container-fluid py-4">
+  <!-- Header con información principal del trámite -->
+  <div class="tramite-detail-header">
+    <div class="tramite-header-content">
+      <div class="tramite-avatar-section">
+        <div class="tramite-main-avatar">
+          <span class="avatar-initials-large">T{{ tramite.id }}</span>
+        </div>
+        <div class="tramite-status {% if tramite.estado == 'completado' %}completed{% elif tramite.estado == 'en_proceso' %}in-process{% else %}pending{% endif %}">
+          <div class="status-dot"></div>
+          <span class="status-label">{{ tramite.get_estado_display|default:"Pendiente" }}</span>
+        </div>
+      </div>
+      
+      <div class="tramite-title-section">
+        <h1 class="tramite-detail-title">Trámite #{{ tramite.id }}</h1>
+        <p class="tramite-detail-subtitle">{{ tramite.get_estado_display|default:"Estado del trámite" }}</p>
+        
+        <div class="tramite-quick-actions">
+          <div class="quick-action-btn client">
+            <i class="fas fa-user"></i>
+            <span>{{ tramite.cliente.nombre_completo }}</span>
+          </div>
+          <div class="quick-action-btn date">
+            <i class="fas fa-calendar"></i>
+            <span>{{ tramite.creado_en|date:"d/m/Y" }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Información detallada del trámite -->
+  <div class="tramite-info-grid">
+    <!-- Información General -->
+    <div class="info-card general-data">
+      <div class="info-card-header">
+        <div class="info-card-icon general">
+          <i class="fas fa-info-circle"></i>
+        </div>
+        <h3 class="info-card-title">Información General</h3>
+      </div>
+      
+      <div class="info-card-body">
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-label">Estado</span>
+            <span class="info-value status-badge {% if tramite.estado == 'completado' %}completed{% elif tramite.estado == 'en_proceso' %}in-process{% else %}pending{% endif %}">
+              {{ tramite.get_estado_display|default:"Pendiente" }}
+            </span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Fecha de Creación</span>
+            <span class="info-value">{{ tramite.creado_en|date:"d/m/Y H:i" }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Última Actualización</span>
+            <span class="info-value">{{ tramite.actualizado_en|date:"d/m/Y H:i" }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Información del Cliente -->
+    <div class="info-card client-data">
+      <div class="info-card-header">
+        <div class="info-card-icon client">
+          <i class="fas fa-user"></i>
+        </div>
+        <h3 class="info-card-title">Información del Cliente</h3>
+      </div>
+      
+      <div class="info-card-body">
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-label">Nombre Completo</span>
+            <span class="info-value">{{ tramite.cliente.nombre_completo }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Teléfono</span>
+            <span class="info-value">{{ tramite.cliente.telefono }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Email</span>
+            <span class="info-value">{{ tramite.cliente.email }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Información del Financiamiento -->
+    <div class="info-card financing-data">
+      <div class="info-card-header">
+        <div class="info-card-icon financing">
+          <i class="fas fa-dollar-sign"></i>
+        </div>
+        <h3 class="info-card-title">Información del Financiamiento</h3>
+      </div>
+      
+      <div class="info-card-body">
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-label">Lote</span>
+            <span class="info-value">{{ tramite.financiamiento.lote }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Precio del Lote</span>
+            <span class="info-value price">${{ tramite.financiamiento.precio_lote|floatformat:2 }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Apartado</span>
+            <span class="info-value price">${{ tramite.financiamiento.apartado|floatformat:2 }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cláusulas Especiales -->
+    <div class="info-card clausulas-data">
+      <div class="info-card-header">
+        <div class="info-card-icon clausulas">
+          <i class="fas fa-file-contract"></i>
+        </div>
+        <h3 class="info-card-title">Cláusulas Especiales</h3>
+      </div>
+      
+      <div class="info-card-body">
+        {% if tramite.clausulas_especiales %}
+          <div class="clausulas-grid">
+            {% if tramite.clausulas_especiales.clausula_pago %}
+            <div class="clausula-item">
+              <div class="clausula-header">
+                <i class="fas fa-credit-card"></i>
+                <span class="clausula-title">Cláusula de Pago</span>
+              </div>
+              <div class="clausula-content">
+                <p>{{ tramite.clausulas_especiales.clausula_pago }}</p>
+              </div>
+            </div>
+            {% endif %}
+            
+            {% if tramite.clausulas_especiales.clausula_deslinde %}
+            <div class="clausula-item">
+              <div class="clausula-header">
+                <i class="fas fa-map-marked-alt"></i>
+                <span class="clausula-title">Cláusula de Deslinde</span>
+              </div>
+              <div class="clausula-content">
+                <p>{{ tramite.clausulas_especiales.clausula_deslinde }}</p>
+              </div>
+            </div>
+            {% endif %}
+            
+            {% if tramite.clausulas_especiales.clausula_promesa %}
+            <div class="clausula-item">
+              <div class="clausula-header">
+                <i class="fas fa-handshake"></i>
+                <span class="clausula-title">Cláusula de Promesa</span>
+              </div>
+              <div class="clausula-content">
+                <p>{{ tramite.clausulas_especiales.clausula_promesa }}</p>
+              </div>
+            </div>
+            {% endif %}
+          </div>
+        {% else %}
+          <div class="no-clausulas">
+            <div class="no-clausulas-icon">
+              <i class="fas fa-file-contract"></i>
+            </div>
+            <p class="no-clausulas-text">No se han definido cláusulas especiales para este trámite.</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Sección de Descarga de Documentos (Ancho completo) -->
+  <div class="info-card documents-download-data full-width">
+    <div class="info-card-header">
+      <div class="info-card-icon documents-download">
+        <i class="fas fa-download"></i>
+      </div>
+      <h3 class="info-card-title">Descarga de Documentos</h3>
+    </div>
+    
+    <div class="info-card-body">
+      <div class="documents-download-grid">
+        <!-- Aviso de Privacidad -->
+        <div class="document-download-item">
+          <div class="document-icon">
+            <i class="fas fa-shield-alt"></i>
+          </div>
+          <div class="document-info">
+            <h4 class="document-name">Aviso de Privacidad</h4>
+            <p class="document-description">Documento con las políticas de privacidad y manejo de datos.</p>
+          </div>
+          <div class="document-actions">
+              <a class="download-btn word" 
+                href="{% url 'dashboard:download_document' tramite.pk 'aviso_privacidad' 'word' %}"
+                download>
+                  <i class="fas fa-file-word"></i>
+                  <span>Word</span>
+              </a>
+              <a class="download-btn pdf" 
+                href="{% url 'dashboard:download_document' tramite.pk 'aviso_privacidad' 'pdf' %}"
+                download>
+                  <i class="fas fa-file-pdf"></i>
+                  <span>PDF</span>
+              </a>
+          </div>
+        </div>
+
+        <!-- Carta de Intención de Compra -->
+        <div class="document-download-item">
+          <div class="document-icon">
+            <i class="fas fa-envelope"></i>
+          </div>
+          <div class="document-info">
+            <h4 class="document-name">Carta de Intención de Compra</h4>
+            <p class="document-description">Documento que manifiesta la intención de compra del cliente.</p>
+          </div>
+          <div class="document-actions">
+            <a class="download-btn word" 
+                    href="{% url 'dashboard:download_document' tramite.pk 'carta_intencion' 'word' %}"
+                download>
+              <i class="fas fa-file-word"></i>
+              <span>Word</span>
+            </a>
+            <a class="download-btn pdf" 
+                href="{% url 'dashboard:download_document' tramite.pk 'carta_intencion' 'pdf' %}"
+                download>
+                <i class="fas fa-file-pdf"></i>
+                <span>PDF</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Solicitud de Contrato -->
+        <div class="document-download-item">
+          <div class="document-icon">
+            <i class="fas fa-file-signature"></i>
+          </div>
+          <div class="document-info">
+            <h4 class="document-name">Solicitud de Contrato</h4>
+            <p class="document-description">Formulario de solicitud para la elaboración del contrato.</p>
+          </div>
+          <div class="document-actions">
+            <a class="download-btn word" 
+                    href="{% url 'dashboard:download_document' tramite.pk 'solicitud_contrato' 'word' %}"
+                download>
+              <i class="fas fa-file-word"></i>
+              <span>Word</span>
+            </a>
+            <a class="download-btn pdf" 
+                href="{% url 'dashboard:download_document' tramite.pk 'solicitud_contrato' 'pdf' %}"
+                download>
+                <i class="fas fa-file-pdf"></i>
+                <span>PDF</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Plan de Financiamiento 
+        <div class="document-download-item">
+          <div class="document-icon">
+            <i class="fas fa-chart-line"></i>
+          </div>
+          <div class="document-info">
+            <h4 class="document-name">Plan de Financiamiento</h4>
+            <p class="document-description">Detalle del plan de pagos y condiciones financieras.</p>
+          </div>
+          <div class="document-actions">
+            <a class="download-btn word" 
+                    href="{% url 'dashboard:download_document' tramite.pk 'plan_financiamiento' 'word' %}"
+                download>
+              <i class="fas fa-file-word"></i>
+              <span>Word</span>
+            </a>
+            <a class="download-btn pdf" 
+                href="{% url 'dashboard:download_document' tramite.pk 'plan_financiamiento' 'pdf' %}"
+                download>
+                <i class="fas fa-file-pdf"></i>
+                <span>PDF</span>
+            </a>
+          </div>
+        </div>-->
+
+        <!-- Contrato (dinámico según régimen y tipo de pago) -->
+        <div class="document-download-item">
+          <div class="document-icon">
+            <i class="fas fa-file-contract"></i>
+          </div>
+          <div class="document-info">
+            <h4 class="document-name">Contrato</h4>
+            <p class="document-description">
+              Contrato {{ tramite.financiamiento.lote.proyecto.tipo_contrato }} - 
+              {{ tramite.financiamiento.get_tipo_pago_display }}
+              {% if tramite.cliente_2_id %} (Varios Clientes){% endif %}
+            </p>
+          </div>
+          <div class="document-actions">
+            <a class="download-btn word" 
+                    href="{% url 'dashboard:download_document' tramite.pk 'contrato' 'word' %}"
+                download>
+              <i class="fas fa-file-word"></i>
+              <span>Word</span>
+            </a>
+            <a class="download-btn pdf" 
+                href="{% url 'dashboard:download_document' tramite.pk 'contrato' 'pdf' %}"
+                download>
+                <i class="fas fa-file-pdf"></i>
+                <span>PDF</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Botones de acción -->
+  <div class="tramite-actions-section">
+    <div class="actions-container">
+      <button class="action-btn primary" 
+              hx-get="{% url 'dashboard:tramite_update' tramite.pk %}" 
+              hx-target="#content" 
+              hx-swap="innerHTML">
+        <i class="fas fa-edit"></i>
+        <span>Editar Trámite</span>
+      </button>
+      
+      <button class="action-btn secondary"
+              hx-get="{% url 'dashboard:tramite_list' %}" 
+              hx-target="#content" 
+              hx-swap="innerHTML">
+        <i class="fas fa-arrow-left"></i>
+        <span>Volver</span>
+      </button>
+      
+      <button class="action-btn danger"
+              hx-get="{% url 'dashboard:tramite_delete' tramite.pk %}" 
+              hx-target="#content" 
+              hx-swap="innerHTML">
+        <i class="fas fa-trash"></i>
+        <span>Eliminar Trámite</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<style>
+/* Variables CSS personalizadas - asumiendo que están definidas globalmente */
+:root {
+  --glass-bg: rgba(255, 255, 255, 0.1);
+  --glass-border: rgba(255, 255, 255, 0.2);
+  --primary-gradient: linear-gradient(135deg, #2E8FCC 0%, #87CEEB 100%);
+  --secondary-gradient: linear-gradient(135deg, #10B981 0%, #34D399 100%);
+  --accent-gradient: linear-gradient(135deg, #F59E0B 0%, #FBBF24 100%);
+  --danger-gradient: linear-gradient(135deg, #EF4444 0%, #F87171 100%);
+  --text-primary: #333;
+  --text-secondary: #666;
+  --logo-blue: #2E8FCC;
+  --border-radius: 16px;
+  --shadow-sm: 0 4px 15px rgba(46, 143, 204, 0.1);
+  --shadow-md: 0 8px 25px rgba(46, 143, 204, 0.15);
+  --shadow-primary: 0 6px 20px rgba(46, 143, 204, 0.25);
+  --shadow-hover: 0 12px 35px rgba(46, 143, 204, 0.3);
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ==== HEADER DEL TRÁMITE ==== */
+.tramite-detail-header {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  border-radius: var(--border-radius);
+  padding: 2.5rem;
+  margin-bottom: 2rem;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--glass-border);
+  position: relative;
+  overflow: hidden;
+  animation: fadeInUp 0.6s ease;
+}
+
+.tramite-detail-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at 30% 20%, rgba(46, 143, 204, 0.08) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.tramite-header-content {
+  display: flex;
+  gap: 2rem;
+  align-items: flex-start;
+  position: relative;
+}
+
+.tramite-avatar-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.tramite-main-avatar {
+  width: 100px;
+  height: 100px;
+  background: var(--primary-gradient);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-primary);
+  animation: pulse 3s infinite;
+}
+
+.avatar-initials-large {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: white;
+  text-transform: uppercase;
+}
+
+.tramite-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  border: 1px solid transparent;
+}
+
+.tramite-status.completed {
+  background: rgba(16, 185, 129, 0.1);
+  border-color: rgba(16, 185, 129, 0.2);
+}
+
+.tramite-status.completed .status-dot {
+  background: #10B981;
+}
+
+.tramite-status.completed .status-label {
+  color: #10B981;
+}
+
+.tramite-status.in-process {
+  background: rgba(245, 158, 11, 0.1);
+  border-color: rgba(245, 158, 11, 0.2);
+}
+
+.tramite-status.in-process .status-dot {
+  background: #F59E0B;
+}
+
+.tramite-status.in-process .status-label {
+  color: #F59E0B;
+}
+
+.tramite-status.pending {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.2);
+}
+
+.tramite-status.pending .status-dot {
+  background: #3B82F6;
+}
+
+.tramite-status.pending .status-label {
+  color: #3B82F6;
+}
+
+.tramite-status .status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  animation: statusPulse 2s infinite;
+}
+
+.status-label {
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.tramite-title-section {
+  flex: 1;
+}
+
+.tramite-detail-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0 0 0.5rem 0;
+  line-height: 1.2;
+}
+
+.tramite-detail-subtitle {
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+  margin: 0 0 2rem 0;
+  font-weight: 500;
+}
+
+.tramite-quick-actions {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.quick-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  font-weight: 500;
+  backdrop-filter: blur(10px);
+  border: 1px solid transparent;
+}
+
+.quick-action-btn.client {
+  background: rgba(139, 69, 19, 0.1);
+  color: #8B4513;
+  border-color: rgba(139, 69, 19, 0.2);
+}
+
+.quick-action-btn.date {
+  background: rgba(59, 130, 246, 0.1);
+  color: #3B82F6;
+  border-color: rgba(59, 130, 246, 0.2);
+}
+
+/* ==== GRID DE INFORMACIÓN ==== */
+.tramite-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.info-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(15px);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  animation: fadeInUp 0.6s ease;
+  animation-fill-mode: both;
+}
+
+/* Sección de ancho completo para descarga de documentos */
+.info-card.full-width {
+  grid-column: 1 / -1;
+}
+
+.info-card.general-data {
+  animation-delay: 0.1s;
+}
+
+.info-card.client-data {
+  animation-delay: 0.2s;
+}
+
+.info-card.financing-data {
+  animation-delay: 0.3s;
+}
+
+.info-card.clausulas-data {
+  animation-delay: 0.4s;
+}
+
+.info-card.documents-download-data {
+  animation-delay: 0.5s;
+}
+
+.info-card.documents-data {
+  animation-delay: 0.6s;
+}
+
+.info-card.observations-data {
+  animation-delay: 0.7s;
+}
+
+.info-card-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.info-card-icon {
+  width: 45px;
+  height: 45px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.2rem;
+}
+
+.info-card-icon.general {
+  background: var(--primary-gradient);
+}
+
+.info-card-icon.client {
+  background: linear-gradient(135deg, #8B4513 0%, #A0522D 100%);
+}
+
+.info-card-icon.financing {
+  background: var(--secondary-gradient);
+}
+
+.info-card-icon.clausulas {
+  background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+}
+
+.info-card-icon.documents-download {
+  background: linear-gradient(135deg, #059669 0%, #10B981 100%);
+}
+
+.info-card-icon.documents {
+  background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+}
+
+.info-card-icon.observations {
+  background: linear-gradient(135deg, #EC4899 0%, #F472B6 100%);
+}
+
+.info-card-title {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+  flex: 1;
+}
+
+.info-card-body {
+  padding: 1.5rem;
+}
+
+/* ==== GRID DE DATOS ==== */
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.25rem;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: var(--transition);
+}
+
+.info-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+  transform: translateY(-2px);
+}
+
+.info-label {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.info-value {
+  font-size: 1rem;
+  color: var(--text-primary);
+  font-weight: 500;
+  word-break: break-word;
+}
+
+.info-value.price {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #10B981;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.status-badge.completed {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10B981;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.status-badge.in-process {
+  background: rgba(245, 158, 11, 0.1);
+  color: #F59E0B;
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.status-badge.pending {
+  background: rgba(59, 130, 246, 0.1);
+  color: #3B82F6;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+/* ==== CLÁUSULAS ESPECIALES ==== */
+.clausulas-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.clausula-item {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 1.5rem;
+  transition: var(--transition);
+}
+
+.clausula-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.clausula-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.clausula-header i {
+  color: #6366F1;
+  font-size: 1.1rem;
+}
+
+.clausula-title {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 1rem;
+}
+
+.clausula-content p {
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.no-clausulas {
+  text-align: center;
+  padding: 2rem;
+  color: var(--text-secondary);
+}
+
+.no-clausulas-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.3;
+}
+
+.no-clausulas-text {
+  font-size: 1rem;
+  margin: 0;
+}
+
+/* ==== SECCIÓN DE DESCARGA DE DOCUMENTOS ==== */
+.documents-download-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 1.5rem;
+}
+
+.document-download-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: var(--transition);
+}
+
+.document-download-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+}
+
+.document-icon {
+  width: 50px;
+  height: 50px;
+  background: var(--primary-gradient);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.3rem;
+  flex-shrink: 0;
+}
+
+.document-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.document-name {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 0.5rem 0;
+}
+
+.document-description {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.document-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.download-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+  font-size: 0.85rem;
+  text-decoration: none;
+}
+
+.download-btn.word {
+  background: rgba(33, 110, 243, 0.1);
+  color: #216EF3;
+  border: 1px solid rgba(33, 110, 243, 0.2);
+}
+
+.download-btn.word:hover {
+  background: rgba(33, 110, 243, 0.2);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(33, 110, 243, 0.2);
+}
+
+.download-btn.pdf {
+  background: rgba(239, 68, 68, 0.1);
+  color: #EF4444;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.download-btn.pdf:hover {
+  background: rgba(239, 68, 68, 0.2);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+}
+
+/* ==== SECCIÓN DE ACCIONES ==== */
+.tramite-actions-section {
+  animation: fadeInUp 0.6s ease 0.8s both;
+}
+
+.actions-container {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 2rem;
+  border: none;
+  border-radius: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+  text-decoration: none;
+  font-size: 0.95rem;
+  backdrop-filter: blur(10px);
+  border: 1px solid transparent;
+  position: relative;
+  overflow: hidden;
+}
+
+.action-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.5s;
+}
+
+.action-btn:hover::before {
+  left: 100%;
+}
+
+.action-btn.primary {
+  background: var(--primary-gradient);
+  color: white;
+  box-shadow: var(--shadow-primary);
+}
+
+.action-btn.primary:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-hover);
+}
+
+.action-btn.secondary {
+  background: rgba(108, 117, 125, 0.1);
+  color: #6C757D;
+  border-color: rgba(108, 117, 125, 0.2);
+}
+
+.action-btn.secondary:hover {
+  background: rgba(108, 117, 125, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(108, 117, 125, 0.15);
+}
+
+.action-btn.danger {
+  background: rgba(239, 68, 68, 0.1);
+  color: #EF4444;
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+.action-btn.danger:hover {
+  background: rgba(239, 68, 68, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(239, 68, 68, 0.15);
+}
+
+/* ==== RESPONSIVE ==== */
+@media (max-width: 1024px) {
+  .tramite-info-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .tramite-header-content {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  
+  .tramite-avatar-section {
+    align-items: center;
+  }
+  
+  .documents-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .documents-download-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .tramite-detail-header {
+    padding: 2rem;
+  }
+  
+  .tramite-detail-title {
+    font-size: 2rem;
+  }
+  
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .actions-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .quick-action-btn {
+    justify-content: center;
+  }
+  
+  .tramite-quick-actions {
+    justify-content: center;
+  }
+  
+  .document-download-item {
+    flex-direction: column;
+    text-align: center;
+    gap: 1rem;
+  }
+  
+  .document-actions {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .tramite-detail-header {
+    padding: 1.5rem;
+  }
+  
+  .tramite-main-avatar {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .avatar-initials-large {
+    font-size: 1.5rem;
+  }
+  
+  .tramite-detail-title {
+    font-size: 1.8rem;
+  }
+  
+  .tramite-quick-actions {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .info-card-header,
+  .info-card-body {
+    padding: 1rem;
+  }
+  
+  .action-btn {
+    justify-content: center;
+  }
+  
+  .document-section {
+    padding: 1rem;
+  }
+  
+  .documents-download-grid {
+    gap: 1rem;
+  }
+  
+  .document-download-item {
+    padding: 1rem;
+  }
+  
+  .download-btn {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+  }
+}
+
+/* ==== ANIMACIONES ==== */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+@keyframes statusPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.1); }
+}

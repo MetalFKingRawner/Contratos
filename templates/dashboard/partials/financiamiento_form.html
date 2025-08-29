@@ -1,0 +1,1650 @@
+<div class="panel-card form-enhanced">
+  <div class="form-header">
+    <div class="form-header-content">
+      <div class="form-icon-wrapper">
+        <i class="fas fa-money-bill-wave"></i>
+      </div>
+      <div class="form-title-section">
+        <h2 class="form-title">
+          {% if action == 'edit' %}Editar{% else %}Nuevo{% endif %} Financiamiento
+        </h2>
+        <p class="form-subtitle">
+          {% if action == 'edit' %}Actualiza la información del financiamiento{% else %}Completa los datos del nuevo financiamiento{% endif %}
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <form method="post" 
+        hx-post="{% if action == 'edit' %}{% url 'dashboard:financiamiento_update' object.id %}{% else %}{% url 'dashboard:financiamiento_create' %}{% endif %}"
+        hx-target="#content"
+        hx-swap="innerHTML"
+        class="financiamiento-form"
+        novalidate
+        id="financiamiento-form">
+    {% csrf_token %}
+    
+    <!-- Campo oculto para monto_pago_final -->
+    <input type="hidden" id="id_monto_pago_final" name="monto_pago_final" value="{{ form.initial.monto_pago_final|default_if_none:'' }}">
+    
+    <!-- Errores generales -->
+    {% if form.non_field_errors %}
+      <div class="form-errors-general">
+        <div class="error-icon">
+          <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <div class="error-content">
+          {% for error in form.non_field_errors %}
+            <p class="error-message">{{ error }}</p>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+
+    <!-- Secciones del formulario -->
+    <div class="form-sections">
+      
+      <!-- Información Básica -->
+      <div class="form-section">
+        <div class="section-header">
+          <div class="section-icon primary">
+            <i class="fas fa-info-circle"></i>
+          </div>
+          <h3 class="section-title">Datos Generales</h3>
+        </div>
+        
+        <div class="form-grid">
+          <!-- Nombre del Cliente -->
+          <div class="form-group form-group-full">
+            <label class="form-label">
+              {{ form.nombre_cliente.label }}
+              {% if form.nombre_cliente.field.required %}
+                <span class="required-indicator">*</span>
+              {% endif %}
+            </label>
+            <div class="input-wrapper">
+              {{ form.nombre_cliente }}
+              <div class="input-icon">
+                <i class="fas fa-user"></i>
+              </div>
+            </div>
+            {% if form.nombre_cliente.help_text %}
+              <small class="form-help-text">{{ form.nombre_cliente.help_text }}</small>
+            {% endif %}
+            {% if form.nombre_cliente.errors %}
+              <div class="field-errors">
+                {% for error in form.nombre_cliente.errors %}
+                  <span class="field-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    {{ error }}
+                  </span>
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
+          
+          <!-- Proyecto (Lotificación) -->
+          <div class="form-group">
+            <label class="form-label">
+              {{ form.proyecto.label }}
+              {% if form.proyecto.field.required %}
+                <span class="required-indicator">*</span>
+              {% endif %}
+            </label>
+            <div class="input-wrapper">
+              {{ form.proyecto }}
+              <div class="input-icon">
+                <i class="fas fa-map"></i>
+              </div>
+            </div>
+            {% if form.proyecto.help_text %}
+              <small class="form-help-text">{{ form.proyecto.help_text }}</small>
+            {% endif %}
+            {% if form.proyecto.errors %}
+              <div class="field-errors">
+                {% for error in form.proyecto.errors %}
+                  <span class="field-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    {{ error }}
+                  </span>
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
+          
+          <!-- Lote -->
+          <div class="form-group">
+            <label class="form-label">
+              {{ form.lote.label }}
+              {% if form.lote.field.required %}
+                <span class="required-indicator">*</span>
+              {% endif %}
+            </label>
+            <div class="input-wrapper">
+              {{ form.lote }}
+              <div class="input-icon">
+                <i class="fas fa-home"></i>
+              </div>
+            </div>
+            {% if form.lote.help_text %}
+              <small class="form-help-text">{{ form.lote.help_text }}</small>
+            {% endif %}
+            {% if form.lote.errors %}
+              <div class="field-errors">
+                {% for error in form.lote.errors %}
+                  <span class="field-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    {{ error }}
+                  </span>
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
+          
+          <!-- Tipo de Pago -->
+          <div class="form-group">
+            <label class="form-label">
+              {{ form.tipo_pago.label }}
+              {% if form.tipo_pago.field.required %}
+                <span class="required-indicator">*</span>
+              {% endif %}
+            </label>
+            <div class="input-wrapper">
+              {{ form.tipo_pago }}
+              <div class="input-icon">
+                <i class="fas fa-credit-card"></i>
+              </div>
+            </div>
+            {% if form.tipo_pago.help_text %}
+              <small class="form-help-text">{{ form.tipo_pago.help_text }}</small>
+            {% endif %}
+            {% if form.tipo_pago.errors %}
+              <div class="field-errors">
+                {% for error in form.tipo_pago.errors %}
+                  <span class="field-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    {{ error }}
+                  </span>
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
+          
+          <!-- Precio del Lote -->
+          <div class="form-group">
+            <label class="form-label">
+              {{ form.precio_lote.label }}
+              {% if form.precio_lote.field.required %}
+                <span class="required-indicator">*</span>
+              {% endif %}
+            </label>
+            <div class="input-wrapper">
+              {{ form.precio_lote }}
+              <div class="input-icon">
+                <i class="fas fa-tag"></i>
+              </div>
+            </div>
+            {% if form.precio_lote.help_text %}
+              <small class="form-help-text">{{ form.precio_lote.help_text }}</small>
+            {% endif %}
+            {% if form.precio_lote.errors %}
+              <div class="field-errors">
+                {% for error in form.precio_lote.errors %}
+                  <span class="field-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    {{ error }}
+                  </span>
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
+          
+          <!-- Apartado -->
+          <div class="form-group">
+            <label class="form-label">
+              {{ form.apartado.label }}
+              {% if form.apartado.field.required %}
+                <span class="required-indicator">*</span>
+              {% endif %}
+            </label>
+            <div class="input-wrapper">
+              {{ form.apartado }}
+              <div class="input-icon">
+                <i class="fas fa-coins"></i>
+              </div>
+            </div>
+            {% if form.apartado.help_text %}
+              <small class="form-help-text">{{ form.apartado.help_text }}</small>
+            {% endif %}
+            {% if form.apartado.errors %}
+              <div class="field-errors">
+                {% for error in form.apartado.errors %}
+                  <span class="field-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    {{ error }}
+                  </span>
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Información de Pago de Contado -->
+      <div class="form-section pago-contado" style="display: none;">
+        <div class="section-header">
+          <div class="section-icon secondary">
+            <i class="fas fa-money-bill-alt"></i>
+          </div>
+          <h3 class="section-title">Pago de Contado</h3>
+        </div>
+        
+        <div class="form-grid">
+          <!-- Fecha de Pago Completo -->
+          <div class="form-group">
+            <label class="form-label">
+              {{ form.fecha_pago_completo.label }}
+              <span class="required-indicator">*</span>
+            </label>
+            <div class="input-wrapper">
+              {{ form.fecha_pago_completo }}
+              <div class="input-icon">
+                <i class="fas fa-calendar"></i>
+              </div>
+            </div>
+            {% if form.fecha_pago_completo.help_text %}
+              <small class="form-help-text">{{ form.fecha_pago_completo.help_text }}</small>
+            {% endif %}
+            {% if form.fecha_pago_completo.errors %}
+              <div class="field-errors">
+                {% for error in form.fecha_pago_completo.errors %}
+                  <span class="field-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    {{ error }}
+                  </span>
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
+          
+          <!-- Monto de Pago Completo (Calculado) -->
+          <div class="form-group">
+            <label class="form-label">
+              {{ form.monto_pago_completo.label }}
+              <span class="calculated-field">(Calculado)</span>
+            </label>
+            <div class="input-wrapper">
+              {{ form.monto_pago_completo }}
+              <div class="input-icon">
+                <i class="fas fa-calculator"></i>
+              </div>
+            </div>
+            <small class="form-help-text">Se calcula automáticamente: Precio del Lote - Apartado</small>
+            {% if form.monto_pago_completo.errors %}
+              <div class="field-errors">
+                {% for error in form.monto_pago_completo.errors %}
+                  <span class="field-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    {{ error }}
+                  </span>
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Información de Financiamiento -->
+      <div class="form-section pago-financiado" style="display: none;">
+        <div class="section-header">
+          <div class="section-icon accent">
+            <i class="fas fa-wallet"></i>
+          </div>
+          <h3 class="section-title">Financiamiento</h3>
+        </div>
+        
+        <div class="form-grid">
+          <!-- Enganche -->
+          <div class="form-group">
+            <label class="form-label">
+              {{ form.enganche.label }}
+              <span class="required-indicator">*</span>
+            </label>
+            <div class="input-wrapper">
+              {{ form.enganche }}
+              <div class="input-icon">
+                <i class="fas fa-hand-holding-usd"></i>
+              </div>
+            </div>
+            {% if form.enganche.help_text %}
+              <small class="form-help-text">{{ form.enganche.help_text }}</small>
+            {% endif %}
+            {% if form.enganche.errors %}
+              <div class="field-errors">
+                {% for error in form.enganche.errors %}
+                  <span class="field-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    {{ error }}
+                  </span>
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
+          
+          <!-- Fecha de Enganche -->
+          <div class="form-group">
+            <label class="form-label">
+              {{ form.fecha_enganche.label }}
+              <span class="required-indicator">*</span>
+            </label>
+            <div class="input-wrapper">
+              {{ form.fecha_enganche }}
+              <div class="input-icon">
+                <i class="fas fa-calendar-check"></i>
+              </div>
+            </div>
+            {% if form.fecha_enganche.help_text %}
+              <small class="form-help-text">{{ form.fecha_enganche.help_text }}</small>
+            {% endif %}
+            {% if form.fecha_enganche.errors %}
+              <div class="field-errors">
+                {% for error in form.fecha_enganche.errors %}
+                  <span class="field-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    {{ error }}
+                  </span>
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
+          
+          <!-- Número de Mensualidades -->
+          <div class="form-group">
+            <label class="form-label">
+              {{ form.num_mensualidades.label }}
+              <span class="required-indicator">*</span>
+            </label>
+            <div class="input-wrapper">
+              {{ form.num_mensualidades }}
+              <div class="input-icon">
+                <i class="fas fa-list-ol"></i>
+              </div>
+            </div>
+            {% if form.num_mensualidades.help_text %}
+              <small class="form-help-text">{{ form.num_mensualidades.help_text }}</small>
+            {% endif %}
+            {% if form.num_mensualidades.errors %}
+              <div class="field-errors">
+                {% for error in form.num_mensualidades.errors %}
+                  <span class="field-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    {{ error }}
+                  </span>
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
+          
+          <!-- Monto de Mensualidad (Calculado) -->
+          <div class="form-group">
+            <label class="form-label">
+              {{ form.monto_mensualidad.label }}
+              <span class="calculated-field">(Calculado)</span>
+            </label>
+            <div class="input-wrapper">
+              {{ form.monto_mensualidad }}
+              <div class="input-icon">
+                <i class="fas fa-calculator"></i>
+              </div>
+            </div>
+            <small class="form-help-text">Se calcula automáticamente según el monto a financiar</small>
+            {% if form.monto_mensualidad.errors %}
+              <div class="field-errors">
+                {% for error in form.monto_mensualidad.errors %}
+                  <span class="field-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    {{ error }}
+                  </span>
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
+          
+          <!-- Fecha del Primer Pago -->
+          <div class="form-group">
+            <label class="form-label">
+              {{ form.fecha_primer_pago.label }}
+              <span class="required-indicator">*</span>
+            </label>
+            <div class="input-wrapper">
+              {{ form.fecha_primer_pago }}
+              <div class="input-icon">
+                <i class="fas fa-calendar-plus"></i>
+              </div>
+            </div>
+            {% if form.fecha_primer_pago.help_text %}
+              <small class="form-help-text">{{ form.fecha_primer_pago.help_text }}</small>
+            {% endif %}
+            {% if form.fecha_primer_pago.errors %}
+              <div class="field-errors">
+                {% for error in form.fecha_primer_pago.errors %}
+                  <span class="field-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    {{ error }}
+                  </span>
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
+          
+          <!-- Fecha del Último Pago (Calculado) -->
+          <div class="form-group">
+            <label class="form-label">
+              {{ form.fecha_ultimo_pago.label }}
+              <span class="calculated-field">(Calculado)</span>
+            </label>
+            <div class="input-wrapper">
+              {{ form.fecha_ultimo_pago }}
+              <div class="input-icon">
+                <i class="fas fa-calendar-minus"></i>
+              </div>
+            </div>
+            <small class="form-help-text">Se calcula automáticamente según fecha del primer pago y número de mensualidades</small>
+            {% if form.fecha_ultimo_pago.errors %}
+              <div class="field-errors">
+                {% for error in form.fecha_ultimo_pago.errors %}
+                  <span class="field-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    {{ error }}
+                  </span>
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Botones de acción -->
+    <div class="form-actions">
+      <button type="submit" class="form-btn primary">
+        <i class="fas fa-save"></i>
+        <span>{% if action == 'edit' %}Actualizar{% else %}Crear{% endif %} Financiamiento</span>
+        <div class="btn-shine"></div>
+      </button>
+      
+      <button type="button" 
+              class="form-btn outline"
+              hx-get="{% if action == 'edit' %}{% url 'dashboard:financiamiento_detail' object.id %}{% else %}{% url 'dashboard:financiamiento_list' %}{% endif %}"
+              hx-target="#content"
+              hx-swap="innerHTML">
+        <i class="fas fa-times"></i>
+        <span>Cancelar</span>
+      </button>
+    </div>
+  </form>
+</div>
+
+<style>
+/* Variables CSS personalizadas */
+:root {
+  --glass-bg: rgba(255, 255, 255, 0.1);
+  --glass-border: rgba(255, 255, 255, 0.2);
+  --glass-hover: rgba(255, 255, 255, 0.15);
+  --primary-gradient: linear-gradient(135deg, #10B981 0%, #34D399 100%);
+  --secondary-gradient: linear-gradient(135deg, #F59E0B 0%, #FBBF24 100%);
+  --accent-gradient: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%);
+  --danger-gradient: linear-gradient(135deg, #EF4444 0%, #F87171 100%);
+  --success-gradient: linear-gradient(135deg, #10B981 0%, #34D399 100%);
+  --text-primary: #333;
+  --text-secondary: #666;
+  --logo-green: #10B981;
+  --border-radius: 16px;
+  --shadow-sm: 0 4px 15px rgba(16, 185, 129, 0.1);
+  --shadow-md: 0 8px 25px rgba(16, 185, 129, 0.15);
+  --shadow-primary: 0 6px 20px rgba(16, 185, 129, 0.25);
+  --shadow-hover: 0 12px 35px rgba(16, 185, 129, 0.3);
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ==== PANEL CARD MEJORADO ==== */
+.panel-card.form-enhanced {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  animation: slideInRight 0.5s ease;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+/* ==== HEADER DEL FORMULARIO ==== */
+.form-header {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 1.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  position: relative;
+}
+
+.form-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at 20% 20%, rgba(16, 185, 129, 0.08) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.form-header-content {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  position: relative;
+}
+
+.form-icon-wrapper {
+  width: 50px;
+  height: 50px;
+  background: var(--primary-gradient);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-sm);
+  animation: pulse 2s infinite;
+}
+
+.form-icon-wrapper i {
+  font-size: 1.5rem;
+  color: white;
+}
+
+.form-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0;
+}
+
+.form-subtitle {
+  color: var(--text-secondary);
+  margin: 0.25rem 0 0 0;
+  font-size: 0.9rem;
+}
+
+/* ==== FORMULARIO PRINCIPAL ==== */
+.financiamiento-form {
+  padding: 1.75rem;
+}
+
+/* ==== ERRORES GENERALES ==== */
+.form-errors-general {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 10px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  animation: shake 0.5s ease-in-out;
+}
+
+.error-icon {
+  width: 35px;
+  height: 35px;
+  background: rgba(239, 68, 68, 0.2);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #EF4444;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.error-content {
+  flex: 1;
+}
+
+.error-message {
+  color: #EF4444;
+  margin: 0;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+/* ==== SECCIONES DEL FORMULARIO ==== */
+.form-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.form-section {
+  position: relative;
+  animation: fadeInUp 0.6s ease;
+  animation-fill-mode: both;
+}
+
+.form-section:nth-child(1) { animation-delay: 0.1s; }
+.form-section:nth-child(2) { animation-delay: 0.2s; }
+.form-section:nth-child(3) { animation-delay: 0.3s; }
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.section-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1rem;
+}
+
+.section-icon.primary {
+  background: var(--primary-gradient);
+}
+
+.section-icon.secondary {
+  background: var(--secondary-gradient);
+}
+
+.section-icon.accent {
+  background: var(--accent-gradient);
+}
+
+.section-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+/* ==== GRID DEL FORMULARIO ==== */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.25rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group-full {
+  grid-column: 1 / -1;
+}
+
+.form-label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.required-indicator {
+  color: #EF4444;
+  font-weight: 600;
+}
+
+.calculated-field {
+  color: var(--logo-green);
+  font-size: 0.75rem;
+  font-weight: 400;
+  background: rgba(16, 185, 129, 0.1);
+  padding: 0.125rem 0.5rem;
+  border-radius: 6px;
+}
+
+/* ==== INPUTS ==== */
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  padding-right: 2.75rem;
+  border: 1.5px solid var(--glass-border);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  transition: var(--transition);
+  font-family: inherit;
+}
+
+.form-group textarea {
+  min-height: 100px;
+  resize: vertical;
+  padding-right: 1rem;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--logo-green);
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+  transform: translateY(-1px);
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+  color: var(--text-secondary);
+}
+
+.input-icon {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  pointer-events: none;
+  transition: var(--transition);
+}
+
+.form-group input:focus + .input-icon,
+.form-group select:focus + .input-icon {
+  color: var(--logo-green);
+}
+
+.form-group textarea + .input-icon {
+  display: none;
+}
+
+/* ==== CAMPOS CALCULADOS ==== */
+.form-group input.calculated-field,
+.form-group input[readonly] {
+  background: rgba(16, 185, 129, 0.05);
+  border-color: rgba(16, 185, 129, 0.3);
+  cursor: not-allowed;
+}
+
+/* ==== TEXTO DE AYUDA ==== */
+.form-help-text {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
+  font-style: italic;
+}
+
+/* ==== ERRORES DE CAMPO ==== */
+.field-errors {
+  margin-top: 0.5rem;
+}
+
+.field-error {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #EF4444;
+  font-size: 0.8rem;
+  font-weight: 500;
+  animation: fadeInDown 0.3s ease;
+}
+
+.field-error i {
+  font-size: 0.75rem;
+}
+
+/* ==== BOTONES DE ACCIÓN ==== */
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.form-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1.75rem;
+  border: none;
+  border-radius: 10px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+  text-decoration: none;
+  font-size: 0.9rem;
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+  border: 1.5px solid transparent;
+  min-width: 140px;
+  justify-content: center;
+}
+
+.btn-shine {
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.6s;
+}
+
+.form-btn:hover .btn-shine {
+  left: 100%;
+}
+
+.form-btn.primary {
+  background: var(--primary-gradient);
+  color: white;
+  box-shadow: var(--shadow-primary);
+}
+
+.form-btn.primary:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+}
+
+.form-btn.outline {
+  background: transparent;
+  color: var(--text-secondary);
+  border-color: var(--glass-border);
+}
+
+.form-btn.outline:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+/* ==== RESPONSIVE ==== */
+@media (max-width: 768px) {
+  .panel-card.form-enhanced {
+    border-radius: 0;
+    height: 100vh;
+    max-height: 100vh;
+  }
+  
+  .form-header {
+    padding: 1.5rem;
+  }
+  
+  .form-header-content {
+    flex-direction: column;
+    text-align: center;
+    gap: 1rem;
+  }
+  
+  .form-title {
+    font-size: 1.3rem;
+  }
+  
+  .financiamiento-form {
+    padding: 1.5rem;
+  }
+  
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .form-btn {
+    min-width: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .form-header {
+    padding: 1rem;
+  }
+  
+  .form-icon-wrapper {
+    width: 45px;
+    height: 45px;
+  }
+  
+  .form-icon-wrapper i {
+    font-size: 1.3rem;
+  }
+  
+  .form-title {
+    font-size: 1.2rem;
+  }
+  
+  .financiamiento-form {
+    padding: 1rem;
+  }
+  
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+  
+  .section-icon {
+    width: 35px;
+    height: 35px;
+  }
+}
+
+/* ==== ANIMACIONES ==== */
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+/* ==== MEJORAS DE UX ==== */
+.form-group input:invalid:not(:focus) {
+  border-color: rgba(239, 68, 68, 0.5);
+}
+
+.form-group input:valid:not(:focus) {
+  border-color: rgba(16, 185, 129, 0.5);
+}
+
+/* ==== LOADING STATE ==== */
+.form-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.form-btn.loading {
+  pointer-events: none;
+}
+
+.form-btn.loading::after {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ==== SCROLL PERSONALIZADO ==== */
+.panel-card.form-enhanced::-webkit-scrollbar {
+  width: 6px;
+}
+
+.panel-card.form-enhanced::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+.panel-card.form-enhanced::-webkit-scrollbar-thumb {
+  background: var(--logo-green);
+  border-radius: 3px;
+}
+
+.panel-card.form-enhanced::-webkit-scrollbar-thumb:hover {
+  background: #0d9668;
+}
+
+/* ==== ESTILOS ADICIONALES PARA CAMPOS CALCULADOS ==== */
+.field-warning {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #F59E0B;
+  font-size: 0.8rem;
+  font-weight: 500;
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  border-radius: 6px;
+  animation: fadeInDown 0.3s ease;
+}
+
+.field-warning i {
+  font-size: 0.75rem;
+  color: #F59E0B;
+}
+
+.form-group input.calculated {
+  border-color: var(--logo-green) !important;
+  background: rgba(16, 185, 129, 0.05);
+}
+
+@keyframes fieldHighlight {
+  0% { background: rgba(16, 185, 129, 0.2); }
+  100% { background: rgba(16, 185, 129, 0.05); }
+}
+
+.form-group input.updated {
+  animation: fieldHighlight 1s ease;
+}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/autonumeric@4.6.0/dist/autoNumeric.min.js"></script>
+<script>
+// Prevenir ejecución múltiple
+if (!window.financiamientoScriptLoaded) {
+  window.financiamientoScriptLoaded = true;
+
+  document.addEventListener('DOMContentLoaded', () => {
+    initFinanciamientoForm();
+  });
+
+  // Reinicializar cuando HTMX carga contenido
+  document.body.addEventListener('htmx:afterSwap', function(evt) {
+    if (evt.detail.target.id === 'content') {
+      setTimeout(initFinanciamientoForm, 50);
+    }
+  });
+
+  function initFinanciamientoForm() {
+    // SISTEMA DE DEBUG
+    function debugLog(message, data = null) {
+      console.log(`🛠 DEBUG FINANCIAMIENTO: ${message}`, data ? data : '');
+    }
+
+    debugLog('=== INICIANDO SCRIPT FINANCIAMIENTO ===');
+
+    const form = document.querySelector('.financiamiento-form');
+    if (!form) {
+      debugLog('❌ Formulario no encontrado');
+      return;
+    }
+
+    // Variables globales
+    let autoNumericInstances = {};
+    let isCalculating = false;
+    let userInputFields = new Set();
+
+    // Campos que tendrán formato de dinero
+    const moneyFields = [
+      'id_precio_lote',
+      'id_apartado', 
+      'id_enganche',
+      'id_monto_pago_completo',
+      'id_monto_mensualidad'
+    ];
+
+    // Campos que son SOLO de entrada
+    const inputFields = [
+      'id_precio_lote',
+      'id_apartado', 
+      'id_enganche'
+    ];
+
+    // Campos que son SOLO calculados
+    const calculatedFields = [
+      'id_monto_pago_completo',
+      'id_monto_mensualidad'
+    ];
+
+    // CONFIGURACIÓN CORREGIDA DE AUTONUMERIC
+    const autoNumericConfig = {
+      currencySymbol: '$ ',
+      currencySymbolPlacement: 'p',
+      digitGroupSeparator: ',',
+      decimalCharacter: '.',
+      decimalPlaces: 2,
+      unformatOnSubmit: true, // ✅ ACTIVADO para desformateo automático
+      formatOnPageLoad: true,
+      minimumValue: '0',
+      watchExternalChanges: false,
+      modifyValueOnWheel: false,
+      unformatOnHover: false,
+      saveValueToSessionStorage: false,
+      createLocalList: false
+    };
+
+    // FUNCIÓN PARA DESFORMATEAR MANUALMENTE (FALLBACK)
+    function unformatValue(value) {
+      if (!value) return '0';
+      return String(value).replace(/[$,\s]/g, '') || '0';
+    }
+
+    // CONFIGURAR HANDLERS DE ENVÍO - SIMPLIFICADO Y ROBUSTO
+    function setupFormSubmitHandler() {
+      debugLog('🔧 Configurando handler de envío SIMPLIFICADO');
+
+      // MÉTODO PRINCIPAL: Interceptar antes del envío
+      form.addEventListener('htmx:configRequest', function(evt) {
+        debugLog('🚀 HTMX configRequest - DESFORMATEANDO CAMPOS');
+        
+        moneyFields.forEach(fieldId => {
+          const element = document.getElementById(fieldId);
+          
+          if (element && element.value) {
+            const instance = autoNumericInstances[fieldId];
+            let cleanValue = '0';
+            
+            try {
+              if (instance && typeof instance.getNumericString === 'function') {
+                cleanValue = instance.getNumericString() || '0';
+                debugLog(`💰 AutoNumeric desformateó ${fieldId}: "${element.value}" → "${cleanValue}"`);
+              } else {
+                // Fallback manual robusto
+                cleanValue = unformatValue(element.value);
+                debugLog(`💰 Desformateo manual ${fieldId}: "${element.value}" → "${cleanValue}"`);
+              }
+            } catch (error) {
+              debugLog(`⚠️ Error con AutoNumeric en ${fieldId}, usando fallback:`, error);
+              cleanValue = unformatValue(element.value);
+            }
+            
+            // Asegurar que el valor sea válido
+            const numValue = parseFloat(cleanValue);
+            if (!isNaN(numValue)) {
+              element.value = cleanValue;
+              // También actualizar en los parámetros de HTMX si es necesario
+              if (evt.detail.parameters) {
+                evt.detail.parameters[element.name] = cleanValue;
+              }
+            }
+          }
+        });
+      });
+
+      // MÉTODO SECUNDARIO: Submit tradicional como respaldo
+      form.addEventListener('submit', function(evt) {
+        debugLog('📝 Submit event - RESPALDO DE DESFORMATEO');
+        
+        moneyFields.forEach(fieldId => {
+          const element = document.getElementById(fieldId);
+          if (element && element.value) {
+            const cleanValue = unformatValue(element.value);
+            element.value = cleanValue;
+            debugLog(`💰 [SUBMIT] Limpieza ${fieldId}: "${cleanValue}"`);
+          }
+        });
+      });
+
+      // Reformatear después de respuesta exitosa
+      form.addEventListener('htmx:afterRequest', function(evt) {
+        if (evt.detail.xhr.status === 200 && !evt.detail.xhr.responseText.includes('error')) {
+          debugLog('🔄 Respuesta exitosa - manteniendo formato para UX');
+          // No reformatear inmediatamente para evitar conflictos
+        }
+      });
+    }
+
+    // Inicializar AutoNumeric
+    function initializeAutoNumeric() {
+      moneyFields.forEach(fieldId => {
+        const element = document.getElementById(fieldId);
+        if (element) {
+          debugLog(`Intentando inicializar AutoNumeric en: ${fieldId}`);
+          
+          // Limpiar instancia previa si existe
+          try {
+            const existingInstance = AutoNumeric.getAutoNumericElement(`#${fieldId}`);
+            if (existingInstance) {
+              existingInstance.remove();
+              debugLog(`🗑️ Instancia anterior de ${fieldId} removida`);
+            }
+          } catch (e) {
+            // No hay instancia previa
+          }
+          
+          try {
+            // Obtener valor inicial
+            const initialValue = element.getAttribute('data-value') || 
+                               element.value || 
+                               element.getAttribute('value') || 
+                               '0';
+            
+            // Limpiar el valor inicial si está formateado
+            const cleanInitialValue = unformatValue(initialValue);
+            element.value = cleanInitialValue;
+            
+            // Crear nueva instancia con valor limpio
+            autoNumericInstances[fieldId] = new AutoNumeric(element, autoNumericConfig);
+            debugLog(`✅ AutoNumeric creado exitosamente en: ${fieldId}`);
+
+            // Formatear valor inicial si es válido
+            const numValue = parseFloat(cleanInitialValue);
+            if (!isNaN(numValue) && numValue > 0) {
+              autoNumericInstances[fieldId].set(numValue);
+            }
+
+            // Eventos para campos de entrada
+            if (inputFields.includes(fieldId)) {
+              debugLog(`Configurando eventos especiales para campo de entrada: ${fieldId}`);
+              
+              element.addEventListener('focus', () => {
+                userInputFields.add(fieldId);
+                debugLog(`🎯 FOCUS en ${fieldId} - Campo marcado como "en uso"`);
+              });
+              
+              element.addEventListener('blur', () => {
+                debugLog(`👋 BLUR en ${fieldId} - Campo desmarcado`);
+                userInputFields.delete(fieldId);
+                
+                setTimeout(() => {
+                  debugLog(`Ejecutando recálculo programado desde ${fieldId}`);
+                  recalculate();
+                }, 100);
+              });
+            }
+
+            // Marcar campos calculados como readonly
+            if (calculatedFields.includes(fieldId)) {
+              element.readOnly = true;
+              element.classList.add('calculated-field');
+              debugLog(`🔒 Campo ${fieldId} marcado como calculado (readonly)`);
+            }
+
+          } catch (error) {
+            debugLog(`❌ ERROR al crear AutoNumeric en ${fieldId}:`, error);
+            // Fallback: mantener el campo sin formato pero funcional
+            element.type = 'number';
+            element.step = '0.01';
+            element.min = '0';
+          }
+        } else {
+          debugLog(`⚠️ Elemento no encontrado: ${fieldId}`);
+        }
+      });
+    }
+
+    // Función para obtener valor numérico limpio
+    function getNumericValue(fieldId) {
+      debugLog(`🔍 Obteniendo valor numérico de: ${fieldId}`);
+      
+      const instance = autoNumericInstances[fieldId];
+      if (instance) {
+        try {
+          const value = parseFloat(instance.getNumericString()) || 0;
+          debugLog(`✅ Valor obtenido de AutoNumeric ${fieldId}: ${value}`);
+          return value;
+        } catch (error) {
+          debugLog(`⚠️ Error obteniendo valor de AutoNumeric ${fieldId}:`, error);
+        }
+      }
+      
+      const element = document.getElementById(fieldId);
+      const rawValue = element?.value;
+      const cleanValue = unformatValue(rawValue);
+      const value = parseFloat(cleanValue) || 0;
+      debugLog(`✅ Valor obtenido manualmente de ${fieldId}: ${value}`);
+      return value;
+    }
+
+    // Función para establecer valor SOLO en campos calculados
+    function setCalculatedValue(fieldId, value) {
+      debugLog(`🎯 Intentando establecer valor calculado en ${fieldId}: ${value}`);
+      
+      if (userInputFields.has(fieldId)) {
+        debugLog(`🚫 BLOQUEADO - Usuario escribiendo en ${fieldId}`);
+        return;
+      }
+      
+      if (!calculatedFields.includes(fieldId)) {
+        debugLog(`🚫 BLOQUEADO - ${fieldId} no es un campo calculado`);
+        return;
+      }
+      
+      debugLog(`✅ Estableciendo valor en campo calculado ${fieldId}: ${value}`);
+      
+      const instance = autoNumericInstances[fieldId];
+      if (instance) {
+        try {
+          isCalculating = true;
+          debugLog(`🔄 Usando AutoNumeric.set() para ${fieldId}`);
+          instance.set(value);
+          setTimeout(() => {
+            isCalculating = false;
+            debugLog(`🔄 Flag isCalculating desactivado para ${fieldId}`);
+          }, 50);
+        } catch (error) {
+          debugLog(`❌ Error usando AutoNumeric.set() en ${fieldId}:`, error);
+          // Fallback
+          const element = document.getElementById(fieldId);
+          if (element) {
+            element.value = value;
+          }
+        }
+      } else {
+        const element = document.getElementById(fieldId);
+        if (element) {
+          debugLog(`🔄 Usando element.value para ${fieldId}`);
+          element.value = value;
+        }
+      }
+
+      // Animación visual de actualización
+      const element = document.getElementById(fieldId);
+      if (element) {
+        element.classList.add('updated');
+        setTimeout(() => {
+          element.classList.remove('updated');
+        }, 1000);
+      }
+    }
+
+    // Función para mostrar/ocultar campos
+    function toggleFieldsVisibility() {
+      const tipo = document.getElementById('id_tipo_pago')?.value;
+      debugLog(`🔀 Cambiando visibilidad de campos para tipo: ${tipo}`);
+      
+      const contadoFields = document.querySelectorAll('.pago-contado');
+      const financiadoFields = document.querySelectorAll('.pago-financiado');
+      
+      contadoFields.forEach(el => el.style.display = tipo === 'contado' ? 'block' : 'none');
+      financiadoFields.forEach(el => el.style.display = tipo === 'financiado' ? 'block' : 'none');
+    }
+
+    // Cálculos para pago de contado
+    function calculateContado() {
+      if (isCalculating) {
+        debugLog('🚫 calculateContado bloqueado - isCalculating = true');
+        return;
+      }
+      
+      debugLog('🧮 INICIANDO cálculo de contado');
+      
+      const precio = getNumericValue('id_precio_lote');
+      const apartado = getNumericValue('id_apartado');
+      const monto = precio - apartado;
+      
+      debugLog('🧮 Valores para cálculo contado:', { precio, apartado, monto });
+      
+      if (monto >= 0) {
+        debugLog('✅ Estableciendo monto de pago completo');
+        setCalculatedValue('id_monto_pago_completo', monto);
+      } else {
+        debugLog('⚠️ Monto negativo, no se establece valor');
+      }
+    }
+
+    // Cálculos para pago financiado
+    function calculateFinanciado() {
+      if (isCalculating) {
+        debugLog('🚫 calculateFinanciado bloqueado - isCalculating = true');
+        return;
+      }
+      
+      debugLog('🧮 INICIANDO cálculo de financiado');
+      
+      const precio = getNumericValue('id_precio_lote');
+      const apartado = getNumericValue('id_apartado');
+      const enganche = getNumericValue('id_enganche');
+      const num = parseInt(document.getElementById('id_num_mensualidades')?.value) || 0;
+      const fechaPrimer = document.getElementById('id_fecha_primer_pago')?.value;
+      
+      debugLog('🧮 Valores para cálculo financiado:', { precio, apartado, enganche, num, fechaPrimer });
+      
+      if (!fechaPrimer || num < 1) {
+        debugLog('⚠️ Datos insuficientes para cálculo financiado');
+        return;
+      }
+
+      // Calcular fecha último pago
+      const [y, m, d] = fechaPrimer.split('-').map(Number);
+      const date = new Date(y, m - 1 + (num - 1), d);
+      const yyyy = date.getFullYear();
+      const mm = String(date.getMonth() + 1).padStart(2, '0');
+      const dd = String(date.getDate()).padStart(2, '0');
+      const fechaUltimo = document.getElementById('id_fecha_ultimo_pago');
+      if (fechaUltimo) {
+        fechaUltimo.value = `${yyyy}-${mm}-${dd}`;
+        debugLog('📅 Fecha último pago calculada:', `${yyyy}-${mm}-${dd}`);
+      }
+
+      // Calcular montos
+      const restante = precio - apartado - enganche;
+      debugLog('💰 Monto restante:', restante);
+      
+      if (restante > 0) {
+        const base = restante / num;
+        const mensual = Math.ceil(base / 100) * 100;
+        const pagoFinal = restante - mensual * (num - 1);
+        
+        debugLog('💰 Cálculos finales:', { base, mensual, pagoFinal });
+        
+        setCalculatedValue('id_monto_mensualidad', mensual);
+        const montoFinalElement = document.getElementById('id_monto_pago_final');
+        if (montoFinalElement) {
+          montoFinalElement.value = pagoFinal.toFixed(2);
+        }
+      }
+    }
+
+    // Función principal de recálculo
+    function recalculate() {
+      if (isCalculating) {
+        debugLog('🚫 recalculate bloqueado - isCalculating = true');
+        return;
+      }
+      
+      debugLog('🔄 INICIANDO RECÁLCULO GENERAL');
+      
+      const tipo = document.getElementById('id_tipo_pago')?.value;
+      debugLog('📋 Tipo de pago actual:', tipo);
+      
+      toggleFieldsVisibility();
+      
+      if (tipo === 'contado') {
+        calculateContado();
+      } else if (tipo === 'financiado') {
+        calculateFinanciado();
+      }
+      
+      debugLog('🔄 RECÁLCULO COMPLETADO');
+    }
+
+    // Event listeners para campos que no son de dinero
+    function setupEventListeners() {
+      const nonMoneyTriggers = [
+        'id_tipo_pago',
+        'id_num_mensualidades',
+        'id_fecha_primer_pago'
+      ];
+
+      nonMoneyTriggers.forEach(fieldId => {
+        const element = document.getElementById(fieldId);
+        if (element) {
+          debugLog(`🔗 Agregando listener 'change' a: ${fieldId}`);
+          element.addEventListener('change', () => {
+            debugLog(`🔔 CHANGE event en ${fieldId}, valor: ${element.value}`);
+            recalculate();
+          });
+        }
+      });
+    }
+
+    // Carga dinámica de lotes
+    function setupLoteLoading() {
+      const proyectoSelect = document.getElementById('id_proyecto');
+      const loteSelect = document.getElementById('id_lote');
+      
+      if (proyectoSelect && loteSelect) {
+        debugLog('🏗️ Configurando carga dinámica de lotes');
+        proyectoSelect.addEventListener('change', function() {
+          const projId = this.value;
+          debugLog('🏗️ Cambio en proyecto:', projId);
+          
+          if (!projId) {
+            loteSelect.innerHTML = '<option value="">— Selecciona lote —</option>';
+            return;
+          }
+          
+          loteSelect.innerHTML = '<option value="">Cargando...</option>';
+          
+          fetch(`/workflow/ajax/lotes/${projId}/`)
+            .then(response => response.json())
+            .then(data => {
+              loteSelect.innerHTML = '<option value="">— Selecciona lote —</option>';
+              if (data.lotes) {
+                data.lotes.forEach(lote => {
+                  const option = document.createElement('option');
+                  option.value = lote.id;
+                  option.textContent = lote.identificador;
+                  loteSelect.appendChild(option);
+                });
+                debugLog('🏗️ Lotes cargados:', data.lotes.length);
+              }
+            })
+            .catch(error => {
+              debugLog('❌ Error cargando lotes:', error);
+              loteSelect.innerHTML = '<option value="">Error al cargar lotes</option>';
+            });
+        });
+      }
+    }
+
+    // Mejoras UX
+    function setupUXEnhancements() {
+      // Auto-focus primer campo
+      const firstInput = form.querySelector('input, select, textarea');
+      if (firstInput) {
+        setTimeout(() => firstInput.focus(), 150);
+      }
+
+      // Animación en inputs
+      const inputs = form.querySelectorAll('input, select, textarea');
+      inputs.forEach(input => {
+        input.addEventListener('focus', function() {
+          this.closest('.form-group').style.transform = 'translateY(-1px)';
+          this.closest('.form-group').style.transition = 'all 0.3s ease';
+        });
+        
+        input.addEventListener('blur', function() {
+          this.closest('.form-group').style.transform = 'translateY(0)';
+        });
+      });
+
+      // Loading state en submit
+      const submitBtn = form.querySelector('.form-btn.primary');
+      if (submitBtn) {
+        form.addEventListener('submit', function() {
+          submitBtn.classList.add('loading');
+          submitBtn.disabled = true;
+          const originalText = submitBtn.querySelector('span').textContent;
+          submitBtn.querySelector('span').textContent = 'Guardando...';
+          
+          setTimeout(() => {
+            submitBtn.classList.remove('loading');
+            submitBtn.disabled = false;
+            submitBtn.querySelector('span').textContent = originalText;
+          }, 4000);
+        });
+      }
+
+      // Validación en tiempo real
+      const inputs2 = form.querySelectorAll('input, select, textarea');
+      inputs2.forEach(input => {
+        input.addEventListener('input', function() {
+          const errorDiv = this.closest('.form-group').querySelector('.field-errors');
+          if (errorDiv && this.value.trim()) {
+            errorDiv.style.opacity = '0';
+            setTimeout(() => {
+              if (errorDiv.style.opacity === '0') {
+                errorDiv.style.display = 'none';
+              }
+            }, 300);
+          }
+        });
+      });
+    }
+
+    // ORDEN DE INICIALIZACIÓN CORREGIDO
+    debugLog('🚀 Iniciando configuración en orden correcto');
+    
+    // 1. Configurar handlers de envío PRIMERO
+    setupFormSubmitHandler();
+    
+    // 2. Inicializar AutoNumeric
+    initializeAutoNumeric();
+    
+    // 3. Configurar event listeners
+    setupEventListeners();
+    
+    // 4. Configurar carga de lotes
+    setupLoteLoading();
+    
+    // 5. Configurar UX
+    setupUXEnhancements();
+    
+    // 6. Ejecutar recálculo inicial
+    debugLog('🚀 Ejecutando inicialización final');
+    recalculate();
+    
+    debugLog('=== SCRIPT FINANCIAMIENTO INICIALIZADO COMPLETAMENTE ===');
+  }
+}
+</script>

@@ -1,0 +1,257 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>{% block title %}Panel Admin{% endblock %}</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+
+  <!-- Tus estilos generales (Bootstrap, Variables CSS, glassmorphism…) -->
+  <link rel="stylesheet" href="{% static 'css/main.css' %}">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- FontAwesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+
+    <!-- HTMX para carga parcial -->
+  <script src="https://unpkg.com/htmx.org@1.9.2"></script>
+</head>
+<body>
+  <!-- Elementos flotantes decorativos -->
+  <div class="floating-elements">
+    <div class="floating-element"></div>
+    <div class="floating-element"></div>
+    <div class="floating-element"></div>
+    <div class="floating-element"></div>
+    <div class="floating-element"></div>
+    <div class="floating-element"></div>
+    <div class="floating-element"></div>
+    <div class="floating-element"></div>
+    <div class="floating-element"></div>
+  </div>
+
+  <!-- Botón de menú móvil -->
+  <button class="mobile-menu-btn" onclick="toggleSidebar()">
+    <i class="fas fa-bars"></i>
+  </button>
+
+  <!--  ─── SIDEBAR ─────────────────────────────────────────  -->
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">🏢</div>
+      <h4>Panel Admin</h4>
+      <div class="subtitle">Sistema de Gestión</div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-title">Principal</div>
+      <ul class="nav flex-column">
+        <li class="nav-item">
+          <a href="#" 
+             class="nav-link active"
+             hx-get="{% url 'dashboard:home' %}"
+             hx-target="#content" 
+             hx-swap="innerHTML">
+            <i class="fas fa-home"></i>
+            <span class="nav-link-text">Inicio</span>
+          </a>
+        </li>
+        <li class="nav-item">
+              <a class="nav-link" href="{% url 'inicio' %}"> <i class="fas fa-home"></i>Principal</a>
+        </li>
+      </ul>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-title">Gestión</div>
+      <ul class="nav flex-column">
+        <li class="nav-item">
+          <a href="#" 
+             class="nav-link"
+             hx-get="{% url 'dashboard:cliente_list' %}"
+             hx-target="#content" 
+             hx-swap="innerHTML">
+            <i class="fas fa-users"></i>
+            <span class="nav-link-text">Clientes</span>
+            <span class="nav-badge">24</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="#" 
+             class="nav-link"
+             hx-get="{% url 'dashboard:vendedor_list' %}"
+             hx-target="#content" 
+             hx-swap="innerHTML">
+            <i class="fas fa-user-tie"></i>
+            <span class="nav-link-text">Vendedores</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="#" 
+             class="nav-link"
+             hx-get="{% url 'dashboard:propietario_list' %}"
+             hx-target="#content" 
+             hx-swap="innerHTML"
+             hx-push-url="true"> <!-- Añadir esto -->
+            <i class="fas fa-crown"></i>
+            <span class="nav-link-text">Propietarios</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-title">Proyectos</div>
+      <ul class="nav flex-column">
+        <li class="nav-item">
+          <a href="#" 
+             class="nav-link"
+             hx-get="{% url 'dashboard:proyecto_list' %}"
+             hx-target="#content" 
+             hx-swap="innerHTML">
+            <i class="fas fa-building"></i>
+            <span class="nav-link-text">Proyectos</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="#" 
+             class="nav-link"
+             hx-get="{% url 'dashboard:lote_list' %}"
+             hx-target="#content" 
+             hx-swap="innerHTML">
+            <i class="fas fa-map"></i>
+            <span class="nav-link-text">Lotes</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-title">Finanzas</div>
+      <ul class="nav flex-column">
+        <li class="nav-item">
+          <a href="#" 
+             class="nav-link"
+             hx-get="{% url 'dashboard:financiamiento_list' %}"
+             hx-target="#content" 
+             hx-swap="innerHTML">
+            <i class="fas fa-credit-card"></i>
+            <span class="nav-link-text">Financiamientos</span>
+            <span class="nav-badge">12</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="#" 
+             class="nav-link"
+             hx-get="{% url 'dashboard:tramite_list' %}"
+             hx-target="#content" 
+             hx-swap="innerHTML">
+            <i class="fas fa-file-alt"></i>
+            <span class="nav-link-text">Trámites</span>
+            <span class="nav-badge">5</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <!--  ─── CONTENIDO DINÁMICO ───────────────────────────────  -->
+  <main id="content" class="flex-grow-1 overflow-auto">
+    {% block content %}
+      <div class="welcome-section">
+        <h1 class="welcome-title">Bienvenido al Panel de Administración</h1>
+        <p class="welcome-subtitle">
+          Gestiona todos los aspectos de tu negocio desde un solo lugar
+        </p>
+        
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon">
+              <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-number">1,234</div>
+            <div class="stat-label">Clientes Activos</div>
+          </div>
+          
+          <div class="stat-card">
+            <div class="stat-icon">
+              <i class="fas fa-building"></i>
+            </div>
+            <div class="stat-number">45</div>
+            <div class="stat-label">Proyectos</div>
+          </div>
+          
+          <div class="stat-card">
+            <div class="stat-icon">
+              <i class="fas fa-chart-line"></i>
+            </div>
+            <div class="stat-number">$2.5M</div>
+            <div class="stat-label">Ventas del Mes</div>
+          </div>
+          
+          <div class="stat-card">
+            <div class="stat-icon">
+              <i class="fas fa-handshake"></i>
+            </div>
+            <div class="stat-number">89</div>
+            <div class="stat-label">Contratos Activos</div>
+          </div>
+        </div>
+      </div>
+    {% endblock %}
+  </main>
+
+  <script>
+    // Función para alternar sidebar en móvil
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      sidebar.classList.toggle('open');
+    }
+
+    // Cerrar sidebar al hacer click fuera en móvil
+    document.addEventListener('click', function(e) {
+      const sidebar = document.getElementById('sidebar');
+      const menuBtn = document.querySelector('.mobile-menu-btn');
+      
+      if (window.innerWidth <= 768 && 
+          !sidebar.contains(e.target) && 
+          !menuBtn.contains(e.target)) {
+        sidebar.classList.remove('open');
+      }
+    });
+
+    // Manejar enlaces de navegación
+    document.addEventListener('DOMContentLoaded', function() {
+      const navLinks = document.querySelectorAll('.nav-link');
+      
+      navLinks.forEach(link => {
+        link.addEventListener('click', function() {
+          // Remover clase active de todos los enlaces
+          navLinks.forEach(l => l.classList.remove('active'));
+          // Agregar clase active al enlace clickeado
+          this.classList.add('active');
+          
+          // Cerrar sidebar en móvil después de click
+          if (window.innerWidth <= 768) {
+            document.getElementById('sidebar').classList.remove('open');
+          }
+        });
+      });
+    });
+
+    // Efectos de scroll
+    window.addEventListener('scroll', function() {
+      const scrolled = window.pageYOffset;
+      const parallax = document.querySelector('.welcome-section');
+      
+      if (parallax) {
+        const speed = scrolled * 0.5;
+        parallax.style.transform = `translateY(${speed}px)`;
+      }
+    });
+  </script>
+</body>
+</html>
