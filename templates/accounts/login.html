@@ -1,0 +1,495 @@
+{# templates/accounts/login.html #}
+{% load static %}
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Iniciar sesión - Grupo Jora</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <style>
+    /* Variables de color basadas en el logo de Grupo Jora */
+    :root {
+      --primary-gradient: linear-gradient(135deg, #2E8FCC 0%, #1B5F8C 100%);
+      --secondary-gradient: linear-gradient(135deg, #2E8FCC 0%, #3F4A7A 100%);
+      --accent-gradient: linear-gradient(135deg, #4A90C2 0%, #2E6DA4 100%);
+      --text-primary: #3F4A7A;
+      --text-secondary: #5A6B8C;
+      --shadow-primary: 0 20px 40px rgba(46, 143, 204, 0.15);
+      --shadow-hover: 0 25px 50px rgba(46, 143, 204, 0.25);
+      --bs-primary: #2E8FCC;
+      --bs-secondary: #3F4A7A;
+      --logo-blue: #2E8FCC;
+      --logo-navy: #3F4A7A;
+      --logo-gray: #8B9DC3;
+    }
+
+    /* Fondo con gradiente animado */
+    body {
+      font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(-45deg, #2E8FCC, #3F4A7A, #4A90C2, #5B7BAD);
+      background-size: 400% 400%;
+      animation: gradientShift 15s ease infinite;
+      min-height: 100vh;
+      position: relative;
+      margin: 0;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(10px);
+      z-index: -1;
+    }
+
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    /* Contenedor principal del login */
+    .login-container {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+      position: relative;
+    }
+
+    /* Efectos de partículas decorativas */
+    .login-container::before {
+      content: '';
+      position: absolute;
+      top: 10%;
+      left: 10%;
+      width: 120px;
+      height: 120px;
+      background: radial-gradient(circle, rgba(46, 143, 204, 0.1) 0%, transparent 70%);
+      border-radius: 50%;
+      animation: floatParticle 6s ease-in-out infinite alternate;
+    }
+
+    .login-container::after {
+      content: '';
+      position: absolute;
+      bottom: 15%;
+      right: 10%;
+      width: 100px;
+      height: 100px;
+      background: radial-gradient(circle, rgba(63, 74, 122, 0.1) 0%, transparent 70%);
+      border-radius: 50%;
+      animation: floatParticle 8s ease-in-out infinite alternate-reverse;
+    }
+
+    @keyframes floatParticle {
+      0% { transform: translate(0, 0) rotate(0deg); opacity: 0.3; }
+      100% { transform: translate(30px, -30px) rotate(180deg); opacity: 0.8; }
+    }
+
+    /* Card principal */
+    .login-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border-radius: 25px;
+      box-shadow: var(--shadow-primary);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      width: 100%;
+      max-width: 450px;
+      padding: 3rem 2.5rem;
+      position: relative;
+      overflow: hidden;
+      animation: slideInUp 0.8s ease-out;
+    }
+
+    .login-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: var(--primary-gradient);
+      border-radius: 25px 25px 0 0;
+    }
+
+    @keyframes slideInUp {
+      from {
+        opacity: 0;
+        transform: translateY(50px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Logo y título */
+    .logo-section {
+      text-align: center;
+      margin-bottom: 2.5rem;
+      animation: fadeInDown 1s ease-out 0.2s both;
+    }
+
+    .logo {
+      font-size: 3rem;
+      margin-bottom: 0.5rem;
+      display: block;
+      animation: logoFloat 3s ease-in-out infinite alternate;
+    }
+
+    .logo-text {
+      font-size: 1.8rem;
+      font-weight: 700;
+      background: var(--primary-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 0.5rem;
+      position: relative;
+    }
+
+    .logo-text::after {
+      content: '';
+      position: absolute;
+      bottom: -8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60px;
+      height: 3px;
+      background: var(--accent-gradient);
+      border-radius: 2px;
+      animation: lineGlow 2s ease-in-out infinite alternate;
+    }
+
+    .subtitle {
+      color: var(--text-secondary);
+      font-weight: 500;
+      font-size: 1rem;
+      opacity: 0.8;
+    }
+
+    @keyframes fadeInDown {
+      from {
+        opacity: 0;
+        transform: translateY(-30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes logoFloat {
+      0% { transform: translateY(0px); }
+      100% { transform: translateY(-8px); }
+    }
+
+    @keyframes lineGlow {
+      0% { box-shadow: 0 0 5px rgba(46, 143, 204, 0.5); }
+      100% { box-shadow: 0 0 15px rgba(46, 143, 204, 0.8); }
+    }
+
+    /* Alertas personalizadas */
+    .alert {
+      border-radius: 15px;
+      border: none;
+      backdrop-filter: blur(10px);
+      animation: shakeAlert 0.5s ease-in-out;
+    }
+
+    .alert-danger {
+      background: rgba(220, 53, 69, 0.1);
+      color: #dc3545;
+      border-left: 4px solid #dc3545;
+    }
+
+    @keyframes shakeAlert {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+    }
+
+    /* Campos de formulario */
+    .form-group {
+      position: relative;
+      margin-bottom: 1.5rem;
+      animation: fadeInLeft 0.8s ease-out 0.4s both;
+    }
+
+    .form-group:nth-child(2) {
+      animation-delay: 0.5s;
+    }
+
+    .form-group:nth-child(3) {
+      animation-delay: 0.6s;
+    }
+
+    @keyframes fadeInLeft {
+      from {
+        opacity: 0;
+        transform: translateX(-30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    .form-label {
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 0.5rem;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .form-control {
+      border: 2px solid rgba(46, 143, 204, 0.2);
+      border-radius: 15px;
+      padding: 0.75rem 1rem;
+      font-size: 1rem;
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(10px);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: none;
+    }
+
+    .form-control:focus {
+      border-color: var(--bs-primary);
+      box-shadow: 0 0 0 0.2rem rgba(46, 143, 204, 0.25);
+      background: rgba(255, 255, 255, 1);
+      transform: translateY(-2px);
+    }
+
+    .form-control:hover:not(:focus) {
+      border-color: rgba(46, 143, 204, 0.4);
+      transform: translateY(-1px);
+    }
+
+    /* Botón de envío */
+    .btn-submit {
+      background: var(--primary-gradient);
+      border: none;
+      border-radius: 50px;
+      padding: 0.75rem 2rem;
+      font-weight: 600;
+      font-size: 1rem;
+      color: white;
+      width: 100%;
+      margin-bottom: 1.5rem;
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--shadow-primary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      animation: fadeInUp 0.8s ease-out 0.7s both;
+    }
+
+    .btn-submit::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+      transition: left 0.5s;
+    }
+
+    .btn-submit:hover {
+      transform: translateY(-3px) scale(1.02);
+      box-shadow: var(--shadow-hover);
+      color: white;
+    }
+
+    .btn-submit:hover::before {
+      left: 100%;
+    }
+
+    .btn-submit:focus {
+      box-shadow: var(--shadow-hover);
+      color: white;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Enlaces */
+    .cancel-link {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      animation: fadeInUp 0.8s ease-out 0.8s both;
+    }
+
+    .cancel-link:hover {
+      color: var(--bs-primary);
+      text-decoration: none;
+      transform: translateY(-2px);
+    }
+
+    /* Errores de campo */
+    .field-error {
+      color: #dc3545;
+      font-size: 0.875rem;
+      margin-top: 0.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      animation: slideInError 0.3s ease-out;
+    }
+
+    @keyframes slideInError {
+      from {
+        opacity: 0;
+        transform: translateX(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    /* Responsivo */
+    @media (max-width: 768px) {
+      .login-card {
+        margin: 1rem;
+        padding: 2rem 1.5rem;
+      }
+      
+      .logo {
+        font-size: 2.5rem;
+      }
+      
+      .logo-text {
+        font-size: 1.5rem;
+      }
+    }
+
+    @media (max-width: 576px) {
+      body {
+        padding: 0;
+      }
+      
+      .login-container {
+        padding: 1rem;
+      }
+      
+      .login-card {
+        padding: 1.5rem;
+        border-radius: 20px;
+      }
+      
+      .logo {
+        font-size: 2rem;
+      }
+      
+      .logo-text {
+        font-size: 1.3rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <div class="login-card">
+      <div class="logo-section">
+        <div class="logo">🏢</div>
+        <div class="logo-text">Grupo Jora</div>
+        <div class="subtitle">Acceso Administrador</div>
+      </div>
+
+      {% if form.non_field_errors %}
+        <div class="alert alert-danger">
+          <i class="fas fa-exclamation-triangle me-2"></i>
+          {{ form.non_field_errors|striptags }}
+        </div>
+      {% endif %}
+
+      <form method="post" novalidate>
+        {% csrf_token %}
+        {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+
+        <div class="form-group">
+          <label class="form-label" for="{{ form.username.id_for_label }}">
+            <i class="fas fa-user"></i>
+            {{ form.username.label }}
+          </label>
+          <input type="text" 
+                 class="form-control {% if form.username.errors %}is-invalid{% endif %}" 
+                 id="{{ form.username.id_for_label }}" 
+                 name="{{ form.username.name }}" 
+                 value="{{ form.username.value|default_if_none:'' }}"
+                 placeholder="Ingrese su nombre de usuario"
+                 required>
+          {% for error in form.username.errors %}
+            <div class="field-error">
+              <i class="fas fa-exclamation-circle"></i>
+              {{ error }}
+            </div>
+          {% endfor %}
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="{{ form.password.id_for_label }}">
+            <i class="fas fa-lock"></i>
+            {{ form.password.label }}
+          </label>
+          <input type="password" 
+                 class="form-control {% if form.password.errors %}is-invalid{% endif %}" 
+                 id="{{ form.password.id_for_label }}" 
+                 name="{{ form.password.name }}"
+                 placeholder="Ingrese su contraseña"
+                 required>
+          {% for error in form.password.errors %}
+            <div class="field-error">
+              <i class="fas fa-exclamation-circle"></i>
+              {{ error }}
+            </div>
+          {% endfor %}
+        </div>
+
+        <button type="submit" class="btn btn-submit">
+          <i class="fas fa-sign-in-alt me-2"></i>
+          Iniciar Sesión
+        </button>
+
+        <div class="text-center">
+          <a href="{% url 'inicio' %}" class="cancel-link">
+            <i class="fas fa-arrow-left"></i>
+            Volver al inicio
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
