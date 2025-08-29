@@ -183,3 +183,7 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'  # ✅
+
+LOGIN_URL = '/accounts/login/'           # o el name: 'core:login'
+LOGIN_REDIRECT_URL = '/'                 # a dónde ir tras login
+LOGOUT_REDIRECT_URL = '/'
