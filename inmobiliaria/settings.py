@@ -79,6 +79,7 @@ INSTALLED_APPS = [
     "workflow",
     "reviews",
     "financiamiento",
+    'dashboard',
     # terceros
     "formtools",
     "storages",
@@ -187,3 +188,4 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage' 
 LOGIN_URL = '/accounts/login/'           # o el name: 'core:login'
 LOGIN_REDIRECT_URL = '/'                 # a dónde ir tras login
 LOGOUT_REDIRECT_URL = '/'
+
