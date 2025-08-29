@@ -1,7 +1,7 @@
 # core/forms.py
 
 from django import forms
-from .models import Cliente
+from .models import Cliente, Vendedor
 
 class ClienteForm(forms.ModelForm):
     class Meta:
@@ -33,4 +33,13 @@ class ClienteForm(forms.ModelForm):
             'estado_civil': forms.TextInput(attrs={'class': 'form-control'}),
             'ocupacion': forms.TextInput(attrs={'class': 'form-control'}),
             'domicilio': forms.Textarea(attrs={'rows': 2}),
+        }
+
+class VendedorForm(forms.ModelForm):
+    class Meta:
+        model = Vendedor
+        fields = ['nombre_completo', 'sexo', 'nacionalidad',
+                  'domicilio', 'ine', 'telefono', 'email', 'tipo']
+        widgets = {
+            'domicilio': forms.Textarea(attrs={'rows':2}),
         }
