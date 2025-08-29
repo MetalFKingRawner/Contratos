@@ -27,21 +27,19 @@ from django.http import FileResponse, Http404
 from django.utils import timezone
 from .forms import SolicitudContratoForm
 #from .views import SolicitudContratoView  # si lo necesitas
-from .models import Tramite
+from .models import ClausulasEspeciales, Tramite
 from django.shortcuts import redirect
 from datetime import date
 from workflow.forms import ClausulasEspecialesForm
 from django.conf import settings
 from pdfs.utils import fill_word_template, convert_docx_to_pdf
 
-from django.http import JsonResponse
 from core.models import Lote
 
 def ajax_lotes(request, proyecto_id):
     lotes = Lote.objects.filter(proyecto_id=proyecto_id, activo=True).order_by('identificador')
     data = [{'id': l.id, 'identificador': l.identificador} for l in lotes]
     return JsonResponse({'lotes': data})
-
 
 class SeleccionDocumentoView(TemplateView):
     template_name = "inicio.html"
@@ -441,6 +439,24 @@ class ClausulasEspecialesView(FormView):
 
     def form_valid(self, form):
         # Guardar las cláusulas en la sesión
+        # Obtener el trámite actual
+        tramite_id = self.request.session.get('tramite_id')
+        if not tramite_id:
+            # Si no hay trámite, redirigir al inicio
+            return redirect('workflow:paso1_financiamiento')
+        
+        tramite = get_object_or_404(Tramite, id=tramite_id)
+
+        # Guardar las cláusulas en la base de datos
+        ClausulasEspeciales.objects.update_or_create(
+            tramite=tramite,
+            defaults={
+                'clausula_pago': form.cleaned_data['clausula_pago'],
+                'clausula_deslinde': form.cleaned_data['clausula_deslinde'],
+                'clausula_promesa': form.cleaned_data['clausula_promesa'],
+            }
+        )
+
         self.request.session['clausulas_especiales'] = {
             'pago': form.cleaned_data['clausula_pago'],
             'deslinde': form.cleaned_data['clausula_deslinde'],
@@ -531,7 +547,7 @@ class SeleccionDocumentosView(FormView):
         # Pasar segundo cliente al contexto si existe (NUEVO)
         if tramite and tramite.cliente_2:
             ctx['cliente2'] = tramite.cliente_2
-            
+
         return ctx
 
     def form_valid(self, form):
@@ -542,7 +558,18 @@ class SeleccionDocumentosView(FormView):
         cli = tramite.cliente
         ven = tramite.vendedor
         cli2 = tramite.cliente_2  # Segundo cliente (NUEVO)
-        clausulas_adicionales = self.request.session.get('clausulas_especiales', {})
+        # Obtener cláusulas especiales de la base de datos
+        clausulas_adicionales = {}
+        if hasattr(tramite, 'clausulas_especiales'):
+            clausulas_db = tramite.clausulas_especiales
+            clausulas_adicionales = {
+                'pago': clausulas_db.clausula_pago,
+                'deslinde': clausulas_db.clausula_deslinde,
+                'promesa': clausulas_db.clausula_promesa,
+            }
+        else:
+            # Fallback a la sesión por si acaso
+            clausulas_adicionales = self.request.session.get('clausulas_especiales', {})
 
         selected = form.cleaned_data['documentos']
 
@@ -555,6 +582,7 @@ class SeleccionDocumentosView(FormView):
                 # 1) Template object and context
                 tpl = DocxTemplate(tpl_path)
                 # Pasamos tpl y request siempre; el builder puede ignorarlos si no los necesita
+                # Pasar segundo cliente si existe (NUEVO)
                 try:
                     # Intenta pasar el segundo cliente si el builder lo soporta
                     context = doc_info['builder'](
@@ -578,6 +606,7 @@ class SeleccionDocumentosView(FormView):
                     except TypeError:
                         # Versión mínima
                         context = doc_info['builder'](fin, cli, ven)
+
 
                 # 2) rellenar plantilla Word
                 tmp_docx = os.path.join(settings.MEDIA_ROOT, 'temp', f"{slug}.docx")
@@ -723,11 +752,3 @@ class Paso1FinanciamientoView(TemplateView):
         # Guardar en sesión para los pasos siguientes
         request.session['financiamiento_id'] = int(plan_id)
         return redirect('workflow:paso2_cliente')
-
-
-
-
-
-
-
-
