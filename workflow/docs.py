@@ -40,14 +40,14 @@ DOCUMENTOS = {
     "contrato_definitiva_pagos": {
         "titulo":     "Contrato Propiedad Definitiva (Pagos)",
         "descripcion":"Contrato con plan de pagos.",
-        "plantilla":  "pdfs/templates/pdfs/contrato_definitiva_pagos.docx",
-        "builder":    build_contrato_definitiva_pagos_context,
+        "plantilla":  "pdfs/templates/pdfs/contrato_propiedad_definitiva_pagos.docx",
+        "builder":    build_contrato_propiedad_pagos_context,
     },
     "contrato_definitiva_contado": {
         "titulo":     "Contrato Propiedad Definitiva (Contado)",
         "descripcion":"Contrato para pago al contado.",
-        "plantilla":  "pdfs/templates/pdfs/contrato_definitiva_contado.docx",
-        "builder":    build_contrato_definitiva_contado_context,
+        "plantilla":  "pdfs/templates/pdfs/contrato_propiedad_definitiva_contado.docx",
+        "builder":    build_contrato_propiedad_contado_context,
     },
     # Contratos Ejidal/Comunal – Financiamiento
     "contrato_ejidal_pagos": {
@@ -88,5 +88,7 @@ DOCUMENTOS = {
         "builder":    build_contrato_propiedad_pagos_varios_context,
     },
 }
+
+
 
 
