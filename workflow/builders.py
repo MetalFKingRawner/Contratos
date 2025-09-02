@@ -643,15 +643,15 @@ def build_contrato_propiedad_contado_context(fin, cli, ven, request=None, tpl=No
     prop = fin.lote.proyecto.propietario.first()
     SEXO_6 = art(prop.sexo, 'EL', 'LA')
     # SEXO_7: A LA / AL
-    SEXO_7 = art(ven.sexo, 'AL', 'A LA')
+    SEXO_7 = art(ven.sexo, 'AL "', 'A "LA ')
     # SEXO_8: DEL / DE LA
-    SEXO_8 = art(ven.sexo, 'DEL', 'DE LA')
+    SEXO_8 = art(ven.sexo, 'DEL "', 'DE "LA ')
     SEXO_9 = art(ven.sexo, 'O', 'A')
 
     SEXO_16 = art(ven.sexo, 'ÉSTE', 'ÉSTA')
     SEXO_17 = art(cli.sexo, 'ÉSTE', 'ÉSTA')
-    SEXO_18 = art(cli.sexo, 'DEL', 'DE LA')
-    SEXO_19 = art(cli.sexo, 'AL', 'A LA')
+    SEXO_18 = art(cli.sexo, 'DEL "', 'DE "LA ')
+    SEXO_19 = art(cli.sexo, 'AL "', 'A "LA ')
     SEXO_20 = art(prop.sexo, 'EL', 'LA')
     #SEXO_10 = art(cli.sexo, 'COMPRADORES','COMPRADORAS')
     #SEXO_11 = art(cli.sexo, 'O', 'A')
@@ -719,6 +719,7 @@ def build_contrato_propiedad_contado_context(fin, cli, ven, request=None, tpl=No
         'SEXO_7': SEXO_7,
         'SEXO_8': SEXO_8,
         'SEXO_9': SEXO_9,
+        'SEXO_16': SEXO_16,
         'SEXO_17': SEXO_17,
         'SEXO_18': SEXO_18,
         'SEXO_19': SEXO_19,
@@ -729,7 +730,7 @@ def build_contrato_propiedad_contado_context(fin, cli, ven, request=None, tpl=No
         #'SEXO_13': SEXO_13,
 
         # Fecha de generación
-        'DIA': numero_a_letras(float(dia_actual.day)),
+        'DIA': numero_a_letras(float(dia_actual.day),apocopado=False),
         'MES': meses[dia_actual.month - 1].upper(),
 
         # Vendedor
@@ -757,7 +758,7 @@ def build_contrato_propiedad_contado_context(fin, cli, ven, request=None, tpl=No
 
         # Lote
         'IDENTIFICADOR_LOTE':    fin.lote.identificador,
-        'LETRA_IDENTIFICADOR':   numero_a_letras(float(fin.lote.identificador)),
+        'LETRA_IDENTIFICADOR':   numero_a_letras(float(fin.lote.identificador),apocopado=False),
         'DIRECCION_PROYECTO_LOTE': fin.lote.proyecto.ubicacion.upper(),
 
         # Coordenadas dinámicas
@@ -875,10 +876,10 @@ def build_contrato_propiedad_contado_varios_context(fin, cli, ven, cliente2=None
     SEXO_5 = art(cli.sexo, 'O', 'A')
     prop = fin.lote.proyecto.propietario.first()
     SEXO_6 = art(prop.sexo, 'EL', 'LA')
-    SEXO_7 = art(ven.sexo, 'AL', 'A LA')
-    SEXO_8 = art(ven.sexo, 'DEL', 'DE LA')
+    SEXO_7 = art(ven.sexo, 'AL "', 'A "LA ')
+    SEXO_8 = art(ven.sexo, 'DEL "', 'DE "LA ')
     SEXO_14 = art(ven.sexo, 'O', 'A')
-    SEXO_15 = art(ven.sexo, 'DEL', 'DE LA')
+    SEXO_15 = art(ven.sexo, 'DEL "', 'DE "LA ')
     SEXO_16 = art(ven.sexo, 'ÉSTE', 'ÉSTA')
     SEXO_20 = art(prop.sexo, 'EL', 'LA')
 
@@ -978,7 +979,7 @@ def build_contrato_propiedad_contado_varios_context(fin, cli, ven, cliente2=None
         'SEXO_17': SEXO_17,
 
         # Fecha de generación
-        'DIA': numero_a_letras(float(pago.day)),
+        'DIA': numero_a_letras(float(pago.day),apocopado=False),
         'MES': meses[pago.month - 1].upper(),
 
         # Vendedor
@@ -1016,7 +1017,7 @@ def build_contrato_propiedad_contado_varios_context(fin, cli, ven, cliente2=None
 
         # Lote
         'IDENTIFICADOR_LOTE':    fin.lote.identificador,
-        'LETRA_IDENTIFICADOR':   numero_a_letras(float(fin.lote.identificador)),
+        'LETRA_IDENTIFICADOR':   numero_a_letras(float(fin.lote.identificador),apocopado=False),
         'DIRECCION_PROYECTO_LOTE': fin.lote.proyecto.ubicacion.upper(),
 
         # Coordenadas dinámicas
@@ -1130,22 +1131,22 @@ def build_contrato_propiedad_pagos_context(fin, cli, ven, request=None, tpl=None
     prop = fin.lote.proyecto.propietario.first()
     SEXO_6 = art(prop.sexo, 'EL', 'LA')
     # SEXO_7: A LA / AL
-    SEXO_7 = art(ven.sexo, 'AL', 'A LA')
+    SEXO_7 = art(ven.sexo, 'AL "', 'A "LA ')
     # SEXO_8: DEL / DE LA
-    SEXO_8 = art(ven.sexo, 'DEL', 'DE LA')
+    SEXO_8 = art(ven.sexo, 'DEL "', 'DE "LA ')
     SEXO_9 = art(ven.sexo, 'O', 'A')
 
     SEXO_16 = art(ven.sexo, 'ÉSTE', 'ÉSTA')
     SEXO_17 = art(cli.sexo, 'ÉSTE', 'ÉSTA')
-    SEXO_18 = art(cli.sexo, 'DEL', 'DE LA')
-    SEXO_19 = art(cli.sexo, 'AL', 'A LA')
+    SEXO_18 = art(cli.sexo, 'DEL "', 'DE "LA ')
+    SEXO_19 = art(cli.sexo, 'AL "', 'A "LA ')
     SEXO_20 = art(prop.sexo, 'EL', 'LA')
 
     # 2) Fecha actual
     hoy   = date.today()
     meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio",
              "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]
-    DIA, MES = numero_a_letras(float(hoy.day)), meses[hoy.month-1].upper()
+    DIA, MES = numero_a_letras(float(hoy.day),apocopado=False), meses[hoy.month-1].upper()
 
     coords = {}
     for lado in ('norte','sur','este','oeste'):
@@ -1229,7 +1230,7 @@ def build_contrato_propiedad_pagos_context(fin, cli, ven, request=None, tpl=None
 
         # Lote
         'IDENTIFICADOR_LOTE':      fin.lote.identificador,
-        'LETRA_IDENTIFICADOR':     numero_a_letras(float(fin.lote.identificador)),
+        'LETRA_IDENTIFICADOR':     numero_a_letras(float(fin.lote.identificador),apocopado=False),
         'DIRECCION_PROYECTO_LOTE': fin.lote.proyecto.ubicacion.upper(),
 
         # Coordenadas
@@ -1355,10 +1356,10 @@ def build_contrato_propiedad_pagos_varios_context(fin, cli, ven, cliente2=None, 
     SEXO_5 = art(cli.sexo, 'O', 'A')
     prop = fin.lote.proyecto.propietario.first()
     SEXO_6 = art(prop.sexo, 'EL', 'LA')
-    SEXO_7 = art(ven.sexo, 'AL', 'A LA')
-    SEXO_8 = art(ven.sexo, 'DEL', 'DE LA')
+    SEXO_7 = art(ven.sexo, 'AL "', 'A "LA ')
+    SEXO_8 = art(ven.sexo, 'DEL "', 'DE "LA ')
     SEXO_14 = art(ven.sexo, 'O', 'A')
-    SEXO_15 = art(ven.sexo, 'DEL', 'DE LA')
+    SEXO_15 = art(ven.sexo, 'DEL "', 'DE "LA ')
     SEXO_16 = art(ven.sexo, 'ÉSTE', 'ÉSTA')
     SEXO_20 = art(prop.sexo, 'EL', 'LA')
 
@@ -1395,7 +1396,7 @@ def build_contrato_propiedad_pagos_varios_context(fin, cli, ven, cliente2=None, 
     hoy   = date.today()
     meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio",
              "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]
-    DIA, MES = numero_a_letras(float(hoy.day)), meses[hoy.month-1].upper()
+    DIA, MES = numero_a_letras(float(hoy.day),apocopado=False), meses[hoy.month-1].upper()
 
     # 4) Coordenadas por cada lado (igual que antes)
     dir_fields = {}
@@ -1509,7 +1510,7 @@ def build_contrato_propiedad_pagos_varios_context(fin, cli, ven, cliente2=None, 
 
         # Lote
         'IDENTIFICADOR_LOTE':    fin.lote.identificador,
-        'LETRA_IDENTIFICADOR':   numero_a_letras(float(fin.lote.identificador)),
+        'LETRA_IDENTIFICADOR':   numero_a_letras(float(fin.lote.identificador),apocopado=False),
         'DIRECCION_PROYECTO_LOTE': fin.lote.proyecto.ubicacion.upper(),
 
         # Coordenadas dinámicas
@@ -1625,10 +1626,10 @@ def build_contrato_ejidal_contado_context(fin, cli, ven, request=None, tpl=None,
     # El “propietario” del lote:
     prop = fin.lote.proyecto.propietario.first()  # instancia Propietario
     SEXO_5 = art(prop.sexo, 'EL', 'LA')
-    SEXO_6 = art(cli.sexo, 'DEL', 'DE LA')
-    SEXO_7 = art(ven.sexo, 'AL', 'A LA')
-    SEXO_8 = art(ven.sexo, 'DEL', 'DE LA')
-    SEXO_9 = art(cli.sexo, 'AL', 'A LA')
+    SEXO_6 = art(cli.sexo, 'DEL "', 'DE "LA ')
+    SEXO_7 = art(ven.sexo, 'AL "', 'A "LA ')
+    SEXO_8 = art(ven.sexo, 'DEL "', 'DE "LA ')
+    SEXO_9 = art(cli.sexo, 'AL "', 'A "LA ')
     SEXO_10 = art(cli.sexo, 'O', 'A')
 
     # 2) Fechas
@@ -1699,11 +1700,11 @@ def build_contrato_ejidal_contado_context(fin, cli, ven, request=None, tpl=None,
 
         'DIRECCION_LOTE':     fin.lote.proyecto.ubicacion.upper(),
         'IDENTIFICADOR_LOTE': fin.lote.identificador.upper(),
-        'LETRA_IDENTIFICADOR': numero_a_letras(float(fin.lote.identificador)),  # o aplica formato
+        'LETRA_IDENTIFICADOR': numero_a_letras(float(fin.lote.identificador),apocopado=False),  # o aplica formato
 
         'NOMBRE_CESION': autoridad,
         'FECHA_DOCUMENTO': fecha_posesion,
-        'DIA_CESION': numero_a_letras(float(cesion.day)),
+        'DIA_CESION': numero_a_letras(float(cesion.day),apocopado=False),
         'MES_CESION': meses[cesion.month-1].upper(),
 
         'ID_INE':            ven.ine,
@@ -1833,8 +1834,8 @@ def build_contrato_ejidal_contado_varios_context(fin, cli, ven, cliente2=None, r
     # El “propietario” del lote:
     prop = fin.lote.proyecto.propietario.first()  # instancia Propietario
     SEXO_5 = art(prop.sexo, 'EL', 'LA')
-    SEXO_7 = art(ven.sexo, 'AL', 'A LA')
-    SEXO_8 = art(ven.sexo, 'DEL', 'DE LA')
+    SEXO_7 = art(ven.sexo, 'AL "', 'A "LA ')
+    SEXO_8 = art(ven.sexo, 'DEL "', 'DE "LA ')
 
     if cliente2:
         if cli.sexo == 'M' or cliente2.sexo == 'M':
@@ -1928,11 +1929,11 @@ def build_contrato_ejidal_contado_varios_context(fin, cli, ven, cliente2=None, r
 
         'DIRECCION_LOTE':     fin.lote.proyecto.ubicacion.upper(),
         'IDENTIFICADOR_LOTE': fin.lote.identificador.upper(),
-        'LETRA_IDENTIFICADOR': numero_a_letras(float(fin.lote.identificador)),  # o aplica formato
+        'LETRA_IDENTIFICADOR': numero_a_letras(float(fin.lote.identificador),apocopado=False),  # o aplica formato
 
         'NOMBRE_CESION': autoridad,
         'FECHA_DOCUMENTO': fecha_posesion,
-        'DIA_CESION': numero_a_letras(float(cesion.day)),
+        'DIA_CESION': numero_a_letras(float(cesion.day),apocopado=False),
         'MES_CESION': meses[cesion.month-1].upper(),
 
         'ID_INE':            ven.ine,
@@ -2072,17 +2073,17 @@ def build_contrato_ejidal_pagos_context(fin, cli, ven, request=None, tpl=None, f
     # El “propietario” del lote:
     prop = fin.lote.proyecto.propietario.first()  # instancia Propietario
     SEXO_5 = art(prop.sexo, 'EL', 'LA')
-    SEXO_6 = art(cli.sexo, 'DEL', 'DE LA')
-    SEXO_7 = art(ven.sexo, 'AL', 'A LA')
-    SEXO_8 = art(ven.sexo, 'DEL', 'DE LA')
-    SEXO_9 = art(cli.sexo, 'AL', 'A LA')
+    SEXO_6 = art(cli.sexo, 'DEL "', 'DE "LA ')
+    SEXO_7 = art(ven.sexo, 'AL "', 'A "LA ')
+    SEXO_8 = art(ven.sexo, 'DEL "', 'DE "LA ')
+    SEXO_9 = art(cli.sexo, 'AL "', 'A "LA ')
     SEXO_10 = art(cli.sexo, 'O', 'A')
 
     # 2) Fecha de cesión (hoy, o fin.fecha_enganche)
     cesion = date.today()
     meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio",
              "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]
-    DIA_CESION = numero_a_letras(float(cesion.day))
+    DIA_CESION = numero_a_letras(float(cesion.day),apocopado=False)
     MES_CESION = meses[cesion.month-1].upper()
 
     # 3) Coordenadas (igual)
@@ -2166,7 +2167,7 @@ def build_contrato_ejidal_pagos_context(fin, cli, ven, request=None, tpl=None, f
 
         'DIRECCION_LOTE':     fin.lote.proyecto.ubicacion.upper(),
         'IDENTIFICADOR_LOTE': fin.lote.identificador,
-        'LETRA_IDENTIFICADOR': numero_a_letras(float(fin.lote.identificador)),
+        'LETRA_IDENTIFICADOR': numero_a_letras(float(fin.lote.identificador),apocopado=False),
 
         'DIA_CESION':  DIA_CESION,
         'MES_CESION':  MES_CESION,
@@ -2540,3 +2541,4 @@ def build_contrato_ejidal_pagos_varios_context(fin, cli, ven, cliente2=None,requ
     })
     
     return context
+    
