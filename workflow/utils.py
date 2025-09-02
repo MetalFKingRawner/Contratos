@@ -11,19 +11,33 @@ def calcular_superficie(norte, sur, este, oeste):
     except:
         return 0.0
     
-def numero_a_letras(numero):
-    """Convierte un número a su representación en letras en español, incluyendo millones"""
+def numero_a_letras(numero, apocopado=True):
+    """Convierte un número a su representación en letras en español, incluyendo millones.
+    Parámetros:
+      - numero: float o int
+      - apocopado: si True usa formas apocopadas (UN, VEINTIUN, TREINTA Y UN).
+                   si False usa formas completas (UNO, VEINTIUNO, TREINTA Y UNO).
+    Ejemplo:
+      numero_a_letras(1) -> "UN"        (por defecto, útil para precios)
+      numero_a_letras(1, apocopado=False) -> "UNO"  (útil para fechas)
+    """
     # Caso especial para cero
     if numero == 0:
         return "CERO"
     
     # Diccionarios para conversión
-    unidades = ['', 'UN', 'DOS', 'TRES', 'CUATRO', 'CINCO', 'SEIS', 'SIETE', 'OCHO', 'NUEVE']
+    if apocopado:
+        unidades = ['', 'UN', 'DOS', 'TRES', 'CUATRO', 'CINCO', 'SEIS', 'SIETE', 'OCHO', 'NUEVE']
+        veintiuno = 'VEINTIUN'
+    else:
+        unidades = ['', 'UNO', 'DOS', 'TRES', 'CUATRO', 'CINCO', 'SEIS', 'SIETE', 'OCHO', 'NUEVE']
+        veintiuno = 'VEINTIUNO'
+    
     decenas = ['', 'DIEZ', 'VEINTE', 'TREINTA', 'CUARENTA', 'CINCUENTA', 'SESENTA', 'SETENTA', 'OCHENTA', 'NOVENTA']
     especiales = {
         11: 'ONCE', 12: 'DOCE', 13: 'TRECE', 14: 'CATORCE', 15: 'QUINCE',
         16: 'DIECISÉIS', 17: 'DIECISIETE', 18: 'DIECIOCHO', 19: 'DIECINUEVE',
-        20: 'VEINTE', 21: 'VEINTIUN', 22: 'VEINTIDÓS', 23: 'VEINTITRÉS',
+        20: 'VEINTE', 21: veintiuno, 22: 'VEINTIDÓS', 23: 'VEINTITRÉS',
         24: 'VEINTICUATRO', 25: 'VEINTICINCO', 26: 'VEINTISÉIS', 27: 'VEINTISIETE',
         28: 'VEINTIOCHO', 29: 'VEINTINUEVE'
     }
@@ -43,11 +57,9 @@ def numero_a_letras(numero):
         if millones == 1:
             resultado.append("UN MILLÓN")
         elif millones > 1:
-            resultado.append(numero_a_letras(millones))
-            if millones == 1:
-                resultado.append("MILLÓN")
-            else:
-                resultado.append("MILLONES")
+            # pasar el mismo modo apocopado a la recursión
+            resultado.append(numero_a_letras(millones, apocopado=apocopado))
+            resultado.append("MILLONES")
     
     # Manejar miles
     if entero >= 1000:
@@ -57,7 +69,7 @@ def numero_a_letras(numero):
         if miles == 1:
             resultado.append("MIL")
         elif miles > 1:
-            resultado.append(numero_a_letras(miles))
+            resultado.append(numero_a_letras(miles, apocopado=apocopado))
             resultado.append("MIL")
     
     # Convertir centenas (0-999)
@@ -78,6 +90,7 @@ def numero_a_letras(numero):
             elif centena == 9:
                 resultado.append("NOVECIENTOS")
             else:
+                # unidades[centena] funciona porque tenemos valores como 'DOS' etc.
                 resultado.append(unidades[centena] + "CIENTOS")
         
         if resto > 0:
