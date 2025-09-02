@@ -49,18 +49,42 @@ DOCUMENTOS = {
         "plantilla":  "pdfs/templates/pdfs/contrato_propiedad_definitiva_contado.docx",
         "builder":    build_contrato_propiedad_contado_context,
     },
+    "contrato_definitiva_contado_varios": {
+        "titulo":     "Contrato Propiedad Definitiva varios compradores(Contado)",
+        "descripcion":"Contrato para pago al contado de varios compradores.",
+        "plantilla":  "pdfs/templates/pdfs/contrato_propiedad_definitiva_contado_varios.docx",
+        "builder":    build_contrato_propiedad_contado_varios_context,
+    },
+    "contrato_definitiva_pagos_varios": {
+        "titulo":     "Contrato Propiedad Definitiva varios compradores (Pagos)",
+        "descripcion":"Contrato con plan de pagos de varios compradores.",
+        "plantilla":  "pdfs/templates/pdfs/contrato_propiedad_definitiva_pagos_varios.docx",
+        "builder":    build_contrato_propiedad_pagos_varios_context,
+    },
     # Contratos Ejidal/Comunal – Financiamiento
     "contrato_ejidal_pagos": {
         "titulo":     "Contrato Ejidal y Comunal (Pagos)",
         "descripcion":"Cesión ejidal/comunal con plan de pagos.",
-        "plantilla":  "pdfs/templates/pdfs/contrato_ejidal_pagos.docx",
+        "plantilla":  "pdfs/templates/pdfs/contrato_ejido_pagos.docx",
         "builder":    build_contrato_ejidal_pagos_context,
     },
     "contrato_ejidal_contado": {
         "titulo":     "Contrato Ejidal y Comunal (Contado)",
         "descripcion":"Cesión ejidal/comunal al contado.",
-        "plantilla":  "pdfs/templates/pdfs/contrato_ejidal_contado.docx",
+        "plantilla":  "pdfs/templates/pdfs/contrato_ejido_contado.docx",
         "builder":    build_contrato_ejidal_contado_context,
+    },
+    "contrato_ejidal_pagos_varios": {
+        "titulo":     "Contrato Ejidal y Comunal (Pagos) varios compradores",
+        "descripcion":"Cesión ejidal/comunal con plan de pagos varios compradores.",
+        "plantilla":  "pdfs/templates/pdfs/contrato_ejido_pagos_varios.docx",
+        "builder":    build_contrato_ejidal_pagos_varios_context,
+    },
+    "contrato_ejidal_contado_varios": {
+        "titulo":     "Contrato Ejidal y Comunal (Contado) varios compradores",
+        "descripcion":"Cesión ejidal/comunal al contado varios compradores.",
+        "plantilla":  "pdfs/templates/pdfs/contrato_ejido_contado_varios.docx",
+        "builder":    build_contrato_ejidal_contado_varios_context,
     },
     # Contratos pequeña propiedad – Financiamiento
     "contrato_propiedad_pagos": {
@@ -88,6 +112,7 @@ DOCUMENTOS = {
         "builder":    build_contrato_propiedad_pagos_varios_context,
     },
 }
+
 
 
 
