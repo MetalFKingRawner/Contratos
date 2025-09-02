@@ -497,10 +497,16 @@ class SeleccionDocumentosView(FormView):
         has_second_client = tramite and tramite.cliente_2 is not None
 
         if 'propiedad definitiva' in regime:
-            if pago == 'contado':
-                slugs.append('contrato_definitiva_contado')
+            if has_second_client:
+                if pago == 'contado':
+                    slugs.append('contrato_definitiva_contado_varios')
+                else:
+                    slugs.append('contrato_definitiva_pagos_varios')
             else:
-                slugs.append('contrato_definitiva_pagos')
+                if pago == 'contado':
+                    slugs.append('contrato_definitiva_contado')
+                else:
+                    slugs.append('contrato_definitiva_pagos')
         elif 'pequeña propiedad' in regime:
             # Contratos especiales para cuando hay 2 clientes
             if has_second_client:
@@ -515,10 +521,16 @@ class SeleccionDocumentosView(FormView):
                     slugs.append('contrato_propiedad_pagos')
         else:
             # ejidal o comunal
-            if pago == 'contado':
-                slugs.append('contrato_ejidal_contado')
+            if has_second_client:
+                if pago == 'contado':
+                    slugs.append('contrato_ejidal_contado_varios')
+                else:
+                    slugs.append('contrato_ejidal_pagos_varios')
             else:
-                slugs.append('contrato_ejidal_pagos')
+                if pago == 'contado':
+                    slugs.append('contrato_ejidal_contado')
+                else:
+                    slugs.append('contrato_ejidal_pagos')
 
         kwargs['available_slugs'] = slugs
         return kwargs
@@ -752,3 +764,4 @@ class Paso1FinanciamientoView(TemplateView):
         # Guardar en sesión para los pasos siguientes
         request.session['financiamiento_id'] = int(plan_id)
         return redirect('workflow:paso2_cliente')
+
