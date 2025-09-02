@@ -37,40 +37,46 @@ class DownloadDocumentView(View):
         tramite = get_object_or_404(Tramite, pk=pk)
         
         # 2. Para el caso especial del contrato, determinar el tipo específico
-        if 'propiedad definitiva' in regime:
-            if has_second_client:
-                if pago == 'contado':
-                    document_type = 'contrato_definitiva_contado_varios'
+        if document_type == 'contrato':
+            fin = tramite.financiamiento
+            regime = fin.lote.proyecto.tipo_contrato.lower()
+            pago = fin.tipo_pago
+            has_second_client = tramite.cliente_2 is not None
+
+            if 'propiedad definitiva' in regime:
+                if has_second_client:
+                    if pago == 'contado':
+                        document_type = 'contrato_definitiva_contado_varios'
+                    else:
+                       document_type = 'contrato_definitiva_pagos_varios'
                 else:
-                    document_type = 'contrato_definitiva_pagos_varios'
+                    if pago == 'contado':
+                        document_type = 'contrato_definitiva_contado'
+                    else:
+                        document_type = 'contrato_definitiva_pagos'
+            elif 'pequeña propiedad' in regime:
+                if has_second_client:
+                    if pago == 'contado':
+                        document_type = 'contrato_propiedad_contado_varios'
+                    else:
+                        document_type = 'contrato_propiedad_pagos_varios'
+                else:
+                    if pago == 'contado':
+                        document_type = 'contrato_propiedad_contado'
+                    else:
+                        document_type = 'contrato_propiedad_pagos'
             else:
-                if pago == 'contado':
-                    document_type = 'contrato_definitiva_contado'
+                # ejidal o comunal
+                if has_second_client:
+                    if pago == 'contado':
+                        document_type = 'contrato_ejidal_contado_varios'
+                    else:
+                        document_type = 'contrato_ejidal_pagos_varios'
                 else:
-                    document_type = 'contrato_definitiva_pagos'
-        elif 'pequeña propiedad' in regime:
-            if has_second_client:
-                if pago == 'contado':
-                    document_type = 'contrato_propiedad_contado_varios'
-                else:
-                    document_type = 'contrato_propiedad_pagos_varios'
-            else:
-                if pago == 'contado':
-                    document_type = 'contrato_propiedad_contado'
-                else:
-                    document_type = 'contrato_propiedad_pagos'
-        else:
-            # ejidal o comunal
-            if has_second_client:
-                if pago == 'contado':
-                    document_type = 'contrato_ejidal_contado_varios'
-                else:
-                    document_type = 'contrato_ejidal_pagos_varios'
-            else:
-                if pago == 'contado':
-                    document_type = 'contrato_ejidal_contado'
-                else:
-                    document_type = 'contrato_ejidal_pagos'
+                    if pago == 'contado':
+                        document_type = 'contrato_ejidal_contado'
+                    else:
+                        document_type = 'contrato_ejidal_pagos'
         
         # 3. Para plan_financiamiento, si no existe en DOCUMENTOS, usar uno por defecto
         if document_type == 'plan_financiamiento' and document_type not in DOCUMENTOS:
@@ -1043,4 +1049,5 @@ def home(request):
                   'dashboard/home.html',
 
                   ctx)
+
 
