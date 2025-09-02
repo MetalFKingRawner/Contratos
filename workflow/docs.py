@@ -11,7 +11,9 @@ from workflow.builders import (
     build_contrato_propiedad_contado_context,
     build_contrato_propiedad_contado_varios_context,
     build_contrato_propiedad_pagos_context,
-    build_contrato_propiedad_pagos_varios_context
+    build_contrato_propiedad_pagos_varios_context,
+    build_contrato_ejidal_contado_varios_context,
+    build_contrato_ejidal_pagos_varios_context
 )
 
 DOCUMENTOS = {
@@ -112,6 +114,7 @@ DOCUMENTOS = {
         "builder":    build_contrato_propiedad_pagos_varios_context,
     },
 }
+
 
 
 
