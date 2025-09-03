@@ -1732,7 +1732,7 @@ def build_contrato_ejidal_contado_context(fin, cli, ven, request=None, tpl=None,
         'MES_PAGO':  meses[pago.month - 1].upper(),
         'ANIO_PAGO': pago.year,
 
-        'CANTIDAD_PAGO_COMPLETO':  f"{restante:.2f}",
+        'CANTIDAD_PAGO_COMPLETO':  fmt_money(restante),
         'CANTIDAD_LETRA_PAGO':     restante_letra,
 
         # Y la cláusula B variable:
@@ -1843,22 +1843,22 @@ def build_contrato_ejidal_contado_varios_context(fin, cli, ven, cliente2=None, r
             
             SEXO_2 = 'LOS'               # cedatario (comprador)
             SEXO_3 = 'CEDATARIOS' # palabra completa
-            SEXO_6 = 'DE LOS'
-            SEXO_9 = 'A LOS'
+            SEXO_6 = 'DE "LOS '
+            SEXO_9 = 'A "LOS '
             SEXO_10 = 'O'
         else:
             # Ambos femeninos -> femenino plural
             SEXO_2 = 'LAS'               # cedatario (comprador)
             SEXO_3 = 'CEDATARIAS' # palabra completa
-            SEXO_6 = 'DE LAS'
-            SEXO_9 = 'A LAS'
+            SEXO_6 = 'DE "LAS '
+            SEXO_9 = 'A "LAS '
             SEXO_10 = 'A'
     else:
         # Por si acaso (aunque esta función es para varios)
         SEXO_2 = 'LOS'               # cedatario (comprador)
         SEXO_3 = 'CEDATARIOS' # palabra completa
-        SEXO_6 = 'DE LOS'
-        SEXO_9 = 'A LOS'
+        SEXO_6 = 'DE "LOS '
+        SEXO_9 = 'A "LOS '
         SEXO_10 = 'O'
 
     # 2) Fechas
@@ -2320,22 +2320,22 @@ def build_contrato_ejidal_pagos_varios_context(fin, cli, ven, cliente2=None,requ
             
             SEXO_2 = 'LOS'               # cedatario (comprador)
             SEXO_3 = 'CEDATARIOS' # palabra completa
-            SEXO_6 = 'DE LOS'
-            SEXO_9 = 'A LOS'
+            SEXO_6 = 'DE "LOS '
+            SEXO_9 = 'A "LOS '
             SEXO_10 = 'O'
         else:
             # Ambos femeninos -> femenino plural
             SEXO_2 = 'LAS'               # cedatario (comprador)
             SEXO_3 = 'CEDATARIAS' # palabra completa
-            SEXO_6 = 'DE LAS'
-            SEXO_9 = 'A LAS'
+            SEXO_6 = 'DE "LAS '
+            SEXO_9 = 'A "LAS '
             SEXO_10 = 'A'
     else:
         # Por si acaso (aunque esta función es para varios)
         SEXO_2 = 'LOS'               # cedatario (comprador)
         SEXO_3 = 'CEDATARIOS' # palabra completa
-        SEXO_6 = 'DE LOS'
-        SEXO_9 = 'A LOS'
+        SEXO_6 = 'DE "LOS '
+        SEXO_9 = 'A "LOS '
         SEXO_10 = 'O'
 
     # 3) Coordenadas (igual)
@@ -2542,3 +2542,4 @@ def build_contrato_ejidal_pagos_varios_context(fin, cli, ven, cliente2=None,requ
     
     return context
     
+
