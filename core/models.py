@@ -84,7 +84,7 @@ class Cliente(models.Model):
     rfc             = models.CharField("RFC", max_length=13, blank=True, null=True)
     domicilio       = models.TextField("Domicilio")
     telefono        = models.CharField("Teléfono", max_length=20)
-    email           = models.EmailField("Correo electrónico")
+    email           = models.EmailField("Correo electrónico", blank=True)
     ocupacion       = models.CharField("Ocupación", max_length=100, blank=True)
     estado_civil    = models.CharField("Estado civil", max_length=50, blank=True)
     nacionalidad    = models.CharField("Nacionalidad", max_length=50, blank=True)
@@ -100,6 +100,7 @@ class Cliente(models.Model):
 
     def __str__(self):
         return self.nombre_completo
+
 
 
 
