@@ -151,6 +151,20 @@ def build_solicitud_contrato_context(fin, cli, ven, request=None, tpl=None, firm
     DIA   = hoy.day
     MES   = meses[hoy.month-1].upper()
     ANIO  = hoy.year
+    email = (cli.email or '')        # convierte None -> ''
+    email = email.strip()            # quita espacios en blanco
+    rfc = (cli.rfc or '')
+    if email:
+        correo_comprador = email.upper()
+    else:
+        correo_comprador = 'NO PROPORCIONADO'
+
+    if rfc:
+        rfc_comprador = rfc.upper()
+    else:
+        rfc_comprador = 'NO PROPORCIONADO'
+
+
 
     # 2) Datos básicos del cliente
     context = {
@@ -159,13 +173,13 @@ def build_solicitud_contrato_context(fin, cli, ven, request=None, tpl=None, firm
         'ANIO':               ANIO,
         'NOMBRE_CLIENTE':     cli.nombre_completo.upper(),
         'TELEFONO_CLIENTE':   cli.telefono,
-        'CORREO_CLIENTE':     cli.email.upper(),
+        'CORREO_CLIENTE':     correo_comprador,
         'OCUPACION_CLIENTE':  cli.ocupacion.upper(),
         'ESTADO_CIVIL':       cli.estado_civil.upper(),
         'ORIGINARIO_CLIENTE': cli.originario.upper(),
         'NACIONALIDAD':       cli.nacionalidad,
         'DIRECCION_CLIENTE':  cli.domicilio,
-        'RFC_CLIENTE':        cli.rfc.upper(),  # asume tienes campo rfc en Cliente
+        'RFC_CLIENTE':        rfc_comprador,  # asume tienes campo rfc en Cliente
         # Lote y financiamiento
         'NOMBRE_LOTE':        str(fin.lote.proyecto.nombre).upper(),
         'NUMERO_LOTE':        fin.lote.identificador,
@@ -681,6 +695,12 @@ def build_contrato_propiedad_contado_context(fin, cli, ven, request=None, tpl=No
     fecha_contrato = fin.lote.proyecto.fecha_emision_contrato
     autoridad = fin.lote.proyecto.autoridad
     dia_actual = date.today()
+    email = (cli.email or '')        # convierte None -> ''
+    email = email.strip()            # quita espacios en blanco
+    if email:
+        correo_comprador = email.upper()
+    else:
+        correo_comprador = 'NO PROPORCIONADO'
 
 # 3) Miembro B dinámico según relación:
     # — Si ven es propietario:
@@ -754,7 +774,7 @@ def build_contrato_propiedad_contado_context(fin, cli, ven, request=None, tpl=No
         'ESTADO_CIVIL':        cli.estado_civil.upper(),
         'TELEFONO_COMPRADOR':  cli.telefono.upper(),
         'OCUPACION_COMPRADOR': cli.ocupacion.upper(),
-        'CORREO_COMPRADOR':    cli.email.upper(),
+        'CORREO_COMPRADOR': correo_comprador,
 
         # Lote
         'IDENTIFICADOR_LOTE':    fin.lote.identificador,
@@ -934,6 +954,20 @@ def build_contrato_propiedad_contado_varios_context(fin, cli, ven, cliente2=None
     fecha_contrato = fin.lote.proyecto.fecha_emision_contrato
     autoridad = fin.lote.proyecto.autoridad
 
+    email1 = (cli.email or '')        # convierte None -> ''
+    email1 = email1.strip()            # quita espacios en blanco
+    if email1:
+        correo_comprador1 = email1.upper()
+    else:
+        correo_comprador1 = 'NO PROPORCIONADO'
+
+    email2 = (cliente2.email or '')        # convierte None -> ''
+    email2 = email2.strip()            # quita espacios en blanco
+    if email2:
+        correo_comprador2 = email2.upper()
+    else:
+        correo_comprador2 = 'NO PROPORCIONADO'
+
     # 6) Miembro B dinámico según relación (igual que antes)
     if ven.ine == prop.ine and prop.tipo == 'propietario':
         claus_b = (
@@ -1003,7 +1037,7 @@ def build_contrato_propiedad_contado_varios_context(fin, cli, ven, cliente2=None
         'ESTADO_CIVIL':        cli.estado_civil.upper(),
         'TELEFONO_COMPRADOR':  cli.telefono.upper(),
         'OCUPACION_COMPRADOR': cli.ocupacion.upper(),
-        'CORREO_COMPRADOR':    cli.email.upper(),
+        'CORREO_COMPRADOR':    correo_comprador1,
 
         # Segundo Cliente/Comprador
         'NOMBRE_COMPRADOR_2':   cliente2.nombre_completo.upper() if cliente2 else '',
@@ -1013,7 +1047,7 @@ def build_contrato_propiedad_contado_varios_context(fin, cli, ven, cliente2=None
         'ESTADO_CIVIL_2':       cliente2.estado_civil.upper() if cliente2 else '',
         'TELEFONO_COMPRADOR_2': cliente2.telefono.upper() if cliente2 else '',
         'OCUPACION_COMPRADOR_2':cliente2.ocupacion.upper() if cliente2 else '',
-        'CORREO_COMPRADOR_2':   cliente2.email.upper() if cliente2 else '',
+        'CORREO_COMPRADOR_2':   correo_comprador2 if cliente2 else '',
 
         # Lote
         'IDENTIFICADOR_LOTE':    fin.lote.identificador,
@@ -1159,6 +1193,13 @@ def build_contrato_propiedad_pagos_context(fin, cli, ven, request=None, tpl=None
     fecha_contrato = fin.lote.proyecto.fecha_emision_contrato
     autoridad = fin.lote.proyecto.autoridad
 
+    email1 = (cli.email or '')        # convierte None -> ''
+    email1 = email1.strip()            # quita espacios en blanco
+    if email1:
+        correo_comprador1 = email1.upper()
+    else:
+        correo_comprador1 = 'NO PROPORCIONADO'
+
     # 3) Miembro B dinámico según relación:
     # — Si ven es propietario:
     if ven.ine == prop.ine and prop.tipo == 'propietario':
@@ -1226,7 +1267,7 @@ def build_contrato_propiedad_pagos_context(fin, cli, ven, request=None, tpl=None
         'ESTADO_CIVIL':        cli.estado_civil.upper(),
         'TELEFONO_COMPRADOR':  cli.telefono.upper(),
         'OCUPACION_COMPRADOR': cli.ocupacion.upper(),
-        'CORREO_COMPRADOR':    cli.email.upper(),
+        'CORREO_COMPRADOR':    correo_comprador1,
 
         # Lote
         'IDENTIFICADOR_LOTE':      fin.lote.identificador,
@@ -1398,6 +1439,20 @@ def build_contrato_propiedad_pagos_varios_context(fin, cli, ven, cliente2=None, 
              "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]
     DIA, MES = numero_a_letras(float(hoy.day),apocopado=False), meses[hoy.month-1].upper()
 
+    email1 = (cli.email or '')        # convierte None -> ''
+    email1 = email1.strip()            # quita espacios en blanco
+    if email1:
+        correo_comprador1 = email1.upper()
+    else:
+        correo_comprador1 = 'NO PROPORCIONADO'
+
+    email2 = (cliente2.email or '')        # convierte None -> ''
+    email2 = email2.strip()            # quita espacios en blanco
+    if email2:
+        correo_comprador2 = email2.upper()
+    else:
+        correo_comprador2 = 'NO PROPORCIONADO'
+
     # 4) Coordenadas por cada lado (igual que antes)
     dir_fields = {}
     for dir_name in ('norte','sur','este','oeste'):
@@ -1496,7 +1551,7 @@ def build_contrato_propiedad_pagos_varios_context(fin, cli, ven, cliente2=None, 
         'ESTADO_CIVIL':        cli.estado_civil.upper(),
         'TELEFONO_COMPRADOR':  cli.telefono.upper(),
         'OCUPACION_COMPRADOR': cli.ocupacion.upper(),
-        'CORREO_COMPRADOR':    cli.email.upper(),
+        'CORREO_COMPRADOR':    correo_comprador1,
 
         # Segundo Cliente/Comprador
         'NOMBRE_COMPRADOR_2':   cliente2.nombre_completo.upper() if cliente2 else '',
@@ -1506,7 +1561,7 @@ def build_contrato_propiedad_pagos_varios_context(fin, cli, ven, cliente2=None, 
         'ESTADO_CIVIL_2':       cliente2.estado_civil.upper() if cliente2 else '',
         'TELEFONO_COMPRADOR_2': cliente2.telefono.upper() if cliente2 else '',
         'OCUPACION_COMPRADOR_2':cliente2.ocupacion.upper() if cliente2 else '',
-        'CORREO_COMPRADOR_2':   cliente2.email.upper() if cliente2 else '',
+        'CORREO_COMPRADOR_2':   correo_comprador2 if cliente2 else '',
 
         # Lote
         'IDENTIFICADOR_LOTE':    fin.lote.identificador,
@@ -1638,6 +1693,12 @@ def build_contrato_ejidal_contado_context(fin, cli, ven, request=None, tpl=None,
     meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio",
              "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]
 
+    email1 = (cli.email or '')        # convierte None -> ''
+    email1 = email1.strip()            # quita espacios en blanco
+    if email1:
+        correo_comprador1 = email1.upper()
+    else:
+        correo_comprador1 = 'NO PROPORCIONADO'
 
     # 3) Parse coordenadas
     dir_fields = {}
@@ -1718,7 +1779,7 @@ def build_contrato_ejidal_contado_context(fin, cli, ven, request=None, tpl=None,
         'ESTADO_CIVIL':        cli.estado_civil.upper(),
         'TELEFONO_COMPRADOR':  cli.telefono.upper(),
         'OCUPACION_COMPRADOR': cli.ocupacion.upper(),
-        'CORREO_COMPRADOR':    cli.email.upper(),
+        'CORREO_COMPRADOR':    correo_comprador1,
 
         # incluir los pares metros/colindancia:
         **dir_fields,
@@ -1867,6 +1928,19 @@ def build_contrato_ejidal_contado_varios_context(fin, cli, ven, cliente2=None, r
     meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio",
              "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]
 
+    email1 = (cli.email or '')        # convierte None -> ''
+    email1 = email1.strip()            # quita espacios en blanco
+    if email1:
+        correo_comprador1 = email1.upper()
+    else:
+        correo_comprador1 = 'NO PROPORCIONADO'
+
+    email2 = (cliente2.email or '')        # convierte None -> ''
+    email2 = email2.strip()            # quita espacios en blanco
+    if email2:
+        correo_comprador2 = email2.upper()
+    else:
+        correo_comprador2 = 'NO PROPORCIONADO'
 
     # 3) Parse coordenadas
     dir_fields = {}
@@ -1947,7 +2021,7 @@ def build_contrato_ejidal_contado_varios_context(fin, cli, ven, cliente2=None, r
         'ESTADO_CIVIL':        cli.estado_civil.upper(),
         'TELEFONO_COMPRADOR':  cli.telefono.upper(),
         'OCUPACION_COMPRADOR': cli.ocupacion.upper(),
-        'CORREO_COMPRADOR':    cli.email.upper(),
+        'CORREO_COMPRADOR':    correo_comprador1,
 
         # Segundo Cliente/Comprador
         'NOMBRE_COMPRADOR_2':   cliente2.nombre_completo.upper() if cliente2 else '',
@@ -1957,7 +2031,7 @@ def build_contrato_ejidal_contado_varios_context(fin, cli, ven, cliente2=None, r
         'ESTADO_CIVIL_2':       cliente2.estado_civil.upper() if cliente2 else '',
         'TELEFONO_COMPRADOR_2': cliente2.telefono.upper() if cliente2 else '',
         'OCUPACION_COMPRADOR_2':cliente2.ocupacion.upper() if cliente2 else '',
-        'CORREO_COMPRADOR_2':   cliente2.email.upper() if cliente2 else '',
+        'CORREO_COMPRADOR_2':   correo_comprador2 if cliente2 else '',
 
         # incluir los pares metros/colindancia:
         **dir_fields,
@@ -2122,6 +2196,13 @@ def build_contrato_ejidal_pagos_context(fin, cli, ven, request=None, tpl=None, f
     fecha_contrato = fin.lote.proyecto.fecha_emision_contrato
     autoridad = fin.lote.proyecto.autoridad
 
+    email1 = (cli.email or '')        # convierte None -> ''
+    email1 = email1.strip()            # quita espacios en blanco
+    if email1:
+        correo_comprador1 = email1.upper()
+    else:
+        correo_comprador1 = 'NO PROPORCIONADO'
+
     # 3) Miembro B dinámico según relación:
     # — Si ven es propietario:
     if ven.ine == prop.ine and prop.tipo == 'propietario':
@@ -2183,7 +2264,7 @@ def build_contrato_ejidal_pagos_context(fin, cli, ven, request=None, tpl=None, f
         'ESTADO_CIVIL':       cli.estado_civil.upper(),
         'TELEFONO_COMPRADOR': cli.telefono,
         'OCUPACION_COMPRADOR':cli.ocupacion.upper(),
-        'CORREO_COMPRADOR':   cli.email.upper(),
+        'CORREO_COMPRADOR':   correo_comprador1,
 
         **coords,
 
@@ -2374,6 +2455,20 @@ def build_contrato_ejidal_pagos_varios_context(fin, cli, ven, cliente2=None,requ
     fecha_contrato = fin.lote.proyecto.fecha_emision_contrato
     autoridad = fin.lote.proyecto.autoridad
 
+    email1 = (cli.email or '')        # convierte None -> ''
+    email1 = email1.strip()            # quita espacios en blanco
+    if email1:
+        correo_comprador1 = email1.upper()
+    else:
+        correo_comprador1 = 'NO PROPORCIONADO'
+
+    email2 = (cliente2.email or '')        # convierte None -> ''
+    email2 = email2.strip()            # quita espacios en blanco
+    if email2:
+        correo_comprador2 = email2.upper()
+    else:
+        correo_comprador2 = 'NO PROPORCIONADO'
+
     # 3) Miembro B dinámico según relación:
     # — Si ven es propietario:
     if ven.ine == prop.ine and prop.tipo == 'propietario':
@@ -2435,7 +2530,7 @@ def build_contrato_ejidal_pagos_varios_context(fin, cli, ven, cliente2=None,requ
         'ESTADO_CIVIL':       cli.estado_civil.upper(),
         'TELEFONO_COMPRADOR': cli.telefono,
         'OCUPACION_COMPRADOR':cli.ocupacion.upper(),
-        'CORREO_COMPRADOR':   cli.email.upper(),
+        'CORREO_COMPRADOR':   correo_comprador1,
 
         # Segundo Cliente/Comprador
         'NOMBRE_COMPRADOR_2':   cliente2.nombre_completo.upper() if cliente2 else '',
@@ -2445,7 +2540,7 @@ def build_contrato_ejidal_pagos_varios_context(fin, cli, ven, cliente2=None,requ
         'ESTADO_CIVIL_2':       cliente2.estado_civil.upper() if cliente2 else '',
         'TELEFONO_COMPRADOR_2': cliente2.telefono.upper() if cliente2 else '',
         'OCUPACION_COMPRADOR_2':cliente2.ocupacion.upper() if cliente2 else '',
-        'CORREO_COMPRADOR_2':   cliente2.email.upper() if cliente2 else '',
+        'CORREO_COMPRADOR_2':   correo_comprador2 if cliente2 else '',
 
 
         **coords,
@@ -2541,5 +2636,3 @@ def build_contrato_ejidal_pagos_varios_context(fin, cli, ven, cliente2=None,requ
     })
     
     return context
-    
-
