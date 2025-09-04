@@ -65,7 +65,7 @@ class DownloadDocumentView(View):
                         document_type = 'contrato_propiedad_contado'
                     else:
                         document_type = 'contrato_propiedad_pagos'
-            else:
+            elif 'ejido' in regime:
                 # ejidal o comunal
                 if has_second_client:
                     if pago == 'contado':
@@ -77,6 +77,17 @@ class DownloadDocumentView(View):
                         document_type = 'contrato_ejidal_contado'
                     else:
                         document_type = 'contrato_ejidal_pagos'
+            else:
+                if has_second_client:
+                    if pago == 'contado':
+                        document_type = 'contrato_canario_contado_varios'
+                    else:
+                        document_type = 'contrato_canario_pagos_varios'
+                else:
+                    if pago == 'contado':
+                        document_type = 'contrato_canario_contado'
+                    else:
+                        document_type = 'contrato_canario_pagos'
         
         # 3. Para plan_financiamiento, si no existe en DOCUMENTOS, usar uno por defecto
         if document_type == 'plan_financiamiento' and document_type not in DOCUMENTOS:
@@ -1049,5 +1060,6 @@ def home(request):
                   'dashboard/home.html',
 
                   ctx)
+
 
 
