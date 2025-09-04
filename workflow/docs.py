@@ -13,7 +13,11 @@ from workflow.builders import (
     build_contrato_propiedad_pagos_context,
     build_contrato_propiedad_pagos_varios_context,
     build_contrato_ejidal_contado_varios_context,
-    build_contrato_ejidal_pagos_varios_context
+    build_contrato_ejidal_pagos_varios_context,
+    build_contrato_canario_contado_context,
+    build_contrato_canario_contado_varios_context,
+    build_contrato_canario_pagos_context,
+    build_contrato_canario_pagos_varios_context
 )
 
 DOCUMENTOS = {
@@ -113,7 +117,35 @@ DOCUMENTOS = {
         "plantilla":  "pdfs/templates/pdfs/contrato_pequeña_pagos_varios.docx",
         "builder":    build_contrato_propiedad_pagos_varios_context,
     },
+    
+    # Contratos pequeña propiedad – Financiamiento
+    "contrato_canario_pagos": {
+        "titulo":     "Contrato Casa Canario (Pagos)",
+        "descripcion":"Contrato con plan de pagos.",
+        "plantilla":  "pdfs/templates/pdfs/casa_canario_pagos.docx",
+        "builder":    build_contrato_canario_pagos_context,
+    },
+    "contrato_canario_contado": {
+        "titulo":     "Contrato Casa Canario (Contado)",
+        "descripcion":"Contrato para pago al contado.",
+        "plantilla":  "pdfs/templates/pdfs/casa_canario_contado.docx",
+        "builder":    build_contrato_canario_contado_context,
+    },
+    "contrato_canario_contado_varios": {
+        "titulo":     "Contrato Casa Canario varios compradores(Contado)",
+        "descripcion":"Contrato para pago al contado de varios compradores.",
+        "plantilla":  "pdfs/templates/pdfs/casa_canario_contado_varios.docx",
+        "builder":    build_contrato_canario_contado_varios_context,
+    },
+    "contrato_canario_pagos_varios": {
+        "titulo":     "Contrato Casa Canario varios compradores (Pagos)",
+        "descripcion":"Contrato con plan de pagos de varios compradores.",
+        "plantilla":  "pdfs/templates/pdfs/casa_canario_pagos_varios.docx",
+        "builder":    build_contrato_canario_pagos_varios_context,
+    },
+
 }
+
 
 
 
