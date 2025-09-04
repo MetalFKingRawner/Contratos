@@ -519,7 +519,7 @@ class SeleccionDocumentosView(FormView):
                     slugs.append('contrato_propiedad_contado')
                 else:
                     slugs.append('contrato_propiedad_pagos')
-        else:
+        elif 'ejido' in regime:
             # ejidal o comunal
             if has_second_client:
                 if pago == 'contado':
@@ -531,6 +531,17 @@ class SeleccionDocumentosView(FormView):
                     slugs.append('contrato_ejidal_contado')
                 else:
                     slugs.append('contrato_ejidal_pagos')
+        else:
+            if has_second_client:
+                if pago == 'contado':
+                    slugs.append('contrato_canario_contado_varios')
+                else:
+                    slugs.append('contrato_canario_pagos_varios')
+            else:
+                if pago == 'contado':
+                    slugs.append('contrato_canario_contado')
+                else:
+                    slugs.append('contrato_canario_pagos')
 
         kwargs['available_slugs'] = slugs
         return kwargs
@@ -764,4 +775,5 @@ class Paso1FinanciamientoView(TemplateView):
         # Guardar en sesión para los pasos siguientes
         request.session['financiamiento_id'] = int(plan_id)
         return redirect('workflow:paso2_cliente')
+
 
