@@ -6,7 +6,7 @@ from django.urls import reverse_lazy
 from .forms import SolicitudContratoForm, Paso1Form
 from django.views.generic import FormView
 from django.http import JsonResponse
-from core.models import Vendedor
+from core.models import Vendedor, Propietario
 from financiamiento.models import Financiamiento
 from core.forms import ClienteForm
 from core.models import Cliente
@@ -815,6 +815,7 @@ class Paso1FinanciamientoView(TemplateView):
         # Guardar en sesión para los pasos siguientes
         request.session['financiamiento_id'] = int(plan_id)
         return redirect('workflow:paso2_cliente')
+
 
 
 
