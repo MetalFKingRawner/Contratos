@@ -11,6 +11,7 @@ def _parse_coord(text):
     """
     Dado un campo como "52.26 MTS | CON LOTE #2 (DOS)"
     devuelve (52.26, "CON LOTE #2 (DOS)")
+    Formatea el número a 2 decimales siempre.
     """
     try:
         metros_part, col_part = text.split('|', 1)
@@ -23,7 +24,10 @@ def _parse_coord(text):
         except:
             metros = 0.0
         colindancia = ''
-    return metros, colindancia
+    
+    # Formatear a 2 decimales
+    metros_str = format(metros, '.2f')
+    return metros_str, colindancia
 
 
 def build_aviso_privacidad_context(fin, cli, ven, request=None, tpl=None,firma_data=None):
@@ -684,7 +688,7 @@ def build_contrato_propiedad_contado_context(fin, cli, ven, request=None, tpl=No
         metros, col = _parse_coord(raw)
         key_m = f'NUMERO_METROS_{dir_name.upper()}'
         key_c = f'COLINDANCIA_LOTE_{dir_name.upper()}'
-        dir_fields[key_m] = metros
+        dir_fields[key_m] = metros  # Ahora metros ya está formateado como string
         dir_fields[key_c] = col
 
     # 4) Cálculo pago restante
@@ -938,12 +942,13 @@ def build_contrato_propiedad_contado_varios_context(fin, cli, ven, cliente2=None
 
     # 4) Coordenadas por cada lado (igual que antes)
     dir_fields = {}
+    # En ambas funciones, cambia este bucle:
     for dir_name in ('norte','sur','este','oeste'):
         raw = getattr(fin.lote, dir_name, '')
         metros, col = _parse_coord(raw)
         key_m = f'NUMERO_METROS_{dir_name.upper()}'
         key_c = f'COLINDANCIA_LOTE_{dir_name.upper()}'
-        dir_fields[key_m] = metros
+        dir_fields[key_m] = metros  # Ahora metros ya está formateado como string
         dir_fields[key_c] = col
 
     # 5) Cálculo pago restante (igual que antes)
@@ -1707,7 +1712,7 @@ def build_contrato_ejidal_contado_context(fin, cli, ven, request=None, tpl=None,
         metros, col = _parse_coord(raw)
         key_m = f'NUMERO_METROS_{dir_name.upper()}'
         key_c = f'COLINDANCIA_LOTE_{dir_name.upper()}'
-        dir_fields[key_m] = metros
+        dir_fields[key_m] = metros  # Ahora metros ya está formateado como string
         dir_fields[key_c] = col
 
     # 4) Cálculo pago restante
@@ -2686,7 +2691,7 @@ def build_contrato_canario_contado_context(fin, cli, ven, request=None, tpl=None
         metros, col = _parse_coord(raw)
         key_m = f'NUMERO_METROS_{dir_name.upper()}'
         key_c = f'COLINDANCIA_LOTE_{dir_name.upper()}'
-        dir_fields[key_m] = metros
+        dir_fields[key_m] = metros  # Ahora metros ya está formateado como string
         dir_fields[key_c] = col
 
     # 4) Cálculo pago restante
@@ -2900,7 +2905,7 @@ def build_contrato_canario_contado_varios_context(fin, cli, ven, cliente2=None, 
         metros, col = _parse_coord(raw)
         key_m = f'NUMERO_METROS_{dir_name.upper()}'
         key_c = f'COLINDANCIA_LOTE_{dir_name.upper()}'
-        dir_fields[key_m] = metros
+        dir_fields[key_m] = metros  # Ahora metros ya está formateado como string
         dir_fields[key_c] = col
 
     # 5) Cálculo pago restante (igual que antes)
@@ -3514,3 +3519,4 @@ def build_contrato_canario_pagos_varios_context(fin, cli, ven, cliente2=None, re
     })
 
     return context
+
