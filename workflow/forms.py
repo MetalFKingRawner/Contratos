@@ -84,21 +84,36 @@ class Paso1Form(forms.Form):
     )
 
 class VendorSelectForm(forms.Form):
-    vendedor = forms.ModelChoiceField(
-        queryset=Vendedor.objects.none(),
+    persona = forms.ChoiceField(
+        choices=[],
         label="Selecciona a la persona que te atendió",
-        widget=forms.RadioSelect(attrs={'class': 'd-none'}),  # Cambio importante
+        widget=forms.RadioSelect(attrs={'class': 'd-none'}),
         required=True
     )
 
     def __init__(self, *args, **kwargs):
         financiamiento = kwargs.pop('financiamiento', None)
         super().__init__(*args, **kwargs)
+        
         if financiamiento:
             proyecto_id = financiamiento.lote.proyecto.id
-            self.fields['vendedor'].queryset = Vendedor.objects.filter(
-                proyectos__id=proyecto_id
-            )
+            
+            # Obtener vendedores y propietarios
+            vendedores = Vendedor.objects.filter(proyectos__id=proyecto_id)
+            propietarios = Propietario.objects.all()
+            
+            # Crear choices para el campo
+            choices = []
+            
+            # Agregar vendedores
+            for v in vendedores:
+                choices.append((f'vendedor-{v.id}', v.nombre_completo))
+            
+            # Agregar propietarios
+            for p in propietarios:
+                choices.append((f'propietario-{p.id}', p.nombre_completo))
+            
+            self.fields['persona'].choices = choices
 
 class SeleccionDocumentosForm(forms.Form):
     documentos = forms.MultipleChoiceField(
@@ -166,4 +181,5 @@ class SegundoClienteForm(forms.ModelForm):
             'ocupacion': forms.TextInput(attrs={'class': 'form-control'}),
             'domicilio': forms.Textarea(attrs={'class':'form-control','rows':2}),
         }
+
 
