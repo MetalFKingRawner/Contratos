@@ -103,7 +103,11 @@ class DownloadDocumentView(View):
         # 5. Obtener los datos necesarios del trámite
         fin = tramite.financiamiento
         cli = tramite.cliente
-        ven = tramite.vendedor
+        # Obtener la persona correcta según el tipo
+        if tramite.persona_tipo == 'vendedor':
+            ven = tramite.vendedor
+        else:
+            ven = tramite.propietario
         cli2 = tramite.cliente_2  # Segundo cliente
         
         # Obtener cláusulas especiales de la base de datos
@@ -1060,6 +1064,7 @@ def home(request):
                   'dashboard/home.html',
 
                   ctx)
+
 
 
 
