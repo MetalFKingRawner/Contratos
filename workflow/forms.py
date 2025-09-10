@@ -1,6 +1,6 @@
 from django import forms
 from financiamiento.models import Financiamiento
-from core.models import Vendedor
+from core.models import Vendedor, Propietario
 from workflow.docs import DOCUMENTOS
 from core.models import Cliente
 
@@ -181,5 +181,6 @@ class SegundoClienteForm(forms.ModelForm):
             'ocupacion': forms.TextInput(attrs={'class': 'form-control'}),
             'domicilio': forms.Textarea(attrs={'class':'form-control','rows':2}),
         }
+
 
 
