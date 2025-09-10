@@ -405,21 +405,40 @@ class SeleccionVendedorView(FormView):
         fin = get_object_or_404(Financiamiento, id=self.request.session['financiamiento_id'])
         ctx['financiamiento'] = fin
         
-        # AQUÍ ESTÁ EL CAMBIO IMPORTANTE: Obtener los vendedores
-        # Filtrar por el proyecto del financiamiento actual
+        # Obtener vendedores y propietarios del proyecto
         proyecto_id = fin.lote.proyecto.id
+        
+        # Vendedores (apoderados y vendedores regulares)
         vendedores = Vendedor.objects.filter(proyectos__id=proyecto_id)
         
-        ctx['vendedores'] = vendedores
+        # Propietarios (propietarios y apoderados)
+        propietarios = Propietario.objects.all()
+        
+        # Agregar información de tipo a cada objeto
+        for v in vendedores:
+            v.tipo_modelo = 'vendedor'
+        
+        for p in propietarios:
+            p.tipo_modelo = 'propietario'
+
+        # Combinar ambas listas para mostrar en la plantilla
+        personas = list(vendedores) + list(propietarios)
+        
+        ctx['personas'] = personas
         return ctx
 
     def form_valid(self, form):
-        vendedor = form.cleaned_data['vendedor']
-        self.request.session['vendedor_id'] = vendedor.id
+        # Obtener el ID y tipo de la persona seleccionada
+        persona_id = form.cleaned_data['persona']
+        
+        # El formato del valor es "tipo-id" (ej: "vendedor-1" o "propietario-3")
+        tipo, id_val = persona_id.split('-')
+        self.request.session['persona_tipo'] = tipo
+        self.request.session['persona_id'] = int(id_val)
+        
         return redirect('workflow:aviso_privacidad')
 
     def form_invalid(self, form):
-        # Agrega esto para depurar
         print("Errores del formulario:", form.errors)
         return super().form_invalid(form)
 
@@ -431,10 +450,13 @@ class ClausulasEspecialesView(FormView):
         # Requiere haber aceptado el aviso
         if not request.session.get('privacy_accepted'):
             return redirect('workflow:aviso_privacidad')
-        # Requiere haber seleccionado financiamiento, cliente y vendedor
-        for key in ('financiamiento_id','cliente_id','vendedor_id'):
+        
+        # Requiere haber seleccionado financiamiento, cliente y persona (vendedor o propietario)
+        required_keys = ['financiamiento_id', 'cliente_id', 'persona_tipo', 'persona_id']
+        for key in required_keys:
             if not request.session.get(key):
                 return redirect('workflow:paso1_financiamiento')
+                
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
@@ -472,8 +494,9 @@ class SeleccionDocumentosView(FormView):
         # Requiere haber aceptado el aviso
         if not request.session.get('privacy_accepted'):
             return redirect('workflow:aviso_privacidad')
-        # Requiere haber seleccionado financiamiento, cliente y vendedor
-        for key in ('financiamiento_id','cliente_id','vendedor_id'):
+        # Requiere haber seleccionado financiamiento, cliente y persona
+        required_keys = ['financiamiento_id', 'cliente_id', 'persona_tipo', 'persona_id']
+        for key in required_keys:
             if not request.session.get(key):
                 return redirect('workflow:paso1_financiamiento')
         return super().dispatch(request, *args, **kwargs)
@@ -485,7 +508,6 @@ class SeleccionDocumentosView(FormView):
         tramite = get_object_or_404(Tramite, id=tramite_id) if tramite_id else None
 
         # 1) Empezamos con los documentos que siempre queremos mostrar
-        # 1) Aviso de privacidad siempre disponible
         slugs = ['aviso_privacidad']
         slugs += ['carta_intencion', 'solicitud_contrato']
 
@@ -493,7 +515,7 @@ class SeleccionDocumentosView(FormView):
         regime = fin.lote.proyecto.tipo_contrato.lower()
         pago   = fin.tipo_pago
 
-        # Verificar si hay segundo cliente (NUEVO)
+        # Verificar si hay segundo cliente
         has_second_client = tramite and tramite.cliente_2 is not None
 
         if 'propiedad definitiva' in regime:
@@ -550,10 +572,21 @@ class SeleccionDocumentosView(FormView):
         ctx = super().get_context_data(**kwargs)
         fin = get_object_or_404(Financiamiento, id=self.request.session['financiamiento_id'])
         cli = get_object_or_404(Cliente, id=self.request.session['cliente_id'])
-        ven = get_object_or_404(Vendedor, id=self.request.session['vendedor_id'])
+        
+        # Obtener la persona (vendedor o propietario) desde la sesión
+        persona_tipo = self.request.session.get('persona_tipo')
+        persona_id = self.request.session.get('persona_id')
+        
+        # Determinar si es vendedor o propietario
+        if persona_tipo == 'vendedor':
+            ven = get_object_or_404(Vendedor, id=persona_id)
+        else:
+            ven = get_object_or_404(Propietario, id=persona_id)
+        
         tramite_id = self.request.session.get('tramite_id')
         tramite = get_object_or_404(Tramite, id=tramite_id) if tramite_id else None
         slugs = self.get_form_kwargs()['available_slugs']
+        
         # Construimos la lista de docs con toda la info
         available_docs = []
         for slug in slugs:
@@ -563,11 +596,11 @@ class SeleccionDocumentosView(FormView):
                 'titulo':      info['titulo'],
                 'descripcion': info['descripcion'],
                 'plantilla':   info['plantilla'],
-                'builder':     info['builder'],  # la función la seguiremos usando en form_valid
+                'builder':     info['builder'],
             })
         ctx['available_docs'] = available_docs
 
-        # Pasar segundo cliente al contexto si existe (NUEVO)
+        # Pasar segundo cliente al contexto si existe
         if tramite and tramite.cliente_2:
             ctx['cliente2'] = tramite.cliente_2
 
@@ -579,8 +612,15 @@ class SeleccionDocumentosView(FormView):
 
         fin = tramite.financiamiento
         cli = tramite.cliente
-        ven = tramite.vendedor
-        cli2 = tramite.cliente_2  # Segundo cliente (NUEVO)
+        
+        # Obtener la persona correcta según el tipo
+        if tramite.persona_tipo == 'vendedor':
+            ven = tramite.vendedor
+        else:
+            ven = tramite.propietario
+            
+        cli2 = tramite.cliente_2
+        
         # Obtener cláusulas especiales de la base de datos
         clausulas_adicionales = {}
         if hasattr(tramite, 'clausulas_especiales'):
@@ -601,11 +641,11 @@ class SeleccionDocumentosView(FormView):
             for slug in selected:
                 doc_info = DOCUMENTOS[slug]
                 tpl_path = os.path.join(settings.BASE_DIR, doc_info['plantilla'])
+                
                 # 1) generar contexto
-                # 1) Template object and context
                 tpl = DocxTemplate(tpl_path)
-                # Pasamos tpl y request siempre; el builder puede ignorarlos si no los necesita
-                # Pasar segundo cliente si existe (NUEVO)
+                
+                # Determinar qué builder usar basado en el tipo de persona
                 try:
                     # Intenta pasar el segundo cliente si el builder lo soporta
                     context = doc_info['builder'](
@@ -614,7 +654,7 @@ class SeleccionDocumentosView(FormView):
                         tpl=tpl, 
                         firma_data=tramite.firma_cliente, 
                         clausulas_adicionales=clausulas_adicionales,
-                        cliente2=cli2  # Nuevo parámetro
+                        cliente2=cli2
                     )
                 except TypeError:
                     try:
@@ -630,13 +670,11 @@ class SeleccionDocumentosView(FormView):
                         # Versión mínima
                         context = doc_info['builder'](fin, cli, ven)
 
-
                 # 2) rellenar plantilla Word
                 tmp_docx = os.path.join(settings.MEDIA_ROOT, 'temp', f"{slug}.docx")
                 os.makedirs(os.path.dirname(tmp_docx), exist_ok=True)
                 tpl.render(context)
                 tpl.save(tmp_docx)
-                #fill_word_template(tpl_path, context, tmp_docx)
 
                 # 3) convertir a PDF
                 out_pdf = os.path.join(settings.MEDIA_ROOT, 'temp', f"{slug}.pdf")
@@ -673,63 +711,65 @@ class AvisoPrivacidadView(FormView):
     form_class    = AvisoForm
 
     def form_valid(self, form):
-        # 1) Guarda que aceptó el aviso
+        # 1) Guarda aceptación y firma en sesión
         self.request.session['privacy_accepted'] = True
-
-        # 2) Comprueba si quiso firmar digitalmente
-        firmar = form.cleaned_data.get('firmar')  # "sí" o "no"
-        firma  = form.cleaned_data.get('firma_data')
-
-        if firmar == 'sí' and firma:
-            # solo guardamos la firma si eligió “sí”
+        firma = form.cleaned_data.get('firma_data')
+        if firma:
             self.request.session['firma_cliente_data'] = firma
-        else:
-            # si no quiere firmar digitalmente, eliminamos cualquier firma previa
-            self.request.session.pop('firma_cliente_data', None)
 
         # 2) Recupera IDs de pasos previos (deben existir en sesión)
         fin_id = self.request.session.get('financiamiento_id')
         cli_id = self.request.session.get('cliente_id')
-        ven_id = self.request.session.get('vendedor_id')
-        cliente2_data = self.request.session.get('cliente2_data')  # Nuevo: datos del segundo cliente
+        persona_tipo = self.request.session.get('persona_tipo')  # 'vendedor' o 'propietario'
+        persona_id = self.request.session.get('persona_id')      # ID correspondiente
+        cliente2_data = self.request.session.get('cliente2_data')
 
         # Si falta alguno, aborta o redirige al inicio
-        if not (fin_id and cli_id and ven_id):
-            # puedes mostrar un mensaje de error aquí
+        if not (fin_id and cli_id and persona_tipo and persona_id):
             return redirect('workflow:paso1_financiamiento')
 
         # 3) Obtén las instancias reales
         financiamiento = get_object_or_404(Financiamiento, id=fin_id)
-        cliente        = get_object_or_404(Cliente,       id=cli_id)
-        vendedor       = get_object_or_404(Vendedor,      id=ven_id)
+        cliente = get_object_or_404(Cliente, id=cli_id)
 
-        # 3.1) Crear segundo cliente si existe (NUEVO)
+        # 3.1) Obtener la instancia correcta según el tipo
+        vendedor = None
+        propietario = None
+        
+        if persona_tipo == 'vendedor':
+            vendedor = get_object_or_404(Vendedor, id=persona_id)
+        else:
+            propietario = get_object_or_404(Propietario, id=persona_id)
+
+        # 3.2) Crear segundo cliente si existe
         cliente2 = None
         if cliente2_data:
             cliente2 = Cliente.objects.create(**cliente2_data)
-
+        
         # 4) Crea o actualiza el Tramite
         tramite_id = self.request.session.get('tramite_id')
         if tramite_id:
-            # Si ya existe (por recarga), actualiza
+            # Si ya existe, actualiza
             tramite = get_object_or_404(Tramite, id=tramite_id)
             tramite.financiamiento = financiamiento
-            tramite.cliente        = cliente
-            tramite.vendedor       = vendedor
-            # Si firmó, actualiza; si no, conserva la previa (o vacía)
-            if firmar == 'sí' and firma:
-                tramite.firma_cliente = firma
+            tramite.cliente = cliente
+            tramite.vendedor = vendedor
+            tramite.propietario = propietario
+            tramite.firma_cliente = firma or tramite.firma_cliente
             if cliente2:
-                tramite.cliente_2 = cliente2  # Asignar segundo cliente
+                tramite.cliente_2 = cliente2
             tramite.save()
         else:
             # Nuevo trámite
             tramite = Tramite.objects.create(
-                financiamiento = financiamiento,
-                cliente        = cliente,
-                vendedor       = vendedor,
-                firma_cliente  = firma if firmar == 'sí' and firma else "",
-                cliente_2=cliente2  # Asignar segundo cliente (puede ser None)
+                financiamiento=financiamiento,
+                cliente=cliente,
+                vendedor=vendedor,
+                propietario=propietario,
+                persona_tipo=persona_tipo,
+                persona_id=persona_id,
+                firma_cliente=firma or "",
+                cliente_2=cliente2
             )
             self.request.session['tramite_id'] = tramite.id
 
@@ -775,5 +815,6 @@ class Paso1FinanciamientoView(TemplateView):
         # Guardar en sesión para los pasos siguientes
         request.session['financiamiento_id'] = int(plan_id)
         return redirect('workflow:paso2_cliente')
+
 
 
