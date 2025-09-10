@@ -434,102 +434,107 @@
     {{ financiamiento.lote }} en el proyecto <strong>{{ financiamiento.lote.proyecto.nombre }}</strong>
   </div>
 
-  <!-- Mensaje cuando no hay vendedores -->
-  {% if not vendedores %}
-  <div class="no-vendors text-center py-5">
-    <i class="fas fa-user-slash fa-3x mb-3 text-secondary"></i>
-    <h3>No encontramos vendedores asociados</h3>
-    <p class="text-muted mb-4">
-      No hay vendedores asignados al proyecto "{{ financiamiento.lote.proyecto.nombre }}".
-      Por favor contacta al administrador.
-    </p>
-    <a href="mailto:admin@tuempresa.com" class="btn btn-primary">
-      <i class="fas fa-envelope me-2"></i>Contactar al administrador
-    </a>
-  </div>
-  {% endif %}
 
-  <!-- Tarjetas de vendedores -->
+  <!-- Tarjetas de personas (vendedores y propietarios) -->
   <form method="post" id="vendorForm">
-    {% csrf_token %}
-    
-    <div class="vendor-cards">
-      {% for vendedor in vendedores %}
-      <label class="vendor-card" for="vend_{{ vendedor.id }}">
-        <input 
-          type="radio" 
-          id="id_vendedor_{{ forloop.counter0 }}" 
-          name="vendedor" 
-          value="{{ vendedor.id }}"
-          {% if form.vendedor.value|stringformat:"s" == vendedor.id|stringformat:"s" %}checked{% endif %}
-          class="d-none">
-        
-        <div class="vendor-header">
-          <div class="vendor-avatar">
-            {{ vendedor.nombre_completo|slice:":1" }}
+      {% csrf_token %}
+      
+      <div class="vendor-cards">
+          {% for persona in personas %}
+          <label class="vendor-card" for="persona_{{ persona.id }}_{{ persona.tipo_modelo }}">
+              <input 
+                  type="radio" 
+                  id="id_persona_{{ forloop.counter0 }}" 
+                  name="persona" 
+                  value="{{ persona.tipo_modelo }}-{{ persona.id }}"
+                  {% if form.persona.value == persona.id|stringformat:"s" %}checked{% endif %}
+                  class="d-none">
+              
+              <div class="vendor-header">
+                  <div class="vendor-avatar">
+                      {{ persona.nombre_completo|slice:":1" }}
+                  </div>
+                  <div class="vendor-info">
+                      <div class="vendor-name">{{ persona.nombre_completo }}</div>
+                      <div class="vendor-type">
+                          <i class="fas fa-{% if persona.tipo == 'vendedor' %}user-tie{% elif persona.tipo == 'apoderado' %}user-shield{% else %}user{% endif %} me-1"></i>
+                          {% if persona.tipo_modelo == 'vendedor' %}
+                              {{ persona.get_tipo_display }}
+                          {% else %}
+                              {{ persona.get_tipo_display }}
+                          {% endif %}
+                      </div>
+                  </div>
+              </div>
+              
+              <div class="vendor-details">
+                  <div class="vendor-detail">
+                      <i class="fas fa-phone"></i>
+                      <div>{{ persona.telefono }}</div>
+                  </div>
+                  
+                  <div class="vendor-detail">
+                      <i class="fas fa-envelope"></i>
+                      <div>{{ persona.email }}</div>
+                  </div>
+                  
+                  <div class="vendor-detail">
+                      <i class="fas fa-map-marker-alt"></i>
+                      <div>{{ persona.domicilio|truncatechars:40 }}</div>
+                  </div>
+              </div>
+              
+              <div class="vendor-projects">
+                  <div class="vendor-projects-title">
+                      <i class="fas fa-building me-1"></i> 
+                      {% if persona.tipo_modelo == 'vendedor' %}
+                          Proyectos asociados:
+                          <div class="project-tags">
+                              {% for proyecto in persona.proyectos.all|slice:":3" %}
+                              <div class="project-tag">{{ proyecto.nombre }}</div>
+                              {% endfor %}
+                              {% if persona.proyectos.count > 3 %}
+                              <div class="project-tag">+{{ persona.proyectos.count|add:"-3" }} más</div>
+                              {% endif %}
+                          </div>
+                      {% else %}
+                          Proyecto: {{ persona.proyecto.nombre }}
+                      {% endif %}
+                  </div>
+              </div>
+          </label>
+          {% empty %}
+          <div class="no-vendors text-center py-5">
+              <i class="fas fa-user-slash fa-3x mb-3 text-secondary"></i>
+              <h3>No encontramos personas asociadas</h3>
+              <p class="text-muted mb-4">
+                  No hay vendedores o propietarios en el sistema.
+                  Por favor contacta al administrador.
+              </p>
+              <a href="mailto:admin@tuempresa.com" class="btn btn-primary">
+                  <i class="fas fa-envelope me-2"></i>Contactar al administrador
+              </a>
           </div>
-          <div class="vendor-info">
-            <div class="vendor-name">{{ vendedor.nombre_completo }}</div>
-            <div class="vendor-type">
-              <i class="fas fa-{% if vendedor.tipo == 'vendedor' %}user-tie{% else %}user-shield{% endif %} me-1"></i>
-              {{ vendedor.get_tipo_display }}
-            </div>
-          </div>
-        </div>
-        
-        <div class="vendor-details">
-          <div class="vendor-detail">
-            <i class="fas fa-phone"></i>
-            <div>{{ vendedor.telefono }}</div>
-          </div>
-          
-          <div class="vendor-detail">
-            <i class="fas fa-envelope"></i>
-            <div>{{ vendedor.email }}</div>
-          </div>
-          
-          <div class="vendor-detail">
-            <i class="fas fa-map-marker-alt"></i>
-            <div>{{ vendedor.domicilio|truncatechars:40 }}</div>
-          </div>
-        </div>
-        
-        <div class="vendor-projects">
-          <div class="vendor-projects-title">
-            <i class="fas fa-building me-1"></i> Proyectos asociados:
-          </div>
-          <div class="project-tags">
-            {% for proyecto in vendedor.proyectos.all|slice:":3" %}
-            <div class="project-tag">{{ proyecto.nombre }}</div>
-            {% endfor %}
-            {% if vendedor.proyectos.count > 3 %}
-            <div class="project-tag">+{{ vendedor.proyectos.count|add:"-3" }} más</div>
-            {% endif %}
-          </div>
-        </div>
-      </label>
-      {% empty %}
-      {% comment %} Este bloque ya no es necesario si tenemos el if anterior {% endcomment %}
-      {% endfor %}
-    </div>
+          {% endfor %}
+      </div>
 
-    {% if form.vendedor.errors %}
-    <div class="alert alert-danger mt-3">
-      {% for error in form.vendedor.errors %}
-        <i class="fas fa-exclamation-circle me-2"></i>{{ error }}
-      {% endfor %}
-    </div>
-    {% endif %}
-    
-    {% if vendedores %}
-    <div class="submit-section">
-      <button type="submit" class="btn btn-continue">
-        <i class="fas fa-check-circle"></i>
-        Confirmar selección
-        <i class="fas fa-arrow-right"></i>
-      </button>
-    </div>
-    {% endif %}
+      {% if form.persona.errors %}
+      <div class="alert alert-danger mt-3">
+          {% for error in form.persona.errors %}
+              <i class="fas fa-exclamation-circle me-2"></i>{{ error }}
+          {% endfor %}
+      </div>
+      {% endif %}
+      
+      {% if personas %}
+      <div class="submit-section">
+          <button type="submit" class="btn btn-continue">
+              <i class="fas fa-check-circle"></i>
+              Confirmar selección
+              <i class="fas fa-arrow-right"></i>
+          </button>
+      </div>
+      {% endif %}
   </form>
 </div>
 
