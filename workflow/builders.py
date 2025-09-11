@@ -6,6 +6,23 @@ from datetime import date
 from django.conf import settings
 from workflow.utils import numero_a_letras, calcular_superficie
 from requests import request
+from django.db.models import Count
+
+def obtener_letra_identificador(lote):
+    """
+    Devuelve 'ÚNICO' si el proyecto tiene solo un lote, 
+    de lo contrario convierte el identificador a letras.
+    Versión optimizada con consulta directa.
+    """
+    # Consulta optimizada: contar lotes directamente por ID de proyecto
+    from core.models import Lote  # Asegúrate de importar tu modelo Lote
+    
+    cantidad_lotes = Lote.objects.filter(proyecto_id=lote.proyecto_id).count()
+    
+    if cantidad_lotes == 1:
+        return 'ÚNICO'
+    else:
+        return numero_a_letras(float(lote.identificador), apocopado=False)
 
 def _parse_coord(text):
     """
@@ -712,7 +729,7 @@ def build_contrato_propiedad_contado_context(fin, cli, ven, request=None, tpl=No
         claus_b = (
             f"QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, "
             f"QUE ACREDITA CON EL CONTRATO PRIVADO DE COMPRAVENTA Y CONSTANCIA DE POSESIÓN DE FECHA {fecha_posesion} "
-            f"EXPEDIDA POR LOS INTEGRANTES DEL / DE LA {autoridad}"
+            f"EXPEDIDA POR LOS INTEGRANTES {autoridad}"
         )
     # — Si ven es apoderado:
     elif ven.ine == prop.ine and prop.tipo == 'apoderado':
@@ -782,7 +799,7 @@ def build_contrato_propiedad_contado_context(fin, cli, ven, request=None, tpl=No
 
         # Lote
         'IDENTIFICADOR_LOTE':    fin.lote.identificador,
-        'LETRA_IDENTIFICADOR':   numero_a_letras(float(fin.lote.identificador),apocopado=False),
+        'LETRA_IDENTIFICADOR': obtener_letra_identificador(fin.lote),  # Cambio aquí
         'DIRECCION_PROYECTO_LOTE': fin.lote.proyecto.ubicacion.upper(),
 
         # Coordenadas dinámicas
@@ -978,7 +995,7 @@ def build_contrato_propiedad_contado_varios_context(fin, cli, ven, cliente2=None
         claus_b = (
             f"QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, "
             f"QUE ACREDITA CON EL CONTRATO PRIVADO DE COMPRAVENTA Y CONSTANCIA DE POSESIÓN DE FECHA {fecha_posesion} "
-            f"EXPEDIDA POR LOS INTEGRANTES DEL / DE LA {autoridad}"
+            f"EXPEDIDA POR LOS INTEGRANTES {autoridad}"
         )
     elif ven.ine == prop.ine and prop.tipo == 'apoderado':
         claus_b = (
@@ -1056,7 +1073,7 @@ def build_contrato_propiedad_contado_varios_context(fin, cli, ven, cliente2=None
 
         # Lote
         'IDENTIFICADOR_LOTE':    fin.lote.identificador,
-        'LETRA_IDENTIFICADOR':   numero_a_letras(float(fin.lote.identificador),apocopado=False),
+        'LETRA_IDENTIFICADOR':   obtener_letra_identificador(fin.lote),  # Cambio aquí
         'DIRECCION_PROYECTO_LOTE': fin.lote.proyecto.ubicacion.upper(),
 
         # Coordenadas dinámicas
@@ -1211,7 +1228,7 @@ def build_contrato_propiedad_pagos_context(fin, cli, ven, request=None, tpl=None
         claus_b = (
             f"QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, "
             f"QUE ACREDITA CON EL CONTRATO PRIVADO DE COMPRAVENTA Y CONSTANCIA DE POSESIÓN DE FECHA {fecha_posesion} "
-            f"EXPEDIDA POR LOS INTEGRANTES DEL / DE LA {autoridad}"
+            f"EXPEDIDA POR LOS INTEGRANTES {autoridad}"
         )
     # — Si ven es apoderado:
     elif ven.ine == prop.ine and prop.tipo == 'apoderado':
@@ -1276,7 +1293,7 @@ def build_contrato_propiedad_pagos_context(fin, cli, ven, request=None, tpl=None
 
         # Lote
         'IDENTIFICADOR_LOTE':      fin.lote.identificador,
-        'LETRA_IDENTIFICADOR':     numero_a_letras(float(fin.lote.identificador),apocopado=False),
+        'LETRA_IDENTIFICADOR':     obtener_letra_identificador(fin.lote),  # Cambio aquí
         'DIRECCION_PROYECTO_LOTE': fin.lote.proyecto.ubicacion.upper(),
 
         # Coordenadas
@@ -1481,7 +1498,7 @@ def build_contrato_propiedad_pagos_varios_context(fin, cli, ven, cliente2=None, 
         claus_b = (
             f"QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, "
             f"QUE ACREDITA CON EL CONTRATO PRIVADO DE COMPRAVENTA Y CONSTANCIA DE POSESIÓN DE FECHA {fecha_posesion} "
-            f"EXPEDIDA POR LOS INTEGRANTES DEL / DE LA {autoridad}"
+            f"EXPEDIDA POR LOS INTEGRANTES {autoridad}"
         )
     elif ven.ine == prop.ine and prop.tipo == 'apoderado':
         claus_b = (
@@ -1570,7 +1587,7 @@ def build_contrato_propiedad_pagos_varios_context(fin, cli, ven, cliente2=None, 
 
         # Lote
         'IDENTIFICADOR_LOTE':    fin.lote.identificador,
-        'LETRA_IDENTIFICADOR':   numero_a_letras(float(fin.lote.identificador),apocopado=False),
+        'LETRA_IDENTIFICADOR':   obtener_letra_identificador(fin.lote),  # Cambio aquí
         'DIRECCION_PROYECTO_LOTE': fin.lote.proyecto.ubicacion.upper(),
 
         # Coordenadas dinámicas
@@ -1729,7 +1746,7 @@ def build_contrato_ejidal_contado_context(fin, cli, ven, request=None, tpl=None,
         claus_b = (
             f"B. QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, "
             f"QUE ACREDITA CON LA CESIÓN DE DERECHOS DE FECHA {fecha_posesion} "
-            f", EXPEDIDA POR LOS INTEGRANTES DEL {autoridad}."
+            f", EXPEDIDA POR LOS INTEGRANTES {autoridad}."
         )
     # — Si ven es apoderado:
     elif ven.ine == prop.ine and prop.tipo == 'apoderado':
@@ -1766,7 +1783,7 @@ def build_contrato_ejidal_contado_context(fin, cli, ven, request=None, tpl=None,
 
         'DIRECCION_LOTE':     fin.lote.proyecto.ubicacion.upper(),
         'IDENTIFICADOR_LOTE': fin.lote.identificador.upper(),
-        'LETRA_IDENTIFICADOR': numero_a_letras(float(fin.lote.identificador),apocopado=False),  # o aplica formato
+        'LETRA_IDENTIFICADOR': obtener_letra_identificador(fin.lote),  # Cambio aquí
 
         'NOMBRE_CESION': autoridad,
         'FECHA_DOCUMENTO': fecha_posesion,
@@ -1971,7 +1988,7 @@ def build_contrato_ejidal_contado_varios_context(fin, cli, ven, cliente2=None, r
         claus_b = (
             f"B. QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, "
             f"QUE ACREDITA CON LA CESIÓN DE DERECHOS DE FECHA {fecha_posesion} "
-            f", EXPEDIDA POR LOS INTEGRANTES DEL {autoridad}."
+            f", EXPEDIDA POR LOS INTEGRANTES {autoridad}."
         )
     # — Si ven es apoderado:
     elif ven.ine == prop.ine and prop.tipo == 'apoderado':
@@ -2008,7 +2025,7 @@ def build_contrato_ejidal_contado_varios_context(fin, cli, ven, cliente2=None, r
 
         'DIRECCION_LOTE':     fin.lote.proyecto.ubicacion.upper(),
         'IDENTIFICADOR_LOTE': fin.lote.identificador.upper(),
-        'LETRA_IDENTIFICADOR': numero_a_letras(float(fin.lote.identificador),apocopado=False),  # o aplica formato
+        'LETRA_IDENTIFICADOR': obtener_letra_identificador(fin.lote),  # Cambio aquí
 
         'NOMBRE_CESION': autoridad,
         'FECHA_DOCUMENTO': fecha_posesion,
@@ -2214,7 +2231,7 @@ def build_contrato_ejidal_pagos_context(fin, cli, ven, request=None, tpl=None, f
         claus_b = (
             f"B. QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, "
             f"QUE ACREDITA CON LA CESIÓN DE DERECHOS DE FECHA {fecha_posesion} "
-            f", EXPEDIDA POR LOS INTEGRANTES DEL {autoridad}."
+            f", EXPEDIDA POR LOS INTEGRANTES {autoridad}."
         )
     # — Si ven es apoderado:
     elif ven.ine == prop.ine and prop.tipo == 'apoderado':
@@ -2253,7 +2270,7 @@ def build_contrato_ejidal_pagos_context(fin, cli, ven, request=None, tpl=None, f
 
         'DIRECCION_LOTE':     fin.lote.proyecto.ubicacion.upper(),
         'IDENTIFICADOR_LOTE': fin.lote.identificador,
-        'LETRA_IDENTIFICADOR': numero_a_letras(float(fin.lote.identificador),apocopado=False),
+        'LETRA_IDENTIFICADOR': obtener_letra_identificador(fin.lote),  # Cambio aquí
 
         'DIA_CESION':  DIA_CESION,
         'MES_CESION':  MES_CESION,
@@ -2480,7 +2497,7 @@ def build_contrato_ejidal_pagos_varios_context(fin, cli, ven, cliente2=None,requ
         claus_b = (
             f"B. QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, "
             f"QUE ACREDITA CON LA CESIÓN DE DERECHOS DE FECHA {fecha_posesion} "
-            f", EXPEDIDA POR LOS INTEGRANTES DEL {autoridad}."
+            f", EXPEDIDA POR LOS INTEGRANTES {autoridad}."
         )
     # — Si ven es apoderado:
     elif ven.ine == prop.ine and prop.tipo == 'apoderado':
@@ -2519,7 +2536,7 @@ def build_contrato_ejidal_pagos_varios_context(fin, cli, ven, cliente2=None,requ
 
         'DIRECCION_LOTE':     fin.lote.proyecto.ubicacion.upper(),
         'IDENTIFICADOR_LOTE': fin.lote.identificador,
-        'LETRA_IDENTIFICADOR': numero_a_letras(float(fin.lote.identificador)),
+        'LETRA_IDENTIFICADOR': obtener_letra_identificador(fin.lote),  # Cambio aquí
 
         'DIA_CESION':  DIA_CESION,
         'MES_CESION':  MES_CESION,
@@ -3519,4 +3536,5 @@ def build_contrato_canario_pagos_varios_context(fin, cli, ven, cliente2=None, re
     })
 
     return context
+
 
