@@ -8,6 +8,8 @@
 :root {
   --primary-gradient: linear-gradient(135deg, #2e8fcc 0%, #1e5f8c 100%);
   --accent-gradient: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+  --google-gradient: linear-gradient(135deg, #4285f4 0%, #34a853 25%, #fbbc05 50%, #ea4335 75%, #4285f4 100%);
+  --google-gradient1: linear-gradient(135deg, #2e8fcc 0%, #1e5f8c 100%);
   --text-primary: #2c3e50;
   --text-secondary: #6c757d;
   --shadow-primary: 0 15px 35px rgba(46, 143, 204, 0.15);
@@ -301,6 +303,90 @@
   transform: translateX(5px);
 }
 
+/* Nuevos estilos para la sección de reseña */
+.review-section {
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 2px solid rgba(46, 143, 204, 0.1);
+  text-align: center;
+  opacity: 0;
+  animation: fadeInUp 1s ease 1s forwards;
+}
+
+.review-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.review-title i {
+  color: #ffd700;
+  font-size: 1.3rem;
+  animation: starTwinkle 2s ease-in-out infinite;
+}
+
+.review-subtitle {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+  font-weight: 300;
+}
+
+.btn-google-review {
+  background: var(--google-gradient1) !important;
+  border: none !important;
+  color: white !important;
+  padding: 1rem 2.5rem !important;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 50px !important;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 10px 25px rgba(66, 133, 244, 0.2);
+  text-decoration: none;
+  display: inline-block;
+  margin-top: 1rem;
+}
+
+.btn-google-review::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  transition: left 0.5s;
+}
+
+.btn-google-review:hover::before {
+  left: 100%;
+}
+
+.btn-google-review:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 15px 35px rgba(66, 133, 244, 0.3);
+  color: white !important;
+  text-decoration: none;
+}
+
+.btn-google-review i {
+  margin-right: 0.75rem;
+  transition: transform 0.3s ease;
+}
+
+.btn-google-review:hover i {
+  transform: scale(1.1);
+}
+
 .progress-indicator {
   display: flex;
   justify-content: center;
@@ -375,9 +461,14 @@
     grid-template-columns: 1fr;
   }
   
-  .btn-generate {
+  .btn-generate,
+  .btn-google-review {
     width: 100%;
     min-width: auto;
+  }
+  
+  .review-title {
+    font-size: 1.3rem;
   }
 }
 
@@ -396,6 +487,11 @@
   .document-header {
     flex-direction: column;
     text-align: center;
+  }
+  
+  .review-title {
+    flex-direction: column;
+    gap: 0.5rem;
   }
 }
 
@@ -440,6 +536,17 @@
 @keyframes pulse {
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.1); }
+}
+
+@keyframes starTwinkle {
+  0%, 100% { 
+    transform: scale(1); 
+    opacity: 0.8; 
+  }
+  50% { 
+    transform: scale(1.1); 
+    opacity: 1; 
+  }
 }
 </style>
 {% endblock %}
@@ -515,6 +622,25 @@
       <i class="fas fa-arrow-down"></i>
     </button>
   </form>
+
+  <!-- Nueva sección para reseña de Google -->
+  <div class="review-section">
+    <div class="review-title">
+      <i class="fas fa-star"></i>
+      ¿Deseas dejarnos una reseña en Google?
+      <i class="fas fa-star"></i>
+    </div>
+    <p class="review-subtitle">
+      Tu opinión es muy importante para nosotros y nos ayuda a mejorar nuestros servicios
+    </p>
+    <a href="https://www.google.com/maps/place/Grupo+Jora/@17.022997,-96.7130501,17z/data=!4m7!3m6!1s0x85c7231eb4abc927:0xdc8607cdac6c90f2!4b1!8m2!3d17.022997!4d-96.7104752!16s%2Fg%2F11vbbxsv4w?entry=ttu&g_ep=EgoyMDI1MDgzMC4wIKXMDSoASAFQAw%3D%3D" 
+       target="_blank" 
+       rel="noopener noreferrer" 
+       class="btn-google-review">
+      <i class="fab fa-google"></i>
+      Escribir Reseña en Google
+    </a>
+  </div>
 </div>
 
 <!-- Modal para vista previa -->
