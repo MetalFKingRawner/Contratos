@@ -18,10 +18,10 @@
       <td>{{ p.lote }}</td>
       <td>{{ p.precio_lote }}</td>
       <td>{{ p.num_mensualidades }}</td>
-      <td>{{ p.fecha_inicio }}</td>
+      <!--<td>{{ p.fecha_inicio }}</td>
       <td>
         <a href="{% url 'financiamiento:edit' p.pk %}" class="btn btn-sm btn-outline-secondary">Editar</a>
-      </td>
+      </td>-->
     </tr>
     {% empty %}
     <tr><td colspan="5" class="text-center">No hay planes de financiamiento.</td></tr>
@@ -29,3 +29,4 @@
   </tbody>
 </table>
 {% endblock %}
+
