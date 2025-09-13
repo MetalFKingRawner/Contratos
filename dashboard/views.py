@@ -1082,6 +1082,11 @@ def home(request):
     ctx = {
       'num_clientes': Cliente.objects.count(),
       'num_proyectos': Proyecto.objects.count(),
+      'num_vendedores': Vendedor.objects.count(),
+      'num_propietarios': Propietario.objects.count(),
+      'num_lotes': Lote.objects.count(),
+      'num_financiamientos': Financiamiento.objects.count(),
+      'num_tramites': Tramite.objects.count(),
     }
     # Si es petición HTMX, devolvemos _solo_ el partial
     if request.headers.get('HX-Request'):
@@ -1092,6 +1097,7 @@ def home(request):
     return render(request,
                   'dashboard/home.html',
                   ctx)
+
 
 
 
