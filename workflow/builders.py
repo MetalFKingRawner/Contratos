@@ -2727,7 +2727,7 @@ def build_contrato_canario_contado_context(fin, cli, ven, request=None, tpl=None
     if ven.ine == prop.ine and prop.tipo == 'propietario':
         claus_b = (
             f"QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, "
-            f"QUE ACREDITA CON EL CONTRATO PRIVADO DE COMPRAVENTA AND CONSTANCIA DE POSESIÓN DE FECHA VEINTITRÉS DE OCTUBRE DE DOS MIL VEINTICUATRO "
+            f"QUE ACREDITA CON EL CONTRATO PRIVADO DE COMPRAVENTA Y CONSTANCIA DE POSESIÓN DE FECHA VEINTITRÉS DE OCTUBRE DE DOS MIL VEINTICUATRO "
             f"EXPEDIDA POR LOS INTEGRANTES DEL ALCALDE ÚNICO CONSTITUCIONAL DE SAN ANTONIO DE LA CAL, OAXACA"
         )
     # — Si es vendedor autorizado:
@@ -2947,7 +2947,7 @@ def build_contrato_canario_contado_varios_context(fin, cli, ven, cliente2=None, 
     if ven.ine == prop.ine and prop.tipo == 'propietario':
         claus_b = (
             f"QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, "
-            f"QUE ACREDITA CON EL CONTRATO PRIVADO DE COMPRAVENTA AND CONSTANCIA DE POSESIÓN DE FECHA VEINTITRÉS DE OCTUBRE DE DOS MIL VEINTICUATRO "
+            f"QUE ACREDITA CON EL CONTRATO PRIVADO DE COMPRAVENTA Y CONSTANCIA DE POSESIÓN DE FECHA VEINTITRÉS DE OCTUBRE DE DOS MIL VEINTICUATRO "
             f"EXPEDIDA POR LOS INTEGRANTES DEL ALCALDE ÚNICO CONSTITUCIONAL DE SAN ANTONIO DE LA CAL, OAXACA"
         )
     # — Si es vendedor autorizado:
@@ -3144,7 +3144,7 @@ def build_contrato_canario_pagos_context(fin, cli, ven, request=None, tpl=None, 
     if ven.ine == prop.ine and prop.tipo == 'propietario':
         claus_b = (
             f"QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, "
-            f"QUE ACREDITA CON EL CONTRATO PRIVADO DE COMPRAVENTA AND CONSTANCIA DE POSESIÓN DE FECHA VEINTITRÉS DE OCTUBRE DE DOS MIL VEINTICUATRO "
+            f"QUE ACREDITA CON EL CONTRATO PRIVADO DE COMPRAVENTA Y CONSTANCIA DE POSESIÓN DE FECHA VEINTITRÉS DE OCTUBRE DE DOS MIL VEINTICUATRO "
             f"EXPEDIDA POR LOS INTEGRANTES DEL ALCALDE ÚNICO CONSTITUCIONAL DE SAN ANTONIO DE LA CAL, OAXACA"
         )
     # — Si es vendedor autorizado:
@@ -3378,7 +3378,7 @@ def build_contrato_canario_pagos_varios_context(fin, cli, ven, cliente2=None, re
     if ven.ine == prop.ine and prop.tipo == 'propietario':
         claus_b = (
             f"QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, "
-            f"QUE ACREDITA CON EL CONTRATO PRIVADO DE COMPRAVENTA AND CONSTANCIA DE POSESIÓN DE FECHA VEINTITRÉS DE OCTUBRE DE DOS MIL VEINTICUATRO "
+            f"QUE ACREDITA CON EL CONTRATO PRIVADO DE COMPRAVENTA Y CONSTANCIA DE POSESIÓN DE FECHA VEINTITRÉS DE OCTUBRE DE DOS MIL VEINTICUATRO "
             f"EXPEDIDA POR LOS INTEGRANTES DEL ALCALDE ÚNICO CONSTITUCIONAL DE SAN ANTONIO DE LA CAL, OAXACA"
         )
     # — Si es vendedor autorizado:
@@ -3536,5 +3536,6 @@ def build_contrato_canario_pagos_varios_context(fin, cli, ven, cliente2=None, re
     })
 
     return context
+
 
 
