@@ -290,12 +290,6 @@
         <span>Volver</span>
       </button>
       
-      <button class="action-btn success"
-              title="Generar PDF">
-        <i class="fas fa-file-pdf"></i>
-        <span>Generar PDF</span>
-      </button>
-      
       <button class="action-btn danger"
               hx-get="{% url 'dashboard:financiamiento_delete' plan.id %}" 
               hx-target="#content" 
@@ -988,4 +982,5 @@
 @keyframes statusPulse {
   0%, 100% { opacity: 1; transform: scale(1); }
   50% { opacity: 0.7; transform: scale(1.1); }
+
 }
