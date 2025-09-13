@@ -13,12 +13,12 @@
       </div>
       <div class="tramites-stats">
         <div class="stat-item">
-          <span class="stat-number">{{ tramites|length }}</span>
+          <span class="stat-number">{{ total_tramites }}</span>
           <span class="stat-label">Total</span>
         </div>
         <div class="stat-divider"></div>
         <div class="stat-item">
-          <span class="stat-number">{{ tramites|length }}</span>
+          <span class="stat-number">{{ tramites_activos }}</span>
           <span class="stat-label">Activos</span>
         </div>
       </div>
@@ -983,12 +983,12 @@ function initTramiteSearch() {
 initTramiteSearch();
 
 // También inicializar cuando HTMX carga nuevo contenido
-document.body.addEventListener('htmx:afterSwap', function(evt) {
-  if (evt.detail.target.id === 'content') {
+//document.body.addEventListener('htmx:afterSwap', function(evt) {
+//  if (evt.detail.target.id === 'content') {
     // Pequeña pausa para permitir que el DOM se actualice completamente
-    setTimeout(initTramiteSearch, 50);
-  }
-});
+//    setTimeout(initTramiteSearch, 50);
+//  }
+//});
 
 // Animaciones escalonadas para las tarjetas de trámites
 function initTramiteAnimations() {
@@ -1026,24 +1026,30 @@ function updateTramiteStatus() {
   });
 }
 
+function shouldRunTramiteScripts() {
+    return document.getElementById('tramitesGrid') !== null;
+}
+
 // Inicializar todas las funcionalidades
 document.addEventListener('DOMContentLoaded', function() {
-  initTramiteSearch();
-  initTramiteAnimations();
-  initTramiteHover();
-  updateTramiteStatus();
+    if (shouldRunTramiteScripts()) {
+        initTramiteSearch();
+        initTramiteAnimations();
+        initTramiteHover();
+        updateTramiteStats();
+    }
 });
 
 // Reinicializar cuando HTMX carga contenido
 document.body.addEventListener('htmx:afterSwap', function(evt) {
-  if (evt.detail.target.id === 'content') {
-    setTimeout(function() {
-      initTramiteSearch();
-      initTramiteAnimations();
-      initTramiteHover();
-      updateTramiteStatus();
-    }, 50);
-  }
+    if (shouldRunTramiteScripts()) {
+        setTimeout(function() {
+            initTramiteSearch();
+            initTramiteAnimations();
+            initTramiteHover();
+            updateTramiteStats();
+        }, 50);
+    }
 });
 
 // Funcionalidad adicional: Contador de trámites por estado
@@ -1076,10 +1082,10 @@ function updateTramiteStats() {
 }
 
 // Ejecutar actualización de estadísticas
-document.addEventListener('DOMContentLoaded', updateTramiteStats);
-document.body.addEventListener('htmx:afterSwap', function(evt) {
-  if (evt.detail.target.id === 'content') {
-    setTimeout(updateTramiteStats, 50);
-  }
-});
+//document.addEventListener('DOMContentLoaded', updateTramiteStats);
+//document.body.addEventListener('htmx:afterSwap', function(evt) {
+//  if (evt.detail.target.id === 'content') {
+//    setTimeout(updateTramiteStats, 50);
+//  }
+//});
 </script>
