@@ -193,7 +193,6 @@ class DownloadDocumentView(View):
 class TramiteListView(ListView):
     """Listado de Trámites."""
     model = Tramite
-    template_name = 'dashboard/tramites_list.html'
     context_object_name = 'tramites'
     paginate_by = 5
     ordering = ['-creado_en']  # Ordenar por fecha de creación descendente
@@ -202,7 +201,14 @@ class TramiteListView(ListView):
         # Si es una solicitud HTMX, devolvemos un template parcial
         if self.request.headers.get('HX-Request'):
             return ['dashboard/partials/tramites_list_partial.html']
-        return [self.template_name]
+        return ['dashboard/tramites_list.html']
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Agregar contadores al contexto
+        context['total_tramites'] = Tramite.objects.count()
+        context['tramites_activos'] = Tramite.objects.count()  # Cambia esto si tienes un campo "activo"
+        return context
 
 class TramiteDetailView(DetailView):
     """Detalle de un Trámite."""
@@ -276,6 +282,12 @@ class FinanciamientoListView(ListView):
     model = Financiamiento
     context_object_name = 'planes'
     paginate_by = 10
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['total_financiamientos'] = Financiamiento.objects.count()
+        context['financiamientos_activos'] = Financiamiento.objects.count()  # Ajusta según tu modelo
+        return context
 
     def get_template_names(self):
         # Si HTMX, devolvemos solo el fragmento
@@ -382,11 +394,18 @@ class ClienteListView(ListView):
         if self.request.headers.get('Hx-Request'):
             return ['dashboard/partials/cliente_list.html']
         # Si no, la vista completa
-        return ['dashboard/cliente_list.html']
+        return ['dashboard/clientes_list.html']
     
     def get_queryset(self):
         # ordena siempre por pk/ID ascendente
         return super().get_queryset().order_by('id')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Agregar contadores al contexto
+        context['total_clientes'] = Cliente.objects.count()
+        context['clientes_activos'] = Cliente.objects.count()  # Cambia esto si tienes un campo "activo"
+        return context
     
 class ClienteCreateView(CreateView):
     model = Cliente
@@ -516,6 +535,8 @@ class VendedorListView(ListView):
     
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
+        ctx['total_vendedores'] = Vendedor.objects.count()
+        ctx['vendedores_activos'] = Vendedor.objects.count()
         # para base.html, renderizará dentro del block content,
         # para partials solo se inyecta la lista:
         if self.request.headers.get('HX-Request') != 'true':
@@ -635,6 +656,11 @@ class PropietarioListView(ListView):
         if self.request.headers.get('Hx-Request'):
             return ['dashboard/partials/propietario_list_partial.html']
         return ['dashboard/propietarios_list.html']
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['total_propietarios'] = Propietario.objects.count()
+        return context
 
 class PropietarioDetailView(DetailView):
     model = Propietario
@@ -753,19 +779,18 @@ class ProyectoListView(ListView):
 
     def get_queryset(self):
         return Proyecto.objects.all().order_by('id')
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Agregar contadores al contexto
+        context['total_proyectos'] = Proyecto.objects.count()
+        context['proyectos_activos'] = Proyecto.objects.count()  # Ajusta según tu modelo
+        return context
 
     def get(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
-        page_number = request.GET.get('page') or 1
-        paginator = Paginator(queryset, self.paginate_by)
-        page_obj = paginator.get_page(page_number)
-        proyectos_page = page_obj.object_list
-
-        context = {
-            'proyectos': proyectos_page,
-            'page_obj': page_obj,
-            'paginator': paginator,
-        }
+        # Obtener el contexto usando get_context_data
+        self.object_list = self.get_queryset()
+        context = self.get_context_data()
 
         # Si es petición HTMX devolvemos solo el fragmento de la lista
         if request.headers.get('HX-Request'):
@@ -928,6 +953,10 @@ class LoteListView(ListView):
         ctx["proyecto_id"] = self.request.GET.get("proyecto", "")
         ctx["search"] = self.request.GET.get("search", "")
         ctx["status"] = self.request.GET.get("status", "")
+        # Agregar contadores
+        ctx["total_lotes"] = Lote.objects.count()
+        ctx["lotes_activos"] = Lote.objects.filter(activo=True).count()
+        ctx["lotes_inactivos"] = Lote.objects.filter(activo=False).count()
         return ctx
 
     def get_template_names(self):
@@ -1062,8 +1091,8 @@ def home(request):
     # Petición normal -> página completa
     return render(request,
                   'dashboard/home.html',
-
                   ctx)
+
 
 
 
