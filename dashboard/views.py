@@ -322,6 +322,13 @@ class FinanciamientoCreateView(CreateView):
 
     def form_valid(self, form):
         response = super().form_valid(form)
+        # Obtenemos el lote asociado al financiamiento
+        lote = form.cleaned_data['lote']
+        
+        # Cambiamos su estado a inactivo
+        lote.activo = False
+        lote.save()
+
         if self.request.headers.get('HX-Request'):
             # Devolver la lista actualizada
             return render(self.request, 'dashboard/partials/financiamientos_list_partial.html', 
@@ -344,6 +351,13 @@ class FinanciamientoUpdateView(UpdateView):
 
     def form_valid(self, form):
         response = super().form_valid(form)
+        # Obtenemos el lote asociado al financiamiento
+        lote = form.cleaned_data['lote']
+        
+        # Cambiamos su estado a inactivo
+        lote.activo = False
+        lote.save()
+
         if self.request.headers.get('HX-Request'):
             # Devolver el detalle actualizado
             return render(self.request, 'dashboard/partials/financiamientos_detail.html', 
@@ -368,6 +382,11 @@ class FinanciamientoDeleteView(DeleteView):
     def delete(self, request, *args, **kwargs):
         self.object = self.get_object()
         
+        # Reactivamos el lote antes de eliminar el financiamiento
+        lote = self.object.lote
+        lote.activo = True
+        lote.save()
+
         # Eliminamos el objeto
         self.object.delete()
         
@@ -1097,6 +1116,7 @@ def home(request):
     return render(request,
                   'dashboard/home.html',
                   ctx)
+
 
 
 
