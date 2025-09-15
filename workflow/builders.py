@@ -576,59 +576,6 @@ def build_contrato_definitiva_contado_context(fin, cli, ven, request=None, tpl=N
     return context
 
 
-def calcular_numeracion_clausulas(tiene_deslinde, tiene_promesa):
-    # Numeración base sin cláusulas adicionales
-    base = {
-        'QUINTA': 'QUINTA',
-        'SEXTA': 'SEXTA',
-        'SEPTIMA': 'SÉPTIMA',
-        'OCTAVA': 'OCTAVA',
-        'NOVENA': 'NOVENA',
-        'DECIMA': 'DÉCIMA',
-        'DECIMA_PRIMERA': 'DÉCIMA PRIMERA',
-        'DECIMA_SEGUNDA': 'DÉCIMA SEGUNDA',
-        'DECIMA_TERCERA': 'DÉCIMA TERCERA'
-    }
-    
-    # Ajustar numeración según cláusulas adicionales
-    if tiene_deslinde and tiene_promesa:
-        return {
-            'QUINTA': 'SEXTA',
-            'SEXTA': 'SÉPTIMA',
-            'SEPTIMA': 'OCTAVA',
-            'OCTAVA': 'NOVENA',
-            'NOVENA': 'DÉCIMA PRIMERA',
-            'DECIMA': 'DÉCIMA SEGUNDA',
-            'DECIMA_PRIMERA': 'DÉCIMA TERCERA',
-            'DECIMA_SEGUNDA': 'DÉCIMA CUARTA',
-            'DECIMA_TERCERA': 'DECIMA QUINTA'
-        }
-    elif tiene_deslinde:
-        return {
-            'QUINTA': 'SEXTA',
-            'SEXTA': 'SÉPTIMA',
-            'SEPTIMA': 'OCTAVA',
-            'OCTAVA': 'NOVENA',
-            'NOVENA': 'DÉCIMA',
-            'DECIMA': 'DÉCIMA PRIMERA',
-            'DECIMA_PRIMERA': 'DÉCIMA SEGUNDA',
-            'DECIMA_SEGUNDA': 'DÉCIMA TERCERA',
-            'DECIMA_TERCERA': 'DECIMA CUARTA'
-        }
-    elif tiene_promesa:
-        return {
-            'QUINTA': 'QUINTA',
-            'SEXTA': 'SEXTA',
-            'SEPTIMA': 'SÉPTIMA',
-            'OCTAVA': 'OCTAVA',
-            'NOVENA': 'DÉCIMA',
-            'DECIMA': 'DÉCIMA PRIMERA',
-            'DECIMA_PRIMERA': 'DÉCIMA SEGUNDA',
-            'DECIMA_SEGUNDA': 'DÉCIMA TERCERA',
-            'DECIMA_TERCERA': 'DECIMA CUARTA'
-        }
-    return base
-
 from decimal import Decimal, InvalidOperation
 # Helper para formatear dinero con separador de miles y 2 decimales
 def fmt_money(val):
@@ -647,14 +594,7 @@ def fmt_money(val):
     return f"{d:,.2f}"
 
 def build_contrato_propiedad_contado_context(fin, cli, ven, request=None, tpl=None, firma_data=None, clausulas_adicionales=None):
-    """
-    Construye el context para el Contrato Pequeña propiedad (Contado).
-    fin: Financiamiento
-    cli: Cliente
-    ven: Vendedor
-    request: HttpRequest para extraer firma
-    tpl: DocxTemplate para InlineImage
-    """
+
     print("Entré al build de pequeña propiedad a contado de un comprador")
 
     if clausulas_adicionales is None:
@@ -843,47 +783,13 @@ def build_contrato_propiedad_contado_context(fin, cli, ven, request=None, tpl=No
     tiene_deslinde = clausulas_adicionales and 'deslinde' in clausulas_adicionales and bool(clausulas_adicionales['deslinde'])
     tiene_promesa = clausulas_adicionales and 'promesa' in clausulas_adicionales and bool(clausulas_adicionales['promesa'])
     
-    # Calcular numeración dinámica
-    numeracion = calcular_numeracion_clausulas(tiene_deslinde, tiene_promesa)
-    
-    # Formatear cláusulas adicionales con numeración correcta
-    clausula_pago = f"C) {clausulas_adicionales['pago']}" if tiene_pago else ''
-    
     # Formatear cláusulas adicionales
-    clausula_pago = ""
-    if tiene_pago:
-        salto = '\n'
-        # Para la cláusula de pago (insertada como inciso C)
-        clausula_pago = f"{clausulas_adicionales['pago']}"
-    
-    clausula_deslinde = ""
-    if tiene_deslinde:
-        # Esta cláusula siempre será QUINTA cuando exista
-        clausula_deslinde = f"QUINTA. {clausulas_adicionales['deslinde']}"
-    
-    clausula_promesa = ""
-    if tiene_promesa:
-        # Determinar posición correcta
-        if tiene_deslinde:
-            # Si hay deslinde, la promesa será DÉCIMA
-            num = 'DÉCIMA'
-        else:
-            # Si no hay deslinde, la promesa será NOVENA
-            num = 'NOVENA'
-        clausula_promesa = f"{num}. {clausulas_adicionales['promesa']}"
+    clausula_pago = clausulas_adicionales['pago'] if tiene_pago else ''
+    clausula_deslinde = clausulas_adicionales['deslinde'] if tiene_deslinde else ''
+    clausula_promesa = clausulas_adicionales['promesa'] if tiene_promesa else ''
     
     # Agregar al contexto
     context.update({
-        'NUM_QUINTA': numeracion['QUINTA'],
-        'NUM_SEXTA': numeracion['SEXTA'],
-        'NUM_SEPTIMA': numeracion['SEPTIMA'],
-        'NUM_OCTAVA': numeracion['OCTAVA'],
-        'NUM_NOVENA': numeracion['NOVENA'],
-        'NUM_DECIMA': numeracion['DECIMA'],
-        'NUM_DECIMA_PRIMERA': numeracion['DECIMA_PRIMERA'],
-        'NUM_DECIMA_SEGUNDA': numeracion['DECIMA_SEGUNDA'],
-        'NUM_DECIMA_TERCERA': numeracion['DECIMA_TERCERA'],
-        
         'CLAUSULA_PAGO': clausula_pago.upper(),
         'CLAUSULA_DESLINDE': clausula_deslinde.upper(),
         'CLAUSULA_PROMESA': clausula_promesa.upper(),
@@ -892,15 +798,7 @@ def build_contrato_propiedad_contado_context(fin, cli, ven, request=None, tpl=No
     return context
 
 def build_contrato_propiedad_contado_varios_context(fin, cli, ven, cliente2=None, request=None, tpl=None, firma_data=None, clausulas_adicionales=None):
-    """
-    Construye el context para el Contrato Pequeña propiedad (Contado) con DOS COMPRADORES.
-    fin: Financiamiento
-    cli: Cliente (primer comprador)
-    ven: Vendedor
-    cliente2: Cliente (segundo comprador)
-    request: HttpRequest para extraer firma
-    tpl: DocxTemplate para InlineImage
-    """
+
     print("Entré al build de pequeña propiedad para DOS COMPRADORES")
 
     if clausulas_adicionales is None:
@@ -1112,41 +1010,18 @@ def build_contrato_propiedad_contado_varios_context(fin, cli, ven, cliente2=None
     else:
         context['FIRMA_CLIENTE'] = ''
 
-    # 9) Cláusulas adicionales (igual que antes)
+    # Determinar qué cláusulas adicionales existen
     tiene_pago = clausulas_adicionales and 'pago' in clausulas_adicionales and bool(clausulas_adicionales['pago'])
     tiene_deslinde = clausulas_adicionales and 'deslinde' in clausulas_adicionales and bool(clausulas_adicionales['deslinde'])
     tiene_promesa = clausulas_adicionales and 'promesa' in clausulas_adicionales and bool(clausulas_adicionales['promesa'])
     
-    numeracion = calcular_numeracion_clausulas(tiene_deslinde, tiene_promesa)
-    
-    clausula_pago = ""
-    if tiene_pago:
-        clausula_pago = f"{clausulas_adicionales['pago']}"
-    
-    clausula_deslinde = ""
-    if tiene_deslinde:
-        clausula_deslinde = f"QUINTA. {clausulas_adicionales['deslinde']}"
-    
-    clausula_promesa = ""
-    if tiene_promesa:
-        if tiene_deslinde:
-            num = 'DÉCIMA'
-        else:
-            num = 'NOVENA'
-        clausula_promesa = f"{num}. {clausulas_adicionales['promesa']}"
+    # Formatear cláusulas adicionales
+    clausula_pago = clausulas_adicionales['pago'] if tiene_pago else ''
+    clausula_deslinde = clausulas_adicionales['deslinde'] if tiene_deslinde else ''
+    clausula_promesa = clausulas_adicionales['promesa'] if tiene_promesa else ''
     
     # Agregar al contexto
     context.update({
-        'NUM_QUINTA': numeracion['QUINTA'],
-        'NUM_SEXTA': numeracion['SEXTA'],
-        'NUM_SEPTIMA': numeracion['SEPTIMA'],
-        'NUM_OCTAVA': numeracion['OCTAVA'],
-        'NUM_NOVENA': numeracion['NOVENA'],
-        'NUM_DECIMA': numeracion['DECIMA'],
-        'NUM_DECIMA_PRIMERA': numeracion['DECIMA_PRIMERA'],
-        'NUM_DECIMA_SEGUNDA': numeracion['DECIMA_SEGUNDA'],
-        'NUM_DECIMA_TERCERA': numeracion['DECIMA_TERCERA'],
-        
         'CLAUSULA_PAGO': clausula_pago.upper(),
         'CLAUSULA_DESLINDE': clausula_deslinde.upper(),
         'CLAUSULA_PROMESA': clausula_promesa.upper(),
@@ -1155,14 +1030,7 @@ def build_contrato_propiedad_contado_varios_context(fin, cli, ven, cliente2=None
     return context
 
 def build_contrato_propiedad_pagos_context(fin, cli, ven, request=None, tpl=None, firma_data=None, clausulas_adicionales=None):
-    """
-    Context para el Contrato Propiedad Definitiva y Pequeña Propiedad a Pagos.
-    fin: Financiamiento
-    cli: Cliente
-    ven: Vendedor
-    request: HttpRequest para firma
-    tpl: DocxTemplate para InlineImage
-    """
+
     print("Entré al build de pequeña propiedad a pagos")
 
     if clausulas_adicionales is None:
@@ -1345,47 +1213,13 @@ def build_contrato_propiedad_pagos_context(fin, cli, ven, request=None, tpl=None
     tiene_deslinde = clausulas_adicionales and 'deslinde' in clausulas_adicionales and bool(clausulas_adicionales['deslinde'])
     tiene_promesa = clausulas_adicionales and 'promesa' in clausulas_adicionales and bool(clausulas_adicionales['promesa'])
     
-    # Calcular numeración dinámica
-    numeracion = calcular_numeracion_clausulas(tiene_deslinde, tiene_promesa)
-    
-    # Formatear cláusulas adicionales con numeración correcta
-    clausula_pago = f"C) {clausulas_adicionales['pago']}" if tiene_pago else ''
-    
     # Formatear cláusulas adicionales
-    clausula_pago = ""
-    if tiene_pago:
-        salto = '\n'
-        # Para la cláusula de pago (insertada como inciso C)
-        clausula_pago = f"{clausulas_adicionales['pago']}"
-    
-    clausula_deslinde = ""
-    if tiene_deslinde:
-        # Esta cláusula siempre será QUINTA cuando exista
-        clausula_deslinde = f"QUINTA. {clausulas_adicionales['deslinde']}"
-    
-    clausula_promesa = ""
-    if tiene_promesa:
-        # Determinar posición correcta
-        if tiene_deslinde:
-            # Si hay deslinde, la promesa será DÉCIMA
-            num = 'DÉCIMA'
-        else:
-            # Si no hay deslinde, la promesa será NOVENA
-            num = 'NOVENA'
-        clausula_promesa = f"{num}. {clausulas_adicionales['promesa']}"
+    clausula_pago = clausulas_adicionales['pago'] if tiene_pago else ''
+    clausula_deslinde = clausulas_adicionales['deslinde'] if tiene_deslinde else ''
+    clausula_promesa = clausulas_adicionales['promesa'] if tiene_promesa else ''
     
     # Agregar al contexto
     context.update({
-        'NUM_QUINTA': numeracion['QUINTA'],
-        'NUM_SEXTA': numeracion['SEXTA'],
-        'NUM_SEPTIMA': numeracion['SEPTIMA'],
-        'NUM_OCTAVA': numeracion['OCTAVA'],
-        'NUM_NOVENA': numeracion['NOVENA'],
-        'NUM_DECIMA': numeracion['DECIMA'],
-        'NUM_DECIMA_PRIMERA': numeracion['DECIMA_PRIMERA'],
-        'NUM_DECIMA_SEGUNDA': numeracion['DECIMA_SEGUNDA'],
-        'NUM_DECIMA_TERCERA': numeracion['DECIMA_TERCERA'],
-        
         'CLAUSULA_PAGO': clausula_pago.upper(),
         'CLAUSULA_DESLINDE': clausula_deslinde.upper(),
         'CLAUSULA_PROMESA': clausula_promesa.upper(),
@@ -1394,15 +1228,7 @@ def build_contrato_propiedad_pagos_context(fin, cli, ven, request=None, tpl=None
     return context
 
 def build_contrato_propiedad_pagos_varios_context(fin, cli, ven, cliente2=None, request=None, tpl=None, firma_data=None, clausulas_adicionales=None):
-    """
-    Construye el context para el Contrato Pequeña propiedad (Contado) con DOS COMPRADORES.
-    fin: Financiamiento
-    cli: Cliente (primer comprador)
-    ven: Vendedor
-    cliente2: Cliente (segundo comprador)
-    request: HttpRequest para extraer firma
-    tpl: DocxTemplate para InlineImage
-    """
+
     print("Entré al build de pequeña propiedad para DOS COMPRADORES a pagos")
 
     if clausulas_adicionales is None:
@@ -1634,41 +1460,18 @@ def build_contrato_propiedad_pagos_varios_context(fin, cli, ven, cliente2=None, 
     else:
         context['FIRMA_CLIENTE'] = ''
 
-    # 9) Cláusulas adicionales (igual que antes)
+    # Determinar qué cláusulas adicionales existen
     tiene_pago = clausulas_adicionales and 'pago' in clausulas_adicionales and bool(clausulas_adicionales['pago'])
     tiene_deslinde = clausulas_adicionales and 'deslinde' in clausulas_adicionales and bool(clausulas_adicionales['deslinde'])
     tiene_promesa = clausulas_adicionales and 'promesa' in clausulas_adicionales and bool(clausulas_adicionales['promesa'])
     
-    numeracion = calcular_numeracion_clausulas(tiene_deslinde, tiene_promesa)
-    
-    clausula_pago = ""
-    if tiene_pago:
-        clausula_pago = f"{clausulas_adicionales['pago']}"
-    
-    clausula_deslinde = ""
-    if tiene_deslinde:
-        clausula_deslinde = f"QUINTA. {clausulas_adicionales['deslinde']}"
-    
-    clausula_promesa = ""
-    if tiene_promesa:
-        if tiene_deslinde:
-            num = 'DÉCIMA'
-        else:
-            num = 'NOVENA'
-        clausula_promesa = f"{num}. {clausulas_adicionales['promesa']}"
+    # Formatear cláusulas adicionales
+    clausula_pago = clausulas_adicionales['pago'] if tiene_pago else ''
+    clausula_deslinde = clausulas_adicionales['deslinde'] if tiene_deslinde else ''
+    clausula_promesa = clausulas_adicionales['promesa'] if tiene_promesa else ''
     
     # Agregar al contexto
     context.update({
-        'NUM_QUINTA': numeracion['QUINTA'],
-        'NUM_SEXTA': numeracion['SEXTA'],
-        'NUM_SEPTIMA': numeracion['SEPTIMA'],
-        'NUM_OCTAVA': numeracion['OCTAVA'],
-        'NUM_NOVENA': numeracion['NOVENA'],
-        'NUM_DECIMA': numeracion['DECIMA'],
-        'NUM_DECIMA_PRIMERA': numeracion['DECIMA_PRIMERA'],
-        'NUM_DECIMA_SEGUNDA': numeracion['DECIMA_SEGUNDA'],
-        'NUM_DECIMA_TERCERA': numeracion['DECIMA_TERCERA'],
-        
         'CLAUSULA_PAGO': clausula_pago.upper(),
         'CLAUSULA_DESLINDE': clausula_deslinde.upper(),
         'CLAUSULA_PROMESA': clausula_promesa.upper(),
@@ -1677,14 +1480,6 @@ def build_contrato_propiedad_pagos_varios_context(fin, cli, ven, cliente2=None, 
     return context
 
 def build_contrato_ejidal_contado_context(fin, cli, ven, request=None, tpl=None, firma_data=None, clausulas_adicionales=None):
-    """
-    Context para el Contrato Ejidal/Comunal al contado.
-    fin: instancia de Financiamiento
-    cli: Cliente
-    ven: Vendedor (o propietario/apoderado)
-    request: para extraer firma en sesión
-    tpl: DocxTemplate instanciado (necesario para InlineImage)
-    """
 
     print("Entré al build de ejido a contado de un comprador")
 
@@ -1844,47 +1639,13 @@ def build_contrato_ejidal_contado_context(fin, cli, ven, request=None, tpl=None,
     tiene_deslinde = clausulas_adicionales and 'deslinde' in clausulas_adicionales and bool(clausulas_adicionales['deslinde'])
     tiene_promesa = clausulas_adicionales and 'promesa' in clausulas_adicionales and bool(clausulas_adicionales['promesa'])
     
-    # Calcular numeración dinámica
-    numeracion = calcular_numeracion_clausulas(tiene_deslinde, tiene_promesa)
-    
-    # Formatear cláusulas adicionales con numeración correcta
-    clausula_pago = f"C) {clausulas_adicionales['pago']}" if tiene_pago else ''
-    
     # Formatear cláusulas adicionales
-    clausula_pago = ""
-    if tiene_pago:
-        salto = '\n'
-        # Para la cláusula de pago (insertada como inciso C)
-        clausula_pago = f"{clausulas_adicionales['pago']}"
-    
-    clausula_deslinde = ""
-    if tiene_deslinde:
-        # Esta cláusula siempre será QUINTA cuando exista
-        clausula_deslinde = f"QUINTA. {clausulas_adicionales['deslinde']}"
-    
-    clausula_promesa = ""
-    if tiene_promesa:
-        # Determinar posición correcta
-        if tiene_deslinde:
-            # Si hay deslinde, la promesa será DÉCIMA
-            num = 'DÉCIMA'
-        else:
-            # Si no hay deslinde, la promesa será NOVENA
-            num = 'NOVENA'
-        clausula_promesa = f"{num}. {clausulas_adicionales['promesa']}"
+    clausula_pago = clausulas_adicionales['pago'] if tiene_pago else ''
+    clausula_deslinde = clausulas_adicionales['deslinde'] if tiene_deslinde else ''
+    clausula_promesa = clausulas_adicionales['promesa'] if tiene_promesa else ''
     
     # Agregar al contexto
     context.update({
-        'NUM_QUINTA': numeracion['QUINTA'],
-        'NUM_SEXTA': numeracion['SEXTA'],
-        'NUM_SEPTIMA': numeracion['SEPTIMA'],
-        'NUM_OCTAVA': numeracion['OCTAVA'],
-        'NUM_NOVENA': numeracion['NOVENA'],
-        'NUM_DECIMA': numeracion['DECIMA'],
-        'NUM_DECIMA_PRIMERA': numeracion['DECIMA_PRIMERA'],
-        'NUM_DECIMA_SEGUNDA': numeracion['DECIMA_SEGUNDA'],
-        'NUM_DECIMA_TERCERA': numeracion['DECIMA_TERCERA'],
-        
         'CLAUSULA_PAGO': clausula_pago.upper(),
         'CLAUSULA_DESLINDE': clausula_deslinde.upper(),
         'CLAUSULA_PROMESA': clausula_promesa.upper(),
@@ -1893,15 +1654,7 @@ def build_contrato_ejidal_contado_context(fin, cli, ven, request=None, tpl=None,
     return context
 
 def build_contrato_ejidal_contado_varios_context(fin, cli, ven, cliente2=None, request=None, tpl=None, firma_data=None, clausulas_adicionales=None):
-    """
-    Context para el Contrato Ejidal/Comunal al contado.
-    fin: instancia de Financiamiento
-    cli: Cliente
-    ven: Vendedor (o propietario/apoderado)
-    request: para extraer firma en sesión
-    tpl: DocxTemplate instanciado (necesario para InlineImage)
-    """
-
+    
     print("Entré al build de ejido a contado de varios compradores")
 
     if clausulas_adicionales is None:
@@ -2096,47 +1849,13 @@ def build_contrato_ejidal_contado_varios_context(fin, cli, ven, cliente2=None, r
     tiene_deslinde = clausulas_adicionales and 'deslinde' in clausulas_adicionales and bool(clausulas_adicionales['deslinde'])
     tiene_promesa = clausulas_adicionales and 'promesa' in clausulas_adicionales and bool(clausulas_adicionales['promesa'])
     
-    # Calcular numeración dinámica
-    numeracion = calcular_numeracion_clausulas(tiene_deslinde, tiene_promesa)
-    
-    # Formatear cláusulas adicionales con numeración correcta
-    clausula_pago = f"C) {clausulas_adicionales['pago']}" if tiene_pago else ''
-    
     # Formatear cláusulas adicionales
-    clausula_pago = ""
-    if tiene_pago:
-        salto = '\n'
-        # Para la cláusula de pago (insertada como inciso C)
-        clausula_pago = f"{clausulas_adicionales['pago']}"
-    
-    clausula_deslinde = ""
-    if tiene_deslinde:
-        # Esta cláusula siempre será QUINTA cuando exista
-        clausula_deslinde = f"QUINTA. {clausulas_adicionales['deslinde']}"
-    
-    clausula_promesa = ""
-    if tiene_promesa:
-        # Determinar posición correcta
-        if tiene_deslinde:
-            # Si hay deslinde, la promesa será DÉCIMA
-            num = 'DÉCIMA'
-        else:
-            # Si no hay deslinde, la promesa será NOVENA
-            num = 'NOVENA'
-        clausula_promesa = f"{num}. {clausulas_adicionales['promesa']}"
+    clausula_pago = clausulas_adicionales['pago'] if tiene_pago else ''
+    clausula_deslinde = clausulas_adicionales['deslinde'] if tiene_deslinde else ''
+    clausula_promesa = clausulas_adicionales['promesa'] if tiene_promesa else ''
     
     # Agregar al contexto
     context.update({
-        'NUM_QUINTA': numeracion['QUINTA'],
-        'NUM_SEXTA': numeracion['SEXTA'],
-        'NUM_SEPTIMA': numeracion['SEPTIMA'],
-        'NUM_OCTAVA': numeracion['OCTAVA'],
-        'NUM_NOVENA': numeracion['NOVENA'],
-        'NUM_DECIMA': numeracion['DECIMA'],
-        'NUM_DECIMA_PRIMERA': numeracion['DECIMA_PRIMERA'],
-        'NUM_DECIMA_SEGUNDA': numeracion['DECIMA_SEGUNDA'],
-        'NUM_DECIMA_TERCERA': numeracion['DECIMA_TERCERA'],
-        
         'CLAUSULA_PAGO': clausula_pago.upper(),
         'CLAUSULA_DESLINDE': clausula_deslinde.upper(),
         'CLAUSULA_PROMESA': clausula_promesa.upper(),
@@ -2145,11 +1864,6 @@ def build_contrato_ejidal_contado_varios_context(fin, cli, ven, cliente2=None, r
     return context
 
 def build_contrato_ejidal_pagos_context(fin, cli, ven, request=None, tpl=None, firma_data=None, clausulas_adicionales=None):
-    """
-    Construye el contexto para el Contrato Ejidal/Comunal a Pagos.
-    Usa los mismos pronombres y coordenadas que el builder de contado,
-    pero en lugar de pago completo rellena enganche y esquema mensualidades.
-    """
 
     print("Entré al build de ejido a pagos de un comprador")
 
@@ -2334,47 +2048,13 @@ def build_contrato_ejidal_pagos_context(fin, cli, ven, request=None, tpl=None, f
     tiene_deslinde = clausulas_adicionales and 'deslinde' in clausulas_adicionales and bool(clausulas_adicionales['deslinde'])
     tiene_promesa = clausulas_adicionales and 'promesa' in clausulas_adicionales and bool(clausulas_adicionales['promesa'])
     
-    # Calcular numeración dinámica
-    numeracion = calcular_numeracion_clausulas(tiene_deslinde, tiene_promesa)
-    
-    # Formatear cláusulas adicionales con numeración correcta
-    clausula_pago = f"C) {clausulas_adicionales['pago']}" if tiene_pago else ''
-    
     # Formatear cláusulas adicionales
-    clausula_pago = ""
-    if tiene_pago:
-        salto = '\n'
-        # Para la cláusula de pago (insertada como inciso C)
-        clausula_pago = f"{clausulas_adicionales['pago']}"
-    
-    clausula_deslinde = ""
-    if tiene_deslinde:
-        # Esta cláusula siempre será QUINTA cuando exista
-        clausula_deslinde = f"QUINTA. {clausulas_adicionales['deslinde']}"
-    
-    clausula_promesa = ""
-    if tiene_promesa:
-        # Determinar posición correcta
-        if tiene_deslinde:
-            # Si hay deslinde, la promesa será DÉCIMA
-            num = 'DÉCIMA'
-        else:
-            # Si no hay deslinde, la promesa será NOVENA
-            num = 'NOVENA'
-        clausula_promesa = f"{num}. {clausulas_adicionales['promesa']}"
+    clausula_pago = clausulas_adicionales['pago'] if tiene_pago else ''
+    clausula_deslinde = clausulas_adicionales['deslinde'] if tiene_deslinde else ''
+    clausula_promesa = clausulas_adicionales['promesa'] if tiene_promesa else ''
     
     # Agregar al contexto
     context.update({
-        'NUM_QUINTA': numeracion['QUINTA'],
-        'NUM_SEXTA': numeracion['SEXTA'],
-        'NUM_SEPTIMA': numeracion['SEPTIMA'],
-        'NUM_OCTAVA': numeracion['OCTAVA'],
-        'NUM_NOVENA': numeracion['NOVENA'],
-        'NUM_DECIMA': numeracion['DECIMA'],
-        'NUM_DECIMA_PRIMERA': numeracion['DECIMA_PRIMERA'],
-        'NUM_DECIMA_SEGUNDA': numeracion['DECIMA_SEGUNDA'],
-        'NUM_DECIMA_TERCERA': numeracion['DECIMA_TERCERA'],
-        
         'CLAUSULA_PAGO': clausula_pago.upper(),
         'CLAUSULA_DESLINDE': clausula_deslinde.upper(),
         'CLAUSULA_PROMESA': clausula_promesa.upper(),
@@ -2383,11 +2063,6 @@ def build_contrato_ejidal_pagos_context(fin, cli, ven, request=None, tpl=None, f
     return context
 
 def build_contrato_ejidal_pagos_varios_context(fin, cli, ven, cliente2=None,request=None, tpl=None, firma_data=None, clausulas_adicionales=None):
-    """
-    Construye el contexto para el Contrato Ejidal/Comunal a Pagos.
-    Usa los mismos pronombres y coordenadas que el builder de contado,
-    pero en lugar de pago completo rellena enganche y esquema mensualidades.
-    """
 
     print("Entré al build de ejido a pagos de varios compradores")
 
@@ -2611,47 +2286,13 @@ def build_contrato_ejidal_pagos_varios_context(fin, cli, ven, cliente2=None,requ
     tiene_deslinde = clausulas_adicionales and 'deslinde' in clausulas_adicionales and bool(clausulas_adicionales['deslinde'])
     tiene_promesa = clausulas_adicionales and 'promesa' in clausulas_adicionales and bool(clausulas_adicionales['promesa'])
     
-    # Calcular numeración dinámica
-    numeracion = calcular_numeracion_clausulas(tiene_deslinde, tiene_promesa)
-    
-    # Formatear cláusulas adicionales con numeración correcta
-    clausula_pago = f"C) {clausulas_adicionales['pago']}" if tiene_pago else ''
-    
     # Formatear cláusulas adicionales
-    clausula_pago = ""
-    if tiene_pago:
-        salto = '\n'
-        # Para la cláusula de pago (insertada como inciso C)
-        clausula_pago = f"{clausulas_adicionales['pago']}"
-    
-    clausula_deslinde = ""
-    if tiene_deslinde:
-        # Esta cláusula siempre será QUINTA cuando exista
-        clausula_deslinde = f"QUINTA. {clausulas_adicionales['deslinde']}"
-    
-    clausula_promesa = ""
-    if tiene_promesa:
-        # Determinar posición correcta
-        if tiene_deslinde:
-            # Si hay deslinde, la promesa será DÉCIMA
-            num = 'DÉCIMA'
-        else:
-            # Si no hay deslinde, la promesa será NOVENA
-            num = 'NOVENA'
-        clausula_promesa = f"{num}. {clausulas_adicionales['promesa']}"
+    clausula_pago = clausulas_adicionales['pago'] if tiene_pago else ''
+    clausula_deslinde = clausulas_adicionales['deslinde'] if tiene_deslinde else ''
+    clausula_promesa = clausulas_adicionales['promesa'] if tiene_promesa else ''
     
     # Agregar al contexto
     context.update({
-        'NUM_QUINTA': numeracion['QUINTA'],
-        'NUM_SEXTA': numeracion['SEXTA'],
-        'NUM_SEPTIMA': numeracion['SEPTIMA'],
-        'NUM_OCTAVA': numeracion['OCTAVA'],
-        'NUM_NOVENA': numeracion['NOVENA'],
-        'NUM_DECIMA': numeracion['DECIMA'],
-        'NUM_DECIMA_PRIMERA': numeracion['DECIMA_PRIMERA'],
-        'NUM_DECIMA_SEGUNDA': numeracion['DECIMA_SEGUNDA'],
-        'NUM_DECIMA_TERCERA': numeracion['DECIMA_TERCERA'],
-        
         'CLAUSULA_PAGO': clausula_pago.upper(),
         'CLAUSULA_DESLINDE': clausula_deslinde.upper(),
         'CLAUSULA_PROMESA': clausula_promesa.upper(),
@@ -2823,38 +2464,13 @@ def build_contrato_canario_contado_context(fin, cli, ven, request=None, tpl=None
     tiene_deslinde = clausulas_adicionales and 'deslinde' in clausulas_adicionales and bool(clausulas_adicionales['deslinde'])
     tiene_promesa = clausulas_adicionales and 'promesa' in clausulas_adicionales and bool(clausulas_adicionales['promesa'])
     
-    # Calcular numeración dinámica
-    numeracion = calcular_numeracion_clausulas(tiene_deslinde, tiene_promesa)
-    
     # Formatear cláusulas adicionales
-    clausula_pago = ""
-    if tiene_pago:
-        clausula_pago = f"{clausulas_adicionales['pago']}"
-    
-    clausula_deslinde = ""
-    if tiene_deslinde:
-        clausula_deslinde = f"QUINTA. {clausulas_adicionales['deslinde']}"
-    
-    clausula_promesa = ""
-    if tiene_promesa:
-        if tiene_deslinde:
-            num = 'DÉCIMA'
-        else:
-            num = 'NOVENA'
-        clausula_promesa = f"{num}. {clausulas_adicionales['promesa']}"
+    clausula_pago = clausulas_adicionales['pago'] if tiene_pago else ''
+    clausula_deslinde = clausulas_adicionales['deslinde'] if tiene_deslinde else ''
+    clausula_promesa = clausulas_adicionales['promesa'] if tiene_promesa else ''
     
     # Agregar al contexto
     context.update({
-        'NUM_QUINTA': numeracion['QUINTA'],
-        'NUM_SEXTA': numeracion['SEXTA'],
-        'NUM_SEPTIMA': numeracion['SEPTIMA'],
-        'NUM_OCTAVA': numeracion['OCTAVA'],
-        'NUM_NOVENA': numeracion['NOVENA'],
-        'NUM_DECIMA': numeracion['DECIMA'],
-        'NUM_DECIMA_PRIMERA': numeracion['DECIMA_PRIMERA'],
-        'NUM_DECIMA_SEGUNDA': numeracion['DECIMA_SEGUNDA'],
-        'NUM_DECIMA_TERCERA': numeracion['DECIMA_TERCERA'],
-        
         'CLAUSULA_PAGO': clausula_pago.upper(),
         'CLAUSULA_DESLINDE': clausula_deslinde.upper(),
         'CLAUSULA_PROMESA': clausula_promesa.upper(),
@@ -3042,40 +2658,18 @@ def build_contrato_canario_contado_varios_context(fin, cli, ven, cliente2=None, 
         context['FIRMA_CLIENTE'] = ''
 
     # 9) Cláusulas adicionales
+    # Determinar qué cláusulas adicionales existen
     tiene_pago = clausulas_adicionales and 'pago' in clausulas_adicionales and bool(clausulas_adicionales['pago'])
     tiene_deslinde = clausulas_adicionales and 'deslinde' in clausulas_adicionales and bool(clausulas_adicionales['deslinde'])
     tiene_promesa = clausulas_adicionales and 'promesa' in clausulas_adicionales and bool(clausulas_adicionales['promesa'])
     
-    numeracion = calcular_numeracion_clausulas(tiene_deslinde, tiene_promesa)
-    
-    clausula_pago = ""
-    if tiene_pago:
-        clausula_pago = f"{clausulas_adicionales['pago']}"
-    
-    clausula_deslinde = ""
-    if tiene_deslinde:
-        clausula_deslinde = f"QUINTA. {clausulas_adicionales['deslinde']}"
-    
-    clausula_promesa = ""
-    if tiene_promesa:
-        if tiene_deslinde:
-            num = 'DÉCIMA'
-        else:
-            num = 'NOVENA'
-        clausula_promesa = f"{num}. {clausulas_adicionales['promesa']}"
+    # Formatear cláusulas adicionales
+    clausula_pago = clausulas_adicionales['pago'] if tiene_pago else ''
+    clausula_deslinde = clausulas_adicionales['deslinde'] if tiene_deslinde else ''
+    clausula_promesa = clausulas_adicionales['promesa'] if tiene_promesa else ''
     
     # Agregar al contexto
     context.update({
-        'NUM_QUINTA': numeracion['QUINTA'],
-        'NUM_SEXTA': numeracion['SEXTA'],
-        'NUM_SEPTIMA': numeracion['SEPTIMA'],
-        'NUM_OCTAVA': numeracion['OCTAVA'],
-        'NUM_NOVENA': numeracion['NOVENA'],
-        'NUM_DECIMA': numeracion['DECIMA'],
-        'NUM_DECIMA_PRIMERA': numeracion['DECIMA_PRIMERA'],
-        'NUM_DECIMA_SEGUNDA': numeracion['DECIMA_SEGUNDA'],
-        'NUM_DECIMA_TERCERA': numeracion['DECIMA_TERCERA'],
-        
         'CLAUSULA_PAGO': clausula_pago.upper(),
         'CLAUSULA_DESLINDE': clausula_deslinde.upper(),
         'CLAUSULA_PROMESA': clausula_promesa.upper(),
@@ -3242,47 +2836,13 @@ def build_contrato_canario_pagos_context(fin, cli, ven, request=None, tpl=None, 
     tiene_deslinde = clausulas_adicionales and 'deslinde' in clausulas_adicionales and bool(clausulas_adicionales['deslinde'])
     tiene_promesa = clausulas_adicionales and 'promesa' in clausulas_adicionales and bool(clausulas_adicionales['promesa'])
     
-    # Calcular numeración dinámica
-    numeracion = calcular_numeracion_clausulas(tiene_deslinde, tiene_promesa)
-    
-    # Formatear cláusulas adicionales con numeración correcta
-    clausula_pago = f"C) {clausulas_adicionales['pago']}" if tiene_pago else ''
-    
     # Formatear cláusulas adicionales
-    clausula_pago = ""
-    if tiene_pago:
-        salto = '\n'
-        # Para la cláusula de pago (insertada como inciso C)
-        clausula_pago = f"{clausulas_adicionales['pago']}"
-    
-    clausula_deslinde = ""
-    if tiene_deslinde:
-        # Esta cláusula siempre será QUINTA cuando exista
-        clausula_deslinde = f"QUINTA. {clausulas_adicionales['deslinde']}"
-    
-    clausula_promesa = ""
-    if tiene_promesa:
-        # Determinar posición correcta
-        if tiene_deslinde:
-            # Si hay deslinde, la promesa será DÉCIMA
-            num = 'DÉCIMA'
-        else:
-            # Si no hay deslinde, la promesa será NOVENA
-            num = 'NOVENA'
-        clausula_promesa = f"{num}. {clausulas_adicionales['promesa']}"
+    clausula_pago = clausulas_adicionales['pago'] if tiene_pago else ''
+    clausula_deslinde = clausulas_adicionales['deslinde'] if tiene_deslinde else ''
+    clausula_promesa = clausulas_adicionales['promesa'] if tiene_promesa else ''
     
     # Agregar al contexto
     context.update({
-        'NUM_QUINTA': numeracion['QUINTA'],
-        'NUM_SEXTA': numeracion['SEXTA'],
-        'NUM_SEPTIMA': numeracion['SEPTIMA'],
-        'NUM_OCTAVA': numeracion['OCTAVA'],
-        'NUM_NOVENA': numeracion['NOVENA'],
-        'NUM_DECIMA': numeracion['DECIMA'],
-        'NUM_DECIMA_PRIMERA': numeracion['DECIMA_PRIMERA'],
-        'NUM_DECIMA_SEGUNDA': numeracion['DECIMA_SEGUNDA'],
-        'NUM_DECIMA_TERCERA': numeracion['DECIMA_TERCERA'],
-        
         'CLAUSULA_PAGO': clausula_pago.upper(),
         'CLAUSULA_DESLINDE': clausula_deslinde.upper(),
         'CLAUSULA_PROMESA': clausula_promesa.upper(),
@@ -3495,47 +3055,21 @@ def build_contrato_canario_pagos_varios_context(fin, cli, ven, cliente2=None, re
     else:
         context['FIRMA_CLIENTE'] = ''
 
-    # 9) Cláusulas adicionales (igual que antes)
+    # Determinar qué cláusulas adicionales existen
     tiene_pago = clausulas_adicionales and 'pago' in clausulas_adicionales and bool(clausulas_adicionales['pago'])
     tiene_deslinde = clausulas_adicionales and 'deslinde' in clausulas_adicionales and bool(clausulas_adicionales['deslinde'])
     tiene_promesa = clausulas_adicionales and 'promesa' in clausulas_adicionales and bool(clausulas_adicionales['promesa'])
     
-    numeracion = calcular_numeracion_clausulas(tiene_deslinde, tiene_promesa)
-    
-    clausula_pago = ""
-    if tiene_pago:
-        clausula_pago = f"{clausulas_adicionales['pago']}"
-    
-    clausula_deslinde = ""
-    if tiene_deslinde:
-        clausula_deslinde = f"QUINTA. {clausulas_adicionales['deslinde']}"
-    
-    clausula_promesa = ""
-    if tiene_promesa:
-        if tiene_deslinde:
-            num = 'DÉCIMA'
-        else:
-            num = 'NOVENA'
-        clausula_promesa = f"{num}. {clausulas_adicionales['promesa']}"
+    # Formatear cláusulas adicionales
+    clausula_pago = clausulas_adicionales['pago'] if tiene_pago else ''
+    clausula_deslinde = clausulas_adicionales['deslinde'] if tiene_deslinde else ''
+    clausula_promesa = clausulas_adicionales['promesa'] if tiene_promesa else ''
     
     # Agregar al contexto
     context.update({
-        'NUM_QUINTA': numeracion['QUINTA'],
-        'NUM_SEXTA': numeracion['SEXTA'],
-        'NUM_SEPTIMA': numeracion['SEPTIMA'],
-        'NUM_OCTAVA': numeracion['OCTAVA'],
-        'NUM_NOVENA': numeracion['NOVENA'],
-        'NUM_DECIMA': numeracion['DECIMA'],
-        'NUM_DECIMA_PRIMERA': numeracion['DECIMA_PRIMERA'],
-        'NUM_DECIMA_SEGUNDA': numeracion['DECIMA_SEGUNDA'],
-        'NUM_DECIMA_TERCERA': numeracion['DECIMA_TERCERA'],
-        
         'CLAUSULA_PAGO': clausula_pago.upper(),
         'CLAUSULA_DESLINDE': clausula_deslinde.upper(),
         'CLAUSULA_PROMESA': clausula_promesa.upper(),
     })
 
     return context
-
-
-
