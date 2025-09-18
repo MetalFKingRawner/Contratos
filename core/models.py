@@ -1,5 +1,7 @@
 # models.py
 from django.db import models
+from django.contrib.auth.models import User
+from django.utils import timezone
 
 class Proyecto(models.Model):
     nombre = models.CharField(max_length=100)
@@ -60,6 +62,15 @@ class Vendedor(models.Model):
         ('F', 'Femenino'),
     ]
 
+    # Relación con el usuario de Django
+    usuario = models.OneToOneField(
+        User, 
+        on_delete=models.CASCADE,
+        related_name='vendedor',
+        null=True,
+        blank=True
+    )
+
     nombre_completo = models.CharField(max_length=100)
     sexo                  = models.CharField("Sexo", max_length=1, choices=SEXO_CHOICES, default='M')
     nacionalidad = models.CharField(max_length=50)
@@ -69,6 +80,11 @@ class Vendedor(models.Model):
     email = models.EmailField()
     tipo = models.CharField(max_length=20, choices=TIPO_CHOICES)
     proyectos = models.ManyToManyField(Proyecto, related_name='vendedores')
+
+    activo = models.BooleanField(default=True)
+    fecha_creacion = models.DateTimeField(default=timezone.now)
+    ultima_modificacion = models.DateTimeField(auto_now=True)
+    contraseña_temporal = models.CharField(max_length=100, blank=True, null=True)
 
     def __str__(self):
         return self.nombre_completo
@@ -100,6 +116,7 @@ class Cliente(models.Model):
 
     def __str__(self):
         return self.nombre_completo
+
 
 
 
