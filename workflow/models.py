@@ -2,6 +2,7 @@ from django.db import models
 from django.conf import settings
 from financiamiento.models import Financiamiento
 from core.models import Cliente, Vendedor, Propietario
+from django.contrib.auth.models import User
 
 class Tramite(models.Model):
     financiamiento = models.ForeignKey(Financiamiento, on_delete=models.PROTECT)
@@ -10,6 +11,16 @@ class Tramite(models.Model):
     # Campos para la persona que atendió (puede ser vendedor o propietario)
     vendedor = models.ForeignKey(Vendedor, on_delete=models.PROTECT, null=True, blank=True)
     propietario = models.ForeignKey(Propietario, on_delete=models.PROTECT, null=True, blank=True)
+
+    # Nuevo campo para registrar el usuario de Django que creó el trámite
+    usuario_creador = models.ForeignKey(
+        User, 
+        on_delete=models.PROTECT, 
+        null=True, 
+        blank=True,
+        verbose_name="Usuario que creó el trámite",
+        related_name="tramites_creados"
+    )
     
     # Campos para identificar el tipo de persona seleccionada
     persona_tipo = models.CharField(
@@ -81,4 +92,5 @@ class ClausulasEspeciales(models.Model):
 
     def __str__(self):
         return f"Cláusulas especiales - Trámite #{self.tramite.id}"
+
 
