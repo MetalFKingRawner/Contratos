@@ -758,6 +758,11 @@ class AvisoPrivacidadView(FormView):
             tramite.firma_cliente = firma or tramite.firma_cliente
             if cliente2:
                 tramite.cliente_2 = cliente2
+
+            # Asignar usuario creador si no está asignado (para trámites existentes)
+            if not tramite.usuario_creador:
+                tramite.usuario_creador = self.request.user
+            
             tramite.save()
         else:
             # Nuevo trámite
@@ -769,7 +774,8 @@ class AvisoPrivacidadView(FormView):
                 persona_tipo=persona_tipo,
                 persona_id=persona_id,
                 firma_cliente=firma or "",
-                cliente_2=cliente2
+                cliente_2=cliente2,
+                usuario_creador=self.request.user  # ← Aquí asignamos el usuario
             )
             self.request.session['tramite_id'] = tramite.id
 
@@ -815,6 +821,7 @@ class Paso1FinanciamientoView(TemplateView):
         # Guardar en sesión para los pasos siguientes
         request.session['financiamiento_id'] = int(plan_id)
         return redirect('workflow:paso2_cliente')
+
 
 
 
