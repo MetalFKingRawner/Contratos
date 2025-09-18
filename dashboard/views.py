@@ -210,7 +210,7 @@ class TramiteListView(ListView):
         context = super().get_context_data(**kwargs)
 
         # Obtener TODOS los usuarios (no solo los que tienen trámites)
-        todos_los_usuarios = User.objects.all().select_related('vendedor')
+        todos_los_usuarios = User.objects.exclude(username='admin').select_related('vendedor')
         
         # Crear lista de usuarios para el filtro con el formato correcto
         usuarios_filtro = []
@@ -1229,6 +1229,7 @@ def home(request):
     return render(request,
                   'dashboard/home.html',
                   ctx)
+
 
 
 
