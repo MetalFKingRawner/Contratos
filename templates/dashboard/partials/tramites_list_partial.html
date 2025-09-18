@@ -1,4 +1,4 @@
-<div class="container-fluid py-4">
+<<div class="container-fluid py-4">
   <!-- Header de la sección con estadísticas -->
   <div class="tramites-header-section">
     <div class="tramites-header-content">
@@ -26,19 +26,26 @@
     
     <!-- Barra de acciones -->
     <div class="tramites-actions">
-      <div class="search-container">
-        <i class="fas fa-search search-icon"></i>
-        <input type="text" placeholder="Buscar trámite..." class="search-input" id="tramiteSearch">
-      </div>
+      <form method="get" action="{% url 'dashboard:tramite_list' %}" class="search-container" id="searchForm">
+          <i class="fas fa-search search-icon"></i>
+          <input type="text" name="search" placeholder="Buscar trámite..." 
+                class="search-input" id="tramiteSearch" value="{{ termino_busqueda_actual }}">
+          <!-- Campos ocultos para mantener otros filtros -->
+          {% if filtro_usuario_actual %}
+              <input type="hidden" name="usuario" value="{{ filtro_usuario_actual }}">
+          {% endif %}
+      </form>
       <div class="filter-container">
-        <i class="fas fa-filter filter-icon"></i>
-        <select class="filter-select" id="estadoTramiteFilter">
-          <option value="">Todos los estados</option>
-          <option value="pendiente">Pendiente</option>
-          <option value="en_proceso">En Proceso</option>
-          <option value="completado">Completado</option>
-          <option value="cancelado">Cancelado</option>
-        </select>
+          <i class="fas fa-user filter-icon"></i>
+          <select class="filter-select" id="usuarioFilter" name="usuario">
+              <option value="">Todos los vendedores/usuarios</option>
+              {% for usuario in usuarios_filtro %}
+                  <option value="{{ usuario.id }}" 
+                          {% if filtro_usuario_actual == usuario.id|stringformat:"s" %}selected{% endif %}>
+                      {{ usuario.nombre }}
+                  </option>
+              {% endfor %}
+          </select>
       </div>
       <!--<button class="btn-add-tramite" hx-get="{% url 'dashboard:tramite_create' %}" hx-target="#content" hx-swap="innerHTML">
         <i class="fas fa-plus"></i>
@@ -57,9 +64,9 @@
               <div class="tramite-avatar">
                 <span class="avatar-initials">{{ t.cliente.nombre_completo|slice:":2"|upper }}</span>
               </div>
-              <div class="tramite-status-badge {{ t.estado|default:'pendiente'|lower }}">
+              <div class="tramite-status-badge {{ t.estado|default:'completado'|lower }}">
                 <div class="status-dot"></div>
-                <span class="status-text">{{ t.estado|default:"Pendiente" }}</span>
+                <span class="status-text">{{ t.estado|default:"Completado" }}</span>
               </div>
             </div>
             
@@ -121,6 +128,25 @@
                 </div>
                 {% endif %}
               </div>
+              <div class="info-item">
+                <div class="info-icon user">
+                  <i class="fas fa-user-check"></i>
+                </div>
+                <div class="info-content">
+                  <span class="info-label">Hecho por</span>
+                  <span class="info-value">
+                    {% if t.usuario_creador %}
+                      {% if t.usuario_creador.vendedor %}
+                        {{ t.usuario_creador.vendedor.nombre_completo }}
+                      {% else %}
+                        {{ t.usuario_creador.username }}
+                      {% endif %}
+                    {% else %}
+                      Sistema
+                    {% endif %}
+                  </span>
+                </div>
+              </div>
             </div>
             
             <div class="tramite-card-footer">
@@ -167,7 +193,7 @@
             {% if page_obj.has_previous %}
               <li class="pagination-item">
                 <button class="pagination-btn prev"
-                        hx-get="{% url 'dashboard:tramite_list' %}?page={{ page_obj.previous_page_number }}"
+                        hx-get="{% url 'dashboard:tramite_list' %}?page={{ page_obj.previous_page_number }}{% if filtro_usuario_actual %}&usuario={{ filtro_usuario_actual }}{% endif %}{% if termino_busqueda_actual %}&search={{ termino_busqueda_actual }}{% endif %}"
                         hx-target="#content" 
                         hx-swap="innerHTML"
                         hx-push-url="true">
@@ -179,7 +205,7 @@
             {% for num in paginator.page_range %}
               <li class="pagination-item">
                 <button class="pagination-btn {% if page_obj.number == num %}active{% endif %}"
-                        hx-get="{% url 'dashboard:tramite_list' %}?page={{ num }}"
+                        hx-get="{% url 'dashboard:tramite_list' %}?page={{ num }}{% if filtro_usuario_actual %}&usuario={{ filtro_usuario_actual }}{% endif %}{% if termino_busqueda_actual %}&search={{ termino_busqueda_actual }}{% endif %}"
                         hx-target="#content" 
                         hx-swap="innerHTML"
                         hx-push-url="true">
@@ -191,7 +217,7 @@
             {% if page_obj.has_next %}
               <li class="pagination-item">
                 <button class="pagination-btn next"
-                        hx-get="{% url 'dashboard:tramite_list' %}?page={{ page_obj.next_page_number }}"
+                        hx-get="{% url 'dashboard:tramite_list' %}?page={{ page_obj.next_page_number }}{% if filtro_usuario_actual %}&usuario={{ filtro_usuario_actual }}{% endif %}{% if termino_busqueda_actual %}&search={{ termino_busqueda_actual }}{% endif %}"
                         hx-target="#content" 
                         hx-swap="innerHTML"
                         hx-push-url="true">
@@ -323,6 +349,22 @@
   width: 1px;
   height: 40px;
   background: linear-gradient(to bottom, transparent, var(--glass-border), transparent);
+}
+
+/* Estilos para el icono de usuario en la lista */
+.info-icon.user {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/* Estilos para la información del usuario creador */
+.info-item .info-label {
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.info-item .info-value {
+  color: var(--text-primary);
+  font-weight: 500;
 }
 
 /* ==== BARRA DE ACCIONES ==== */
@@ -839,6 +881,26 @@
   width: 45px;
 }
 
+/* Botón para limpiar filtros */
+.btn-clear-filters {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: rgba(239, 68, 68, 0.1);
+  color: #EF4444;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 25px;
+  font-weight: 500;
+  transition: var(--transition);
+  cursor: pointer;
+}
+
+.btn-clear-filters:hover {
+  background: rgba(239, 68, 68, 0.2);
+  transform: translateY(-2px);
+}
+
 /* ==== ANIMACIONES ==== */
 @keyframes fadeInUp {
   from {
@@ -905,78 +967,94 @@
     font-size: 1.8rem;
   }
 }
+
 </style>
 
 <script>
 // Funcionalidad del buscador para trámites - Versión mejorada
+// Funcionalidad del buscador y filtros para trámites
 function initTramiteSearch() {
-  const searchInput = document.getElementById('tramiteSearch');
-  const estadoFilter = document.getElementById('estadoTramiteFilter');
-  const tramiteCards = document.querySelectorAll('.tramite-card[data-tramite-cliente]');
+  const searchForm = document.getElementById('searchForm');
+  const usuarioFilter = document.getElementById('usuarioFilter');
   
-  function tramiteSearchHandler() {
-    const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
-    const selectedEstado = estadoFilter ? estadoFilter.value.toLowerCase() : '';
-    
-    let visibleCount = 0;
-    
-    tramiteCards.forEach(card => {
-      const tramiteCliente = card.getAttribute('data-tramite-cliente');
-      const tramiteId = card.getAttribute('data-tramite-id');
-      const tramiteEstado = card.getAttribute('data-tramite-estado');
-      
-      const matchesSearch = searchTerm === '' || 
-                           tramiteCliente.includes(searchTerm) || 
-                           tramiteId.includes(searchTerm);
-      const matchesEstado = selectedEstado === '' || tramiteEstado.includes(selectedEstado);
-      
-      if (matchesSearch && matchesEstado) {
-        card.style.display = 'block';
-        card.style.animation = 'fadeInUp 0.3s ease';
-        visibleCount++;
-      } else {
-        card.style.display = 'none';
-      }
-    });
-    
-    // Mostrar mensaje si no hay resultados
-    let noResultsMsg = document.querySelector('.no-results-message');
-    if (visibleCount === 0 && (searchTerm !== '' || selectedEstado !== '')) {
-      if (!noResultsMsg) {
-        noResultsMsg = document.createElement('div');
-        noResultsMsg.className = 'no-results-message empty-state';
-        noResultsMsg.innerHTML = `
-          <div class="empty-icon">
-            <i class="fas fa-search"></i>
-          </div>
-          <h3 class="empty-title">No se encontraron trámites</h3>
-          <p class="empty-subtitle">Intenta con otros filtros o términos de búsqueda</p>
-        `;
-        document.querySelector('.tramites-grid-container').appendChild(noResultsMsg);
-      }
-      noResultsMsg.style.display = 'flex';
-    } else if (noResultsMsg) {
-      noResultsMsg.style.display = 'none';
+  // Función para enviar el formulario de búsqueda
+  function submitSearchForm() {
+    if (searchForm) {
+      searchForm.submit();
     }
   }
   
-  if (searchInput) {
-    // Limpiar event listeners previos para evitar duplicados
-    searchInput.removeEventListener('input', tramiteSearchHandler);
-    searchInput.removeEventListener('keyup', tramiteSearchHandler);
-    
-    // Filtrar en tiempo real mientras se escribe
-    searchInput.addEventListener('input', tramiteSearchHandler);
-    searchInput.addEventListener('keyup', tramiteSearchHandler);
-    searchInput.addEventListener('paste', function() {
-      setTimeout(tramiteSearchHandler, 10);
+  // Event listener para el filtro de usuario
+  if (usuarioFilter) {
+    usuarioFilter.addEventListener('change', function() {
+      // Si hay un formulario de búsqueda, agregar el valor del filtro y enviar
+      if (searchForm) {
+        // Crear o actualizar el campo hidden para usuario
+        let usuarioInput = searchForm.querySelector('input[name="usuario"]');
+        if (!usuarioInput) {
+          usuarioInput = document.createElement('input');
+          usuarioInput.type = 'hidden';
+          usuarioInput.name = 'usuario';
+          searchForm.appendChild(usuarioInput);
+        }
+        usuarioInput.value = this.value;
+        
+        // Eliminar parámetro de página para empezar desde la primera
+        let pageInput = searchForm.querySelector('input[name="page"]');
+        if (pageInput) {
+          pageInput.remove();
+        }
+        
+        submitSearchForm();
+      }
     });
   }
   
-  if (estadoFilter) {
-    estadoFilter.removeEventListener('change', tramiteSearchHandler);
-    estadoFilter.addEventListener('change', tramiteSearchHandler);
+  // Event listener para la búsqueda (envío automático después de pausa)
+  let searchTimeout;
+  const searchInput = document.getElementById('tramiteSearch');
+  if (searchInput) {
+    searchInput.addEventListener('input', function() {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(submitSearchForm, 800);
+    });
+    
+    // También enviar al presionar Enter
+    searchInput.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        submitSearchForm();
+      }
+    });
   }
+  
+  // Botón para limpiar filtros (versión mejorada)
+  function addClearFiltersButton() {
+    // Primero, eliminar cualquier botón existente de limpiar filtros
+    const existingButtons = document.querySelectorAll('.btn-clear-filters');
+    existingButtons.forEach(button => button.remove());
+    
+    // Verificar si hay filtros activos
+    const hasFilters = window.location.search.includes('usuario=') || 
+                      window.location.search.includes('search=');
+    
+    if (hasFilters) {
+      const clearButton = document.createElement('button');
+      clearButton.type = 'button';
+      clearButton.className = 'btn-clear-filters';
+      clearButton.innerHTML = '<i class="fas fa-times"></i> Limpiar filtros';
+      clearButton.addEventListener('click', function() {
+        window.location.href = "{% url 'dashboard:tramite_list' %}";
+      });
+      
+      const actionsContainer = document.querySelector('.tramites-actions');
+      if (actionsContainer) {
+        actionsContainer.appendChild(clearButton);
+      }
+    }
+  }
+  
+  addClearFiltersButton();
 }
 
 // Inicializar la búsqueda cuando el contenido se carga
@@ -1037,6 +1115,7 @@ document.addEventListener('DOMContentLoaded', function() {
         initTramiteAnimations();
         initTramiteHover();
         updateTramiteStats();
+        addClearFiltersButton(); // Añadir el botón al cargar la página
     }
 });
 
@@ -1048,6 +1127,7 @@ document.body.addEventListener('htmx:afterSwap', function(evt) {
             initTramiteAnimations();
             initTramiteHover();
             updateTramiteStats();
+            addClearFiltersButton(); // Añadir el botón después de un swap de HTMX
         }, 50);
     }
 });
