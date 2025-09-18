@@ -18,6 +18,7 @@ from django.urls import reverse
 from .forms import PropietarioForm, ProyectoForm,LoteForm, TramiteForm
 from django.db.models import Q
 from financiamiento.forms import FinanciamientoForm
+from django.contrib.auth.models import User
 #class DashboardHomeView(TemplateView):
 #    template_name = 'dashboard/home.html'
 
@@ -27,6 +28,8 @@ from workflow.docs import DOCUMENTOS
 from pdfs.utils import convert_docx_to_pdf 
 from docxtpl import DocxTemplate
 from django.conf import settings
+from .utils import crear_usuario_para_vendedor
+from django.contrib import messages
 
 
 class DownloadDocumentView(View):
@@ -205,10 +208,78 @@ class TramiteListView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+
+        # Obtener TODOS los usuarios (no solo los que tienen trámites)
+        todos_los_usuarios = User.objects.all().select_related('vendedor')
+        
+        # Crear lista de usuarios para el filtro con el formato correcto
+        usuarios_filtro = []
+        for usuario in todos_los_usuarios:
+            # Verificar si tiene un vendedor asociado
+            if hasattr(usuario, 'vendedor') and usuario.vendedor:
+                nombre = f"🧑‍💼 {usuario.vendedor.nombre_completo}"
+            else:
+                # Para usuarios sin vendedor (staff), usar el username
+                if usuario.first_name and usuario.last_name:
+                    nombre = f"👨‍💻 {usuario.first_name} {usuario.last_name} ({usuario.username})"
+                else:
+                    nombre = f"👨‍💻 {usuario.username}"
+            
+            usuarios_filtro.append({
+                'id': usuario.id,
+                'nombre': nombre
+            })
+        
+        # Ordenar alfabéticamente por nombre
+        usuarios_filtro.sort(key=lambda x: x['nombre'].lower())
+
         # Agregar contadores al contexto
         context['total_tramites'] = Tramite.objects.count()
         context['tramites_activos'] = Tramite.objects.count()  # Cambia esto si tienes un campo "activo"
+        context['usuarios_filtro'] = usuarios_filtro
+
+        # Agregar parámetros de filtro actuales al contexto
+        context['filtro_usuario_actual'] = self.request.GET.get('usuario', '')
+        context['termino_busqueda_actual'] = self.request.GET.get('search', '')
+
         return context
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        # Optimizar consultas relacionadas
+        queryset = queryset.select_related(
+            'cliente', 
+            'financiamiento', 
+            'financiamiento__lote',
+            'usuario_creador'  # Para el usuario creador
+        ).prefetch_related(
+            'usuario_creador__vendedor'  # Para el perfil de vendedor asociado al usuario
+        )
+
+        # Obtener parámetros de filtro
+        usuario_id = self.request.GET.get('usuario')
+        search_term = self.request.GET.get('search')
+        
+        # Aplicar filtro por usuario si se especificó
+        if usuario_id:
+            queryset = queryset.filter(usuario_creador_id=usuario_id)
+        
+        # Aplicar búsqueda si se especificó
+        if search_term:
+            # Buscar por ID de trámite o nombre de cliente
+            try:
+                # Intentar convertir a número para búsqueda por ID
+                tramite_id = int(search_term)
+                queryset = queryset.filter(id=tramite_id)
+            except ValueError:
+                # Búsqueda por nombre de cliente
+                queryset = queryset.filter(cliente__nombre_completo__icontains=search_term)
+        
+        # Si hay filtro o búsqueda, desactivar paginación
+        if usuario_id or search_term:
+            self.paginate_by = None
+
+        return queryset
 
 class TramiteDetailView(DetailView):
     """Detalle de un Trámite."""
@@ -575,7 +646,21 @@ class VendedorUpdateView(UpdateView):
             return ['dashboard/partials/vendedor_form.html']
         return [self.template_name]
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Añadir flag para indicar que es edición
+        context['creating'] = False
+        # Mostrar credenciales solo si el vendedor tiene usuario
+        context['mostrar_credenciales'] = self.object.usuario is not None
+        return context
+
     def form_valid(self, form):
+        # Guardar el vendedor (y actualizar usuario a través del form)
+        self.object = form.save()
+        
+        # Mensaje de éxito
+        messages.success(self.request, f'Vendedor {self.object.nombre_completo} actualizado exitosamente.')
+        
         response = super().form_valid(form)
         if self.request.headers.get('HX-Request'):
             return HttpResponse(
@@ -612,9 +697,30 @@ class VendedorCreateView(CreateView):
         context = super().get_context_data(**kwargs)
         # Añadimos una flag para indicar que es creación, no edición
         context['creating'] = True
+        context['mostrar_credenciales'] = False
         return context
 
     def form_valid(self, form):
+        # Guardar el vendedor primero (sin usuario aún)
+        self.object = form.save(commit=False)
+        self.object.save()
+        form.save_m2m()  # Guardar relaciones ManyToMany
+
+        # Asignar automáticamente todos los proyectos existentes
+        todos_los_proyectos = Proyecto.objects.all()
+        self.object.proyectos.set(todos_los_proyectos)
+        
+        # Crear usuario automáticamente y obtener las credenciales
+        credenciales = crear_usuario_para_vendedor(self.object)
+        
+        # Mensaje de éxito con información del usuario creado
+        messages.success(
+            self.request, 
+            f'Vendedor {self.object.nombre_completo} creado exitosamente. '
+            f'Usuario: {credenciales["username"]}, '
+            f'Contraseña: {credenciales["password"]}'
+        )
+        
         response = super().form_valid(form)
         if self.request.headers.get('HX-Request'):
             return HttpResponse(
@@ -655,8 +761,15 @@ class VendedorDeleteView(DeleteView):
         return ['dashboard/vendedor_delete_confirm.html']
 
     def form_valid(self, form):
+        # Guardar referencia al usuario antes de eliminar el vendedor
+        usuario = self.object.usuario
+
         success_url = self.get_success_url()
         self.object.delete()
+
+        # Eliminar el usuario asociado si existe
+        if usuario:
+            usuario.delete()
         
         if self.request.headers.get('HX-Request'):
             # Para solicitudes HTMX, devolvemos la lista actualizada de vendedores
@@ -1116,6 +1229,7 @@ def home(request):
     return render(request,
                   'dashboard/home.html',
                   ctx)
+
 
 
 
