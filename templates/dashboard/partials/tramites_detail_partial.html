@@ -111,6 +111,23 @@
             <span class="info-label">Apartado</span>
             <span class="info-value price">${{ tramite.financiamiento.apartado|floatformat:2 }}</span>
           </div>
+          <div class="info-item">
+            <span class="info-label">Trámite hecho por:</span>
+            <span class="info-value">
+              {% if tramite.usuario_creador %}
+                {% if tramite.usuario_creador.vendedor %}
+                  {{ tramite.usuario_creador.vendedor.nombre_completo }}
+                {% else %}
+                  {{ tramite.usuario_creador.username }}
+                  {% if tramite.usuario_creador.first_name or tramite.usuario_creador.last_name %}
+                    ({{ tramite.usuario_creador.first_name }} {{ tramite.usuario_creador.last_name }})
+                  {% endif %}
+                {% endif %}
+              {% else %}
+                Sistema
+              {% endif %}
+            </span>
+          </div>
         </div>
       </div>
     </div>
