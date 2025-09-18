@@ -272,6 +272,68 @@
           </div>
         </div>
       </div>
+      
+      <!-- Sección de Credenciales (solo para edición cuando mostrar_credenciales es True) -->
+      {% if not creating and mostrar_credenciales %}
+      <div class="form-section">
+        <div class="section-header">
+          <div class="section-icon credentials">
+            <i class="fas fa-key"></i>
+          </div>
+          <h3 class="section-title">Credenciales de Acceso</h3>
+        </div>
+        
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">
+              {{ form.nombre_usuario.label }}
+              <span class="required-indicator">*</span>
+            </label>
+            <div class="input-wrapper">
+              {{ form.nombre_usuario }}
+              <div class="input-icon">
+                <i class="fas fa-user"></i>
+              </div>
+            </div>
+            {% if form.nombre_usuario.errors %}
+              <div class="field-errors">
+                {% for error in form.nombre_usuario.errors %}
+                  <span class="field-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    {{ error }}
+                  </span>
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              {{ form.nueva_contraseña.label }}
+            </label>
+            <div class="input-wrapper">
+              {{ form.nueva_contraseña }}
+              <div class="input-icon">
+                <i class="fas fa-lock"></i>
+              </div>
+            </div>
+            {% if form.nueva_contraseña.errors %}
+              <div class="field-errors">
+                {% for error in form.nueva_contraseña.errors %}
+                  <span class="field-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    {{ error }}
+                  </span>
+                {% endfor %}
+              </div>
+            {% endif %}
+            <small class="form-text text-muted" style="color: var(--text-secondary); margin-top: 0.5rem;">
+              Dejar vacío para mantener la contraseña actual.
+            </small>
+          </div>
+        </div>
+      </div>
+      {% endif %}
 
       <!-- Botones de acción (actualizados) -->
       <div class="form-actions">
@@ -478,6 +540,16 @@
   font-weight: 600;
   color: var(--text-primary);
   margin: 0;
+}
+
+/* Ocultar completamente los campos hidden */
+input[type="hidden"] {
+  display: none !important;
+}
+
+/* Estilos adicionales para la sección de credenciales */
+.section-icon.credentials {
+  background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
 }
 
 /* ==== GRID DEL FORMULARIO ==== */
