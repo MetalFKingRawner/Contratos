@@ -1557,7 +1557,7 @@ def build_contrato_ejidal_contado_context(fin, cli, ven, request=None, tpl=None,
         claus_b = (
             f"QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, AL IGUAL QUE CON LAS FACULTADES Y AUTORIZACIÓN SUFICIENTE PARA OBLIGARSE EN LOS TÉRMINOS DE ESTE, "
             f"TAL COMO SE ACREDITA EN EL CONTRATO DE EXCLUSIVIDAD, PROMOCIÓN Y COMISIÓN POR LA VENTA DEL BIEN INMUEBLE DE FECHA {fecha_contrato}"
-            f", OTORGADO POR {SEXO_5} C.{prop.nombre_completo.upper()}."
+            f", OTORGADO POR {SEXO_5} C. {prop.nombre_completo.upper()}."
         )
 
     # 4) Construcción del context completo
@@ -1757,7 +1757,7 @@ def build_contrato_ejidal_contado_varios_context(fin, cli, ven, cliente2=None, r
         claus_b = (
             f"QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, AL IGUAL QUE CON LAS FACULTADES Y AUTORIZACIÓN SUFICIENTE PARA OBLIGARSE EN LOS TÉRMINOS DE ESTE, "
             f"TAL COMO SE ACREDITA EN EL CONTRATO DE EXCLUSIVIDAD, PROMOCIÓN Y COMISIÓN POR LA VENTA DEL BIEN INMUEBLE DE FECHA {fecha_contrato}"
-            f", OTORGADO POR {SEXO_5} C.{prop.nombre_completo.upper()}."
+            f", OTORGADO POR {SEXO_5} C. {prop.nombre_completo.upper()}."
         )
 
     # 4) Construcción del context completo
@@ -1961,7 +1961,7 @@ def build_contrato_ejidal_pagos_context(fin, cli, ven, request=None, tpl=None, f
         claus_b = (
             f"QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, AL IGUAL QUE CON LAS FACULTADES Y AUTORIZACIÓN SUFICIENTE PARA OBLIGARSE EN LOS TÉRMINOS DE ESTE, "
             f"TAL COMO SE ACREDITA EN EL CONTRATO DE EXCLUSIVIDAD, PROMOCIÓN Y COMISIÓN POR LA VENTA DEL BIEN INMUEBLE DE FECHA {fecha_contrato}"
-            f", OTORGADO POR {SEXO_5} C.{prop.nombre_completo.upper()}."
+            f", OTORGADO POR {SEXO_5} C. {prop.nombre_completo.upper()}."
         )
 
     # 5) Construcción del context
@@ -2188,7 +2188,7 @@ def build_contrato_ejidal_pagos_varios_context(fin, cli, ven, cliente2=None,requ
         claus_b = (
             f"QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, AL IGUAL QUE CON LAS FACULTADES Y AUTORIZACIÓN SUFICIENTE PARA OBLIGARSE EN LOS TÉRMINOS DE ESTE, "
             f"TAL COMO SE ACREDITA EN EL CONTRATO DE EXCLUSIVIDAD, PROMOCIÓN Y COMISIÓN POR LA VENTA DEL BIEN INMUEBLE DE FECHA {fecha_contrato}"
-            f", OTORGADO POR {SEXO_5} C.{prop.nombre_completo.upper()}."
+            f", OTORGADO POR {SEXO_5} C. {prop.nombre_completo.upper()}."
         )
 
     # 5) Construcción del context
@@ -3073,3 +3073,4 @@ def build_contrato_canario_pagos_varios_context(fin, cli, ven, cliente2=None, re
     })
 
     return context
+
