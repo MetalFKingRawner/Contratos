@@ -408,8 +408,20 @@ class SeleccionVendedorView(FormView):
         # Obtener vendedores y propietarios del proyecto
         proyecto_id = fin.lote.proyecto.id
         
-        # Vendedores (apoderados y vendedores regulares)
-        vendedores = Vendedor.objects.filter(proyectos__id=proyecto_id)
+        # Vendedores - filtrar según el tipo de usuario
+        if self.request.user.is_staff:
+            # Usuario staff: mostrar todos los vendedores del proyecto
+            vendedores = Vendedor.objects.filter(proyectos__id=proyecto_id)
+        else:
+            # Usuario vendedor: mostrar solo el vendedor asociado al usuario actual
+            try:
+                vendedores = Vendedor.objects.filter(
+                    usuario=self.request.user,
+                    proyectos__id=proyecto_id
+                )
+            except Vendedor.DoesNotExist:
+                # Si el usuario no tiene un vendedor asociado, no mostrar ningún vendedor
+                vendedores = Vendedor.objects.none()
         
         # Propietarios (propietarios y apoderados)
         propietarios = Propietario.objects.all()
@@ -821,6 +833,7 @@ class Paso1FinanciamientoView(TemplateView):
         # Guardar en sesión para los pasos siguientes
         request.session['financiamiento_id'] = int(plan_id)
         return redirect('workflow:paso2_cliente')
+
 
 
 
