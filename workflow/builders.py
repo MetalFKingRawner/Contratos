@@ -1539,14 +1539,14 @@ def build_contrato_ejidal_contado_context(fin, cli, ven, request=None, tpl=None,
     # — Si ven es propietario:
     if ven.ine == prop.ine and prop.tipo == 'propietario':
         claus_b = (
-            f"B. QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, "
-            f"QUE ACREDITA CON LA CESIÓN DE DERECHOS DE FECHA {fecha_posesion} "
-            f", EXPEDIDA POR LOS INTEGRANTES {autoridad}."
+            f"QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, "
+            f"QUE ACREDITA CON LA CESIÓN DE DERECHOS DE FECHA {fecha_posesion}"
+            f", EXPEDIDA POR LOS INTEGRANTES {autoridad}"
         )
     # — Si ven es apoderado:
     elif ven.ine == prop.ine and prop.tipo == 'apoderado':
         claus_b = (
-            f"B. QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, AL IGUAL QUE, CON LAS "
+            f"QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, AL IGUAL QUE, CON LAS "
             f"FACULTADES Y AUTORIZACIÓN SUFICIENTE PARA OBLIGARSE EN LOS TÉRMINOS DE ESTE, TAL COMO SE ACREDITA CON EL INSTRUMENTO PÚBLICO "
             f"{fin.instrumento_publico} OTORGADO ANTE LA FE DEL NOTARIO PÚBLICO "
             f"{fin.notario_publico} DE OAXACA, EL LICENCIADO {fin.nombre_notario.upper()}."
@@ -1739,14 +1739,14 @@ def build_contrato_ejidal_contado_varios_context(fin, cli, ven, cliente2=None, r
     # — Si ven es propietario:
     if ven.ine == prop.ine and prop.tipo == 'propietario':
         claus_b = (
-            f"B. QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, "
-            f"QUE ACREDITA CON LA CESIÓN DE DERECHOS DE FECHA {fecha_posesion} "
-            f", EXPEDIDA POR LOS INTEGRANTES {autoridad}."
+            f"QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, "
+            f"QUE ACREDITA CON LA CESIÓN DE DERECHOS DE FECHA {fecha_posesion}"
+            f", EXPEDIDA POR LOS INTEGRANTES {autoridad}"
         )
     # — Si ven es apoderado:
     elif ven.ine == prop.ine and prop.tipo == 'apoderado':
         claus_b = (
-            f"B. QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, AL IGUAL QUE, CON LAS "
+            f"QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, AL IGUAL QUE, CON LAS "
             f"FACULTADES Y AUTORIZACIÓN SUFICIENTE PARA OBLIGARSE EN LOS TÉRMINOS DE ESTE, TAL COMO SE ACREDITA CON EL INSTRUMENTO PÚBLICO "
             f"{fin.instrumento_publico} OTORGADO ANTE LA FE DEL NOTARIO PÚBLICO "
             f"{fin.notario_publico} DE OAXACA, EL LICENCIADO {fin.nombre_notario.upper()}."
@@ -1943,14 +1943,14 @@ def build_contrato_ejidal_pagos_context(fin, cli, ven, request=None, tpl=None, f
     # — Si ven es propietario:
     if ven.ine == prop.ine and prop.tipo == 'propietario':
         claus_b = (
-            f"B. QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, "
-            f"QUE ACREDITA CON LA CESIÓN DE DERECHOS DE FECHA {fecha_posesion} "
-            f", EXPEDIDA POR LOS INTEGRANTES {autoridad}."
+            f"QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, "
+            f"QUE ACREDITA CON LA CESIÓN DE DERECHOS DE FECHA {fecha_posesion}"
+            f", EXPEDIDA POR LOS INTEGRANTES {autoridad}"
         )
     # — Si ven es apoderado:
     elif ven.ine == prop.ine and prop.tipo == 'apoderado':
         claus_b = (
-            f"B. QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, AL IGUAL QUE, CON LAS "
+            f"QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, AL IGUAL QUE, CON LAS "
             f"FACULTADES Y AUTORIZACIÓN SUFICIENTE PARA OBLIGARSE EN LOS TÉRMINOS DE ESTE, TAL COMO SE ACREDITA CON EL INSTRUMENTO PÚBLICO "
             f"{fin.instrumento_publico} OTORGADO ANTE LA FE DEL NOTARIO PÚBLICO "
             f"{fin.notario_publico} DE OAXACA, EL LICENCIADO {fin.nombre_notario.upper()}."
@@ -2170,14 +2170,14 @@ def build_contrato_ejidal_pagos_varios_context(fin, cli, ven, cliente2=None,requ
     # — Si ven es propietario:
     if ven.ine == prop.ine and prop.tipo == 'propietario':
         claus_b = (
-            f"B. QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, "
-            f"QUE ACREDITA CON LA CESIÓN DE DERECHOS DE FECHA {fecha_posesion} "
-            f", EXPEDIDA POR LOS INTEGRANTES {autoridad}."
+            f"QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, "
+            f"QUE ACREDITA CON LA CESIÓN DE DERECHOS DE FECHA {fecha_posesion}"
+            f", EXPEDIDA POR LOS INTEGRANTES {autoridad}"
         )
     # — Si ven es apoderado:
     elif ven.ine == prop.ine and prop.tipo == 'apoderado':
         claus_b = (
-            f"B. QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, AL IGUAL QUE, CON LAS "
+            f"QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, AL IGUAL QUE, CON LAS "
             f"FACULTADES Y AUTORIZACIÓN SUFICIENTE PARA OBLIGARSE EN LOS TÉRMINOS DE ESTE, TAL COMO SE ACREDITA CON EL INSTRUMENTO PÚBLICO "
             f"{fin.instrumento_publico} OTORGADO ANTE LA FE DEL NOTARIO PÚBLICO "
             f"{fin.notario_publico} DE OAXACA, EL LICENCIADO {fin.nombre_notario.upper()}."
@@ -3073,4 +3073,5 @@ def build_contrato_canario_pagos_varios_context(fin, cli, ven, cliente2=None, re
     })
 
     return context
+
 
