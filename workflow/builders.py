@@ -19,10 +19,11 @@ def obtener_letra_identificador(lote):
     
     cantidad_lotes = Lote.objects.filter(proyecto_id=lote.proyecto_id).count()
     
-    if cantidad_lotes == 1:
+    if cantidad_lotes == 1 and lote.identificador == '1':
         return 'ÚNICO'
     else:
         return numero_a_letras(float(lote.identificador), apocopado=False)
+
 
 def _parse_coord(text):
     """
@@ -3073,5 +3074,6 @@ def build_contrato_canario_pagos_varios_context(fin, cli, ven, cliente2=None, re
     })
 
     return context
+
 
 
