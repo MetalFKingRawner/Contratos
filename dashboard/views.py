@@ -106,6 +106,7 @@ class DownloadDocumentView(View):
         # 5. Obtener los datos necesarios del trámite
         fin = tramite.financiamiento
         cli = tramite.cliente
+        fecha = tramite.creado_en
         # Obtener la persona correcta según el tipo
         if tramite.persona_tipo == 'vendedor':
             ven = tramite.vendedor
@@ -136,7 +137,8 @@ class DownloadDocumentView(View):
                 tpl=tpl, 
                 firma_data=tramite.firma_cliente, 
                 clausulas_adicionales=clausulas_adicionales,
-                cliente2=cli2
+                cliente2=cli2,
+                fecha=fecha
             )
         except TypeError as e:
             # Si el builder no acepta cliente2, intentar sin él
@@ -146,7 +148,8 @@ class DownloadDocumentView(View):
                     request=request, 
                     tpl=tpl, 
                     firma_data=tramite.firma_cliente, 
-                    clausulas_adicionales=clausulas_adicionales
+                    clausulas_adicionales=clausulas_adicionales,
+                    fecha=fecha
                 )
             except TypeError:
                 # Versión mínima
@@ -1229,6 +1232,7 @@ def home(request):
     return render(request,
                   'dashboard/home.html',
                   ctx)
+
 
 
 
