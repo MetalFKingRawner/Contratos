@@ -594,7 +594,7 @@ def fmt_money(val):
     # El formato con ',' funciona con Decimal en Python 3.6+
     return f"{d:,.2f}"
 
-def build_contrato_propiedad_contado_context(fin, cli, ven, request=None, tpl=None, firma_data=None, clausulas_adicionales=None):
+def build_contrato_propiedad_contado_context(fin, cli, ven, request=None, tpl=None, firma_data=None, clausulas_adicionales=None, fecha=None):
 
     print("Entré al build de pequeña propiedad a contado de un comprador")
 
@@ -636,6 +636,7 @@ def build_contrato_propiedad_contado_context(fin, cli, ven, request=None, tpl=No
 
     # 2) Fecha de pago completo (hoy)
     pago = fin.fecha_pago_completo
+    
     meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio",
              "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]
 
@@ -656,7 +657,10 @@ def build_contrato_propiedad_contado_context(fin, cli, ven, request=None, tpl=No
     fecha_posesion = fin.lote.proyecto.fecha_emision_documento
     fecha_contrato = fin.lote.proyecto.fecha_emision_contrato
     autoridad = fin.lote.proyecto.autoridad
-    dia_actual = date.today()
+    if fecha == None:
+        dia_actual = date.today()
+    else:
+        dia_actual = fecha
     email = (cli.email or '')        # convierte None -> ''
     email = email.strip()            # quita espacios en blanco
     if email:
@@ -739,7 +743,7 @@ def build_contrato_propiedad_contado_context(fin, cli, ven, request=None, tpl=No
         'CORREO_COMPRADOR': correo_comprador,
 
         # Lote
-        'IDENTIFICADOR_LOTE':    fin.lote.identificador,
+        'IDENTIFICADOR_LOTE':  fin.lote.identificador,
         'LETRA_IDENTIFICADOR': obtener_letra_identificador(fin.lote),  # Cambio aquí
         'DIRECCION_PROYECTO_LOTE': fin.lote.proyecto.ubicacion.upper(),
 
@@ -798,7 +802,7 @@ def build_contrato_propiedad_contado_context(fin, cli, ven, request=None, tpl=No
 
     return context
 
-def build_contrato_propiedad_contado_varios_context(fin, cli, ven, cliente2=None, request=None, tpl=None, firma_data=None, clausulas_adicionales=None):
+def build_contrato_propiedad_contado_varios_context(fin, cli, ven, cliente2=None, request=None, tpl=None, firma_data=None, clausulas_adicionales=None, fecha=None):
 
     print("Entré al build de pequeña propiedad para DOS COMPRADORES")
 
@@ -852,7 +856,10 @@ def build_contrato_propiedad_contado_varios_context(fin, cli, ven, cliente2=None
         SEXO_17 = 'ÉSTOS'
 
     # 3) Fecha de pago completo (hoy)
-    pago = date.today()
+    if fecha == None:
+        pago = date.today()
+    else:
+        pago = fecha
     meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio",
              "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]
 
@@ -1030,7 +1037,7 @@ def build_contrato_propiedad_contado_varios_context(fin, cli, ven, cliente2=None
 
     return context
 
-def build_contrato_propiedad_pagos_context(fin, cli, ven, request=None, tpl=None, firma_data=None, clausulas_adicionales=None):
+def build_contrato_propiedad_pagos_context(fin, cli, ven, request=None, tpl=None, firma_data=None, clausulas_adicionales=None, fecha=None):
 
     print("Entré al build de pequeña propiedad a pagos")
 
@@ -1068,7 +1075,10 @@ def build_contrato_propiedad_pagos_context(fin, cli, ven, request=None, tpl=None
     SEXO_20 = art(prop.sexo, 'EL', 'LA')
 
     # 2) Fecha actual
-    hoy   = date.today()
+    if fecha == None:
+        hoy = date.today()
+    else:
+        hoy = fecha
     meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio",
              "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]
     DIA, MES = numero_a_letras(float(hoy.day),apocopado=False), meses[hoy.month-1].upper()
@@ -1228,7 +1238,7 @@ def build_contrato_propiedad_pagos_context(fin, cli, ven, request=None, tpl=None
 
     return context
 
-def build_contrato_propiedad_pagos_varios_context(fin, cli, ven, cliente2=None, request=None, tpl=None, firma_data=None, clausulas_adicionales=None):
+def build_contrato_propiedad_pagos_varios_context(fin, cli, ven, cliente2=None, request=None, tpl=None, firma_data=None, clausulas_adicionales=None, fecha=None):
 
     print("Entré al build de pequeña propiedad para DOS COMPRADORES a pagos")
 
@@ -1283,7 +1293,10 @@ def build_contrato_propiedad_pagos_varios_context(fin, cli, ven, cliente2=None, 
 
 
     # 2) Fecha actual
-    hoy   = date.today()
+    if fecha == None:
+        hoy = date.today()
+    else:
+        hoy = fecha
     meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio",
              "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]
     DIA, MES = numero_a_letras(float(hoy.day),apocopado=False), meses[hoy.month-1].upper()
@@ -1480,7 +1493,7 @@ def build_contrato_propiedad_pagos_varios_context(fin, cli, ven, cliente2=None, 
 
     return context
 
-def build_contrato_ejidal_contado_context(fin, cli, ven, request=None, tpl=None, firma_data=None, clausulas_adicionales=None):
+def build_contrato_ejidal_contado_context(fin, cli, ven, request=None, tpl=None, firma_data=None, clausulas_adicionales=None, fecha=None):
 
     print("Entré al build de ejido a contado de un comprador")
 
@@ -1506,7 +1519,10 @@ def build_contrato_ejidal_contado_context(fin, cli, ven, request=None, tpl=None,
     SEXO_10 = art(cli.sexo, 'O', 'A')
 
     # 2) Fechas
-    cesion = date.today()  # o toma de fin.fecha_enganche si aplica
+    if fecha == None:
+        cesion = date.today()
+    else:
+        cesion = fecha
     pago = fin.fecha_pago_completo
     meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio",
              "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]
@@ -1654,7 +1670,7 @@ def build_contrato_ejidal_contado_context(fin, cli, ven, request=None, tpl=None,
 
     return context
 
-def build_contrato_ejidal_contado_varios_context(fin, cli, ven, cliente2=None, request=None, tpl=None, firma_data=None, clausulas_adicionales=None):
+def build_contrato_ejidal_contado_varios_context(fin, cli, ven, cliente2=None, request=None, tpl=None, firma_data=None, clausulas_adicionales=None, fecha=None):
     
     print("Entré al build de ejido a contado de varios compradores")
 
@@ -1699,7 +1715,10 @@ def build_contrato_ejidal_contado_varios_context(fin, cli, ven, cliente2=None, r
         SEXO_10 = 'O'
 
     # 2) Fechas
-    cesion = date.today()  # o toma de fin.fecha_enganche si aplica
+    if fecha == None:
+        cesion = date.today()
+    else:
+        cesion = fecha
     pago = fin.fecha_pago_completo
     meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio",
              "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]
@@ -1864,7 +1883,7 @@ def build_contrato_ejidal_contado_varios_context(fin, cli, ven, cliente2=None, r
 
     return context
 
-def build_contrato_ejidal_pagos_context(fin, cli, ven, request=None, tpl=None, firma_data=None, clausulas_adicionales=None):
+def build_contrato_ejidal_pagos_context(fin, cli, ven, request=None, tpl=None, firma_data=None, clausulas_adicionales=None, fecha=None):
 
     print("Entré al build de ejido a pagos de un comprador")
 
@@ -1891,7 +1910,10 @@ def build_contrato_ejidal_pagos_context(fin, cli, ven, request=None, tpl=None, f
     SEXO_10 = art(cli.sexo, 'O', 'A')
 
     # 2) Fecha de cesión (hoy, o fin.fecha_enganche)
-    cesion = date.today()
+    if fecha == None:
+        cesion = date.today()
+    else:
+        cesion = fecha
     meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio",
              "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]
     DIA_CESION = numero_a_letras(float(cesion.day),apocopado=False)
@@ -2063,7 +2085,7 @@ def build_contrato_ejidal_pagos_context(fin, cli, ven, request=None, tpl=None, f
 
     return context
 
-def build_contrato_ejidal_pagos_varios_context(fin, cli, ven, cliente2=None,request=None, tpl=None, firma_data=None, clausulas_adicionales=None):
+def build_contrato_ejidal_pagos_varios_context(fin, cli, ven, cliente2=None,request=None, tpl=None, firma_data=None, clausulas_adicionales=None, fecha=None):
 
     print("Entré al build de ejido a pagos de varios compradores")
 
@@ -2085,7 +2107,10 @@ def build_contrato_ejidal_pagos_varios_context(fin, cli, ven, cliente2=None,requ
     SEXO_8 = art(ven.sexo, 'DEL', 'DE LA')
 
     # 2) Fecha de cesión (hoy, o fin.fecha_enganche)
-    cesion = date.today()
+    if fecha == None:
+        cesion = date.today()
+    else:
+        cesion = fecha
     meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio",
              "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]
     DIA_CESION = numero_a_letras(float(cesion.day))
@@ -2301,7 +2326,7 @@ def build_contrato_ejidal_pagos_varios_context(fin, cli, ven, cliente2=None,requ
     
     return context
 
-def build_contrato_canario_contado_context(fin, cli, ven, request=None, tpl=None, firma_data=None, clausulas_adicionales=None):
+def build_contrato_canario_contado_context(fin, cli, ven, request=None, tpl=None, firma_data=None, clausulas_adicionales=None, fecha=None):
 
     print("Entré al build de casa canario a contado de un comprador")
 
@@ -2356,7 +2381,10 @@ def build_contrato_canario_contado_context(fin, cli, ven, request=None, tpl=None
     # 4) Cálculo pago restante
     restante = float(fin.precio_lote) - float(fin.apartado)
     restante_letra = numero_a_letras(restante)
-    dia_actual = date.today()
+    if fecha == None:
+        dia_actual = date.today()
+    else:
+        dia_actual = fecha
     email = (cli.email or '')        # convierte None -> ''
     email = email.strip()            # quita espacios en blanco
     if email:
@@ -2479,7 +2507,7 @@ def build_contrato_canario_contado_context(fin, cli, ven, request=None, tpl=None
 
     return context
 
-def build_contrato_canario_contado_varios_context(fin, cli, ven, cliente2=None, request=None, tpl=None, firma_data=None, clausulas_adicionales=None):
+def build_contrato_canario_contado_varios_context(fin, cli, ven, cliente2=None, request=None, tpl=None, firma_data=None, clausulas_adicionales=None, fecha=None):
     
     print("Entré al build de casa canario para DOS COMPRADORES")
 
@@ -2528,7 +2556,10 @@ def build_contrato_canario_contado_varios_context(fin, cli, ven, cliente2=None, 
     prop = fin.lote.proyecto.propietario.first()
 
     # 3) Fecha de pago completo (hoy)
-    pago = date.today()
+    if fecha == None:
+        pago = date.today()
+    else:
+        pago = fecha
     meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio",
              "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]
 
@@ -2678,7 +2709,7 @@ def build_contrato_canario_contado_varios_context(fin, cli, ven, cliente2=None, 
 
     return context
 
-def build_contrato_canario_pagos_context(fin, cli, ven, request=None, tpl=None, firma_data=None, clausulas_adicionales=None):
+def build_contrato_canario_pagos_context(fin, cli, ven, request=None, tpl=None, firma_data=None, clausulas_adicionales=None, fecha=None):
 
     print("Entré al build de casa canario a pagos")
 
@@ -2715,7 +2746,10 @@ def build_contrato_canario_pagos_context(fin, cli, ven, request=None, tpl=None, 
     SEXO_19 = art(cli.sexo, 'AL "', 'A "LA ')
 
     # 2) Fecha actual
-    hoy   = date.today()
+    if fecha == None:
+        hoy = date.today()
+    else:
+        hoy = fecha
     meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio",
              "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]
     DIA, MES = numero_a_letras(float(hoy.day),apocopado=False), meses[hoy.month-1].upper()
@@ -2851,7 +2885,7 @@ def build_contrato_canario_pagos_context(fin, cli, ven, request=None, tpl=None, 
 
     return context
 
-def build_contrato_canario_pagos_varios_context(fin, cli, ven, cliente2=None, request=None, tpl=None, firma_data=None, clausulas_adicionales=None):
+def build_contrato_canario_pagos_varios_context(fin, cli, ven, cliente2=None, request=None, tpl=None, firma_data=None, clausulas_adicionales=None, fecha=None):
 
     print("Entré al build de casa canario para DOS COMPRADORES a pagos")
 
@@ -2906,7 +2940,10 @@ def build_contrato_canario_pagos_varios_context(fin, cli, ven, cliente2=None, re
 
 
     # 2) Fecha actual
-    hoy   = date.today()
+    if fecha == None:
+        hoy = date.today()
+    else:
+        hoy = fecha
     meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio",
              "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]
     DIA, MES = numero_a_letras(float(hoy.day),apocopado=False), meses[hoy.month-1].upper()
@@ -3074,6 +3111,7 @@ def build_contrato_canario_pagos_varios_context(fin, cli, ven, cliente2=None, re
     })
 
     return context
+
 
 
 
