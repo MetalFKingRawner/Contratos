@@ -8,10 +8,10 @@
       </div>
       <div class="form-title-section">
         <h2 class="form-title">
-          {% if action == 'create' %}Nuevo Propietario{% else %}Editar Propietario{% endif %}
+          {% if creating %}Nuevo Propietario{% else %}Editar Propietario{% endif %}
         </h2>
         <p class="form-subtitle">
-          {% if action == 'create' %}Registra un nuevo propietario en el sistema{% else %}Actualiza la información del propietario{% endif %}
+          {% if creating %}Registra un nuevo propietario en el sistema{% else %}Actualiza la información del propietario{% endif %}
         </p>
       </div>
     </div>
@@ -1028,4 +1028,5 @@ form.addEventListener('submit', function(e) {
     });
   });
 });
+
 </script>
