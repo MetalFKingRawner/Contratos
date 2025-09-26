@@ -424,13 +424,25 @@ class FinanciamientoUpdateView(UpdateView):
         return reverse_lazy('dashboard:financiamiento_list')
 
     def form_valid(self, form):
-        response = super().form_valid(form)
-        # Obtenemos el lote asociado al financiamiento
-        lote = form.cleaned_data['lote']
+        # CAMBIO IMPORTANTE: Lógica mejorada para lotes
+        lote_anterior = self.object.lote  # El lote que tenía antes de la edición
+        lote_nuevo = form.cleaned_data['lote']  # El lote seleccionado en el formulario
         
-        # Cambiamos su estado a inactivo
-        lote.activo = False
-        lote.save()
+        response = super().form_valid(form)
+        
+        # Si cambió de lote, activar el anterior y desactivar el nuevo
+        if lote_anterior.pk != lote_nuevo.pk:
+            # Activar el lote anterior (ya no está financiado)
+            lote_anterior.activo = True
+            lote_anterior.save()
+            
+            # Desactivar el nuevo lote
+            lote_nuevo.activo = False
+            lote_nuevo.save()
+        else:
+            # Si es el mismo lote, mantenerlo inactivo
+            lote_nuevo.activo = False
+            lote_nuevo.save()
 
         if self.request.headers.get('HX-Request'):
             # Devolver el detalle actualizado
@@ -1232,6 +1244,7 @@ def home(request):
     return render(request,
                   'dashboard/home.html',
                   ctx)
+
 
 
 
