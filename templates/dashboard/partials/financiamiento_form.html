@@ -1261,24 +1261,41 @@ if (!window.financiamientoScriptLoaded) {
           }
           
           try {
-            // Obtener valor inicial
-            const initialValue = element.getAttribute('data-value') || 
-                               element.value || 
-                               element.getAttribute('value') || 
-                               '0';
-            
+            // Obtener valor inicial - MEJORADO para edición
+            let initialValue = '0';
+
+            // Prioridad 1: data-value (establecido por Django forms)
+            if (element.hasAttribute('data-value')) {
+              initialValue = element.getAttribute('data-value');
+              debugLog(`📊 Valor inicial desde data-value para ${fieldId}:`, initialValue);
+            }
+            // Prioridad 2: value del elemento
+            else if (element.value && element.value.trim()) {
+              initialValue = element.value;
+              debugLog(`📊 Valor inicial desde element.value para ${fieldId}:`, initialValue);
+            }
+            // Prioridad 3: value attribute
+            else if (element.getAttribute('value')) {
+              initialValue = element.getAttribute('value');
+              debugLog(`📊 Valor inicial desde value attribute para ${fieldId}:`, initialValue);
+            }
+
             // Limpiar el valor inicial si está formateado
             const cleanInitialValue = unformatValue(initialValue);
+            debugLog(`🧹 Valor limpio para ${fieldId}: "${initialValue}" → "${cleanInitialValue}"`);
+
+            // Establecer el valor limpio en el elemento antes de crear AutoNumeric
             element.value = cleanInitialValue;
-            
+
             // Crear nueva instancia con valor limpio
             autoNumericInstances[fieldId] = new AutoNumeric(element, autoNumericConfig);
             debugLog(`✅ AutoNumeric creado exitosamente en: ${fieldId}`);
 
-            // Formatear valor inicial si es válido
+            // Formatear valor inicial si es válido y mayor que 0
             const numValue = parseFloat(cleanInitialValue);
-            if (!isNaN(numValue) && numValue > 0) {
+            if (!isNaN(numValue) && numValue >= 0) {
               autoNumericInstances[fieldId].set(numValue);
+              debugLog(`💰 Valor formateado establecido en ${fieldId}: ${numValue}`);
             }
 
             // Eventos para campos de entrada
