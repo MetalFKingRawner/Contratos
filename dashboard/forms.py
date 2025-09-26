@@ -27,9 +27,22 @@ class ProyectoForm(forms.ModelForm):
         fields = ['nombre', 'tipo_contrato', 'ubicacion', 'fecha_emision_documento', 'autoridad', 'fecha_emision_contrato']
         widgets = {
             'ubicacion': forms.Textarea(attrs={'rows': 2}),
-            'fecha_emision_documento': forms.TextInput(attrs={'placeholder': 'DD/MM/AAAA o texto'}),
-            'fecha_emision_contrato': forms.TextInput(attrs={'placeholder': 'DD/MM/AAAA o texto'}),
+            'fecha_emision_documento': forms.TextInput(attrs={'placeholder': 'Fecha en texto sin abreviaturas (opcional)'}),
+            'fecha_emision_contrato': forms.TextInput(attrs={'placeholder': 'Fecha en texto sin abreviaturas (opcional)'}),
+            'autoridad': forms.Textarea(attrs={'rows': 2, 'placeholder': 'Autoridad competente (opcional)'}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Hacer opcionales los campos especificados
+        self.fields['autoridad'].required = False
+        self.fields['fecha_emision_documento'].required = False
+        self.fields['fecha_emision_contrato'].required = False
+        
+        # Opcional: actualizar las etiquetas para indicar que son opcionales
+        self.fields['autoridad'].label = "Autoridad"
+        self.fields['fecha_emision_documento'].label = "Fecha Emisión Documento"
+        self.fields['fecha_emision_contrato'].label = "Fecha Emisión Contrato"
 
 class LoteForm(forms.ModelForm):
     class Meta:
