@@ -793,9 +793,18 @@ def build_contrato_propiedad_contado_context(fin, cli, ven, request=None, tpl=No
     clausula_deslinde = clausulas_adicionales['deslinde'] if tiene_deslinde else ''
     clausula_promesa = clausulas_adicionales['promesa'] if tiene_promesa else ''
     
+    if tiene_pago:
+        clausula_e = "E."
+        clausula_f = "F."
+    else:
+        clausula_e = "D."
+        clausula_f = "E."
+
     # Agregar al contexto
     context.update({
         'CLAUSULA_PAGO': clausula_pago.upper(),
+        'LETRA_E': clausula_e,
+        'LETRA_F': clausula_f,
         'CLAUSULA_DESLINDE': clausula_deslinde.upper(),
         'CLAUSULA_PROMESA': clausula_promesa.upper(),
     })
@@ -1028,9 +1037,18 @@ def build_contrato_propiedad_contado_varios_context(fin, cli, ven, cliente2=None
     clausula_deslinde = clausulas_adicionales['deslinde'] if tiene_deslinde else ''
     clausula_promesa = clausulas_adicionales['promesa'] if tiene_promesa else ''
     
+    if tiene_pago:
+        clausula_e = "E."
+        clausula_f = "F."
+    else:
+        clausula_e = "D."
+        clausula_f = "E."
+
     # Agregar al contexto
     context.update({
         'CLAUSULA_PAGO': clausula_pago.upper(),
+        'LETRA_E': clausula_e,
+        'LETRA_F': clausula_f,
         'CLAUSULA_DESLINDE': clausula_deslinde.upper(),
         'CLAUSULA_PROMESA': clausula_promesa.upper(),
     })
@@ -1229,9 +1247,21 @@ def build_contrato_propiedad_pagos_context(fin, cli, ven, request=None, tpl=None
     clausula_deslinde = clausulas_adicionales['deslinde'] if tiene_deslinde else ''
     clausula_promesa = clausulas_adicionales['promesa'] if tiene_promesa else ''
     
+    if tiene_pago:
+        clausula_e = "E."
+        clausula_f = "F."
+        clausula_g = "G."
+    else:
+        clausula_e = "D."
+        clausula_f = "E."
+        clausula_g = "F."
+
     # Agregar al contexto
     context.update({
         'CLAUSULA_PAGO': clausula_pago.upper(),
+        'LETRA_E': clausula_e,
+        'LETRA_F': clausula_f,
+        'LETRA_G': clausula_g,
         'CLAUSULA_DESLINDE': clausula_deslinde.upper(),
         'CLAUSULA_PROMESA': clausula_promesa.upper(),
     })
@@ -1484,9 +1514,21 @@ def build_contrato_propiedad_pagos_varios_context(fin, cli, ven, cliente2=None, 
     clausula_deslinde = clausulas_adicionales['deslinde'] if tiene_deslinde else ''
     clausula_promesa = clausulas_adicionales['promesa'] if tiene_promesa else ''
     
+    if tiene_pago:
+        clausula_e = "E."
+        clausula_f = "F."
+        clausula_g = "G."
+    else:
+        clausula_e = "D."
+        clausula_f = "E."
+        clausula_g = "F."
+
     # Agregar al contexto
     context.update({
         'CLAUSULA_PAGO': clausula_pago.upper(),
+        'LETRA_E': clausula_e,
+        'LETRA_F': clausula_f,
+        'LETRA_G': clausula_g,
         'CLAUSULA_DESLINDE': clausula_deslinde.upper(),
         'CLAUSULA_PROMESA': clausula_promesa.upper(),
     })
@@ -1661,9 +1703,18 @@ def build_contrato_ejidal_contado_context(fin, cli, ven, request=None, tpl=None,
     clausula_deslinde = clausulas_adicionales['deslinde'] if tiene_deslinde else ''
     clausula_promesa = clausulas_adicionales['promesa'] if tiene_promesa else ''
     
+    if tiene_pago:
+        clausula_e = "E."
+        clausula_f = "F."
+    else:
+        clausula_e = "D."
+        clausula_f = "E."
+
     # Agregar al contexto
     context.update({
         'CLAUSULA_PAGO': clausula_pago.upper(),
+        'LETRA_E': clausula_e,
+        'LETRA_F': clausula_f,
         'CLAUSULA_DESLINDE': clausula_deslinde.upper(),
         'CLAUSULA_PROMESA': clausula_promesa.upper(),
     })
@@ -1874,9 +1925,18 @@ def build_contrato_ejidal_contado_varios_context(fin, cli, ven, cliente2=None, r
     clausula_deslinde = clausulas_adicionales['deslinde'] if tiene_deslinde else ''
     clausula_promesa = clausulas_adicionales['promesa'] if tiene_promesa else ''
     
+    if tiene_pago:
+        clausula_e = "E."
+        clausula_f = "F."
+    else:
+        clausula_e = "D."
+        clausula_f = "E."
+
     # Agregar al contexto
     context.update({
         'CLAUSULA_PAGO': clausula_pago.upper(),
+        'LETRA_E': clausula_e,
+        'LETRA_F': clausula_f,
         'CLAUSULA_DESLINDE': clausula_deslinde.upper(),
         'CLAUSULA_PROMESA': clausula_promesa.upper(),
     })
@@ -2076,9 +2136,21 @@ def build_contrato_ejidal_pagos_context(fin, cli, ven, request=None, tpl=None, f
     clausula_deslinde = clausulas_adicionales['deslinde'] if tiene_deslinde else ''
     clausula_promesa = clausulas_adicionales['promesa'] if tiene_promesa else ''
     
+    if tiene_pago:
+        clausula_e = "E."
+        clausula_f = "F."
+        clausula_g = "G."
+    else:
+        clausula_e = "D."
+        clausula_f = "E."
+        clausula_g = "F."
+
     # Agregar al contexto
     context.update({
         'CLAUSULA_PAGO': clausula_pago.upper(),
+        'LETRA_E': clausula_e,
+        'LETRA_F': clausula_f,
+        'LETRA_G': clausula_g,
         'CLAUSULA_DESLINDE': clausula_deslinde.upper(),
         'CLAUSULA_PROMESA': clausula_promesa.upper(),
     })
@@ -2317,9 +2389,21 @@ def build_contrato_ejidal_pagos_varios_context(fin, cli, ven, cliente2=None,requ
     clausula_deslinde = clausulas_adicionales['deslinde'] if tiene_deslinde else ''
     clausula_promesa = clausulas_adicionales['promesa'] if tiene_promesa else ''
     
+    if tiene_pago:
+        clausula_e = "E."
+        clausula_f = "F."
+        clausula_g = "G."
+    else:
+        clausula_e = "D."
+        clausula_f = "E."
+        clausula_g = "F."
+
     # Agregar al contexto
     context.update({
         'CLAUSULA_PAGO': clausula_pago.upper(),
+        'LETRA_E': clausula_e,
+        'LETRA_F': clausula_f,
+        'LETRA_G': clausula_g,
         'CLAUSULA_DESLINDE': clausula_deslinde.upper(),
         'CLAUSULA_PROMESA': clausula_promesa.upper(),
     })
@@ -2498,9 +2582,18 @@ def build_contrato_canario_contado_context(fin, cli, ven, request=None, tpl=None
     clausula_deslinde = clausulas_adicionales['deslinde'] if tiene_deslinde else ''
     clausula_promesa = clausulas_adicionales['promesa'] if tiene_promesa else ''
     
+    if tiene_pago:
+        clausula_e = "E."
+        clausula_f = "F."
+    else:
+        clausula_e = "D."
+        clausula_f = "E."
+
     # Agregar al contexto
     context.update({
         'CLAUSULA_PAGO': clausula_pago.upper(),
+        'LETRA_E': clausula_e,
+        'LETRA_F': clausula_f,
         'CLAUSULA_DESLINDE': clausula_deslinde.upper(),
         'CLAUSULA_PROMESA': clausula_promesa.upper(),
     })
@@ -2700,9 +2793,18 @@ def build_contrato_canario_contado_varios_context(fin, cli, ven, cliente2=None, 
     clausula_deslinde = clausulas_adicionales['deslinde'] if tiene_deslinde else ''
     clausula_promesa = clausulas_adicionales['promesa'] if tiene_promesa else ''
     
+    if tiene_pago:
+        clausula_e = "E."
+        clausula_f = "F."
+    else:
+        clausula_e = "D."
+        clausula_f = "E."
+
     # Agregar al contexto
     context.update({
         'CLAUSULA_PAGO': clausula_pago.upper(),
+        'LETRA_E': clausula_e,
+        'LETRA_F': clausula_f,
         'CLAUSULA_DESLINDE': clausula_deslinde.upper(),
         'CLAUSULA_PROMESA': clausula_promesa.upper(),
     })
@@ -2876,9 +2978,21 @@ def build_contrato_canario_pagos_context(fin, cli, ven, request=None, tpl=None, 
     clausula_deslinde = clausulas_adicionales['deslinde'] if tiene_deslinde else ''
     clausula_promesa = clausulas_adicionales['promesa'] if tiene_promesa else ''
     
+    if tiene_pago:
+        clausula_e = "E."
+        clausula_f = "F."
+        clausula_g = "G."
+    else:
+        clausula_e = "D."
+        clausula_f = "E."
+        clausula_g = "F."
+
     # Agregar al contexto
     context.update({
         'CLAUSULA_PAGO': clausula_pago.upper(),
+        'LETRA_E': clausula_e,
+        'LETRA_F': clausula_f,
+        'LETRA_G': clausula_g,
         'CLAUSULA_DESLINDE': clausula_deslinde.upper(),
         'CLAUSULA_PROMESA': clausula_promesa.upper(),
     })
@@ -3103,14 +3217,27 @@ def build_contrato_canario_pagos_varios_context(fin, cli, ven, cliente2=None, re
     clausula_deslinde = clausulas_adicionales['deslinde'] if tiene_deslinde else ''
     clausula_promesa = clausulas_adicionales['promesa'] if tiene_promesa else ''
     
+    if tiene_pago:
+        clausula_e = "E."
+        clausula_f = "F."
+        clausula_g = "G."
+    else:
+        clausula_e = "D."
+        clausula_f = "E."
+        clausula_g = "F."
+
     # Agregar al contexto
     context.update({
         'CLAUSULA_PAGO': clausula_pago.upper(),
+        'LETRA_E': clausula_e,
+        'LETRA_F': clausula_f,
+        'LETRA_G': clausula_g,
         'CLAUSULA_DESLINDE': clausula_deslinde.upper(),
         'CLAUSULA_PROMESA': clausula_promesa.upper(),
     })
 
     return context
+
 
 
 
