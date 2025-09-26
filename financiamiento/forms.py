@@ -41,13 +41,39 @@ class FinanciamientoForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
+        # 💡 CORRECCIÓN: Establecer valores iniciales ANTES de super().__init__
+        instance = kwargs.get('instance')
+        if instance and instance.pk:
+            # Pre-inicializar kwargs para las fechas
+            if not kwargs.get('initial'):
+                kwargs['initial'] = {}
+            
+            # Establecer formato YYYY-MM-DD para campos de fecha
+            date_fields = ['fecha_pago_completo', 'fecha_enganche', 'fecha_primer_pago', 'fecha_ultimo_pago']
+            for field_name in date_fields:
+                field_value = getattr(instance, field_name, None)
+                if field_value:
+                    kwargs['initial'][field_name] = field_value.strftime('%Y-%m-%d')
+            
+            # También para campos de dinero
+            money_fields = ['precio_lote', 'apartado', 'monto_pago_completo', 'enganche', 'monto_mensualidad']
+            for field_name in money_fields:
+                field_value = getattr(instance, field_name, None)
+                if field_value is not None:
+                    kwargs['initial'][field_name] = str(field_value)
+        
         super().__init__(*args, **kwargs)
-        # Si estamos editando y ya hay instancia, precargamos proyecto→lote
+        
+        # Resto de la lógica de inicialización...
         if self.instance and self.instance.lote_id:
+            lote_actual = self.instance.lote
+            if not lote_actual.activo:
+                lote_actual.activo = True
+                lote_actual.save()
             proj = self.instance.lote.proyecto
             self.fields['proyecto'].initial = proj
             self.fields['lote'].queryset = Lote.objects.filter(proyecto=proj, activo=True)
-        # En un POST, si viene proyecto, filtramos lotes
+            self.fields['lote'].initial = lote_actual
         elif 'proyecto' in self.data:
             try:
                 proj_id = int(self.data.get('proyecto'))
@@ -55,9 +81,9 @@ class FinanciamientoForm(forms.ModelForm):
             except (ValueError, TypeError):
                 pass
         else:
-            # formulario en blanco: no mostrar lotes
             self.fields['lote'].queryset = Lote.objects.none()
-        # Campos que sólo validaremos en clean()
+        
+        # Campos opcionales
         opcionales = [
             'fecha_pago_completo', 'monto_pago_completo',
             'enganche', 'fecha_enganche',
@@ -91,3 +117,4 @@ class FinanciamientoForm(forms.ModelForm):
             raise forms.ValidationError("Selecciona un tipo de pago válido.")
 
         return cd
+
