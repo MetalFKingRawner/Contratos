@@ -689,8 +689,8 @@ def build_contrato_propiedad_contado_context(fin, cli, ven, request=None, tpl=No
     else:
         claus_b = (
             f"QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, AL IGUAL QUE CON LAS FACULTADES Y AUTORIZACIÓN SUFICIENTE PARA OBLIGARSE EN LOS TÉRMINOS DE ESTE, "
-            f"TAL COMO SE ACREDITA EN EL CONTRATO DE EXCLUSIVIDAD, PROMOCIÓN Y COMISIÓN POR LA VENTA DEL BIEN INMUEBLE DE FECHA {fecha_contrato} "
-            f"OTORGADO POR {SEXO_20}  C. {prop.nombre_completo.upper()}"
+            f"TAL COMO SE ACREDITA EN EL CONTRATO DE EXCLUSIVIDAD, PROMOCIÓN Y COMISIÓN POR LA VENTA DEL BIEN INMUEBLE DE FECHA {fecha_contrato}"
+            f", OTORGADO POR {SEXO_20}  C. {prop.nombre_completo.upper()}"
         )
 
     # 5) Construcción del context
@@ -923,8 +923,8 @@ def build_contrato_propiedad_contado_varios_context(fin, cli, ven, cliente2=None
     else:
         claus_b = (
             f"QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, AL IGUAL QUE CON LAS FACULTADES Y AUTORIZACIÓN SUFICIENTE PARA OBLIGARSE EN LOS TÉRMINOS DE ESTE, "
-            f"TAL COMO SE ACREDITA EN EL CONTRATO DE EXCLUSIVIDAD, PROMOCIÓN Y COMISIÓN POR LA VENTA DEL BIEN INMUEBLE DE FECHA {fecha_contrato} "
-            f"OTORGADO POR {SEXO_20}  C. {prop.nombre_completo.upper()}"
+            f"TAL COMO SE ACREDITA EN EL CONTRATO DE EXCLUSIVIDAD, PROMOCIÓN Y COMISIÓN POR LA VENTA DEL BIEN INMUEBLE DE FECHA {fecha_contrato}"
+            f", OTORGADO POR {SEXO_20}  C. {prop.nombre_completo.upper()}"
         )
     fecha_pago = fin.fecha_pago_completo
     # 7) Construcción del context - con datos de AMBOS clientes
@@ -1141,7 +1141,7 @@ def build_contrato_propiedad_pagos_context(fin, cli, ven, request=None, tpl=None
         claus_b = (
             f"QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, AL IGUAL QUE CON LAS FACULTADES Y AUTORIZACIÓN SUFICIENTE PARA OBLIGARSE EN LOS TÉRMINOS DE ESTE, "
             f"TAL COMO SE ACREDITA EN EL CONTRATO DE EXCLUSIVIDAD, PROMOCIÓN Y COMISIÓN POR LA VENTA DEL BIEN INMUEBLE DE FECHA {fecha_contrato}"
-            f"OTORGADO POR {SEXO_20}  C. {prop.nombre_completo.upper()}"
+            f", OTORGADO POR {SEXO_20}  C. {prop.nombre_completo.upper()}"
         )
 
     # 4) Enganche y mensualidades
@@ -1381,8 +1381,8 @@ def build_contrato_propiedad_pagos_varios_context(fin, cli, ven, cliente2=None, 
     else:
         claus_b = (
             f"QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, AL IGUAL QUE CON LAS FACULTADES Y AUTORIZACIÓN SUFICIENTE PARA OBLIGARSE EN LOS TÉRMINOS DE ESTE, "
-            f"TAL COMO SE ACREDITA EN EL CONTRATO DE EXCLUSIVIDAD, PROMOCIÓN Y COMISIÓN POR LA VENTA DEL BIEN INMUEBLE DE FECHA {fecha_contrato} "
-            f"OTORGADO POR {SEXO_20}  C. {prop.nombre_completo.upper()}"
+            f"TAL COMO SE ACREDITA EN EL CONTRATO DE EXCLUSIVIDAD, PROMOCIÓN Y COMISIÓN POR LA VENTA DEL BIEN INMUEBLE DE FECHA {fecha_contrato}"
+            f", OTORGADO POR {SEXO_20}  C. {prop.nombre_completo.upper()}"
         )
 
     # 4) Enganche y mensualidades
@@ -2488,8 +2488,8 @@ def build_contrato_canario_contado_context(fin, cli, ven, request=None, tpl=None
     else:
         claus_b = (
             f"QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, AL IGUAL QUE CON LAS FACULTADES Y AUTORIZACIÓN SUFICIENTE PARA OBLIGARSE EN LOS TÉRMINOS DE ESTE, "
-            f"TAL COMO SE ACREDITA EN EL CONTRATO DE EXCLUSIVIDAD, PROMOCIÓN Y COMISIÓN POR LA VENTA DEL BIEN INMUEBLE DE FECHA SEIS DE ENERO DE DOS MIL VEINTICINCO "
-            f"OTORGADO POR EL C. JORGE EMILIO ALAVEZ AGUILAR."
+            f"TAL COMO SE ACREDITA EN EL CONTRATO DE EXCLUSIVIDAD, PROMOCIÓN Y COMISIÓN POR LA VENTA DEL BIEN INMUEBLE DE FECHA SEIS DE ENERO DE DOS MIL VEINTICINCO"
+            f", OTORGADO POR EL C. JORGE EMILIO ALAVEZ AGUILAR."
         )
 
     # 5) Construcción del context
@@ -2695,7 +2695,7 @@ def build_contrato_canario_contado_varios_context(fin, cli, ven, cliente2=None, 
     else:
         claus_b = (
             f"QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, AL IGUAL QUE CON LAS FACULTADES Y AUTORIZACIÓN SUFICIENTE PARA OBLIGARSE EN LOS TÉRMINOS DE ESTE, "
-            f"TAL COMO SE ACREDITA EN EL CONTRATO DE EXCLUSIVIDAD, PROMOCIÓN Y COMISIÓN POR LA VENTA DEL BIEN INMUEBLE DE FECHA SEIS DE ENERO DE DOS MIL VEINTICINCO "
+            f"TAL COMO SE ACREDITA EN EL CONTRATO DE EXCLUSIVIDAD, PROMOCIÓN Y COMISIÓN POR LA VENTA DEL BIEN INMUEBLE DE FECHA SEIS DE ENERO DE DOS MIL VEINTICINCO, "
             f"OTORGADO POR EL C. JORGE EMILIO ALAVEZ AGUILAR."
         )
     
@@ -2882,7 +2882,7 @@ def build_contrato_canario_pagos_context(fin, cli, ven, request=None, tpl=None, 
     else:
         claus_b = (
             f"QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, AL IGUAL QUE CON LAS FACULTADES Y AUTORIZACIÓN SUFICIENTE PARA OBLIGARSE EN LOS TÉRMINOS DE ESTE, "
-            f"TAL COMO SE ACREDITA EN EL CONTRATO DE EXCLUSIVIDAD, PROMOCIÓN Y COMISIÓN POR LA VENTA DEL BIEN INMUEBLE DE FECHA SEIS DE ENERO DE DOS MIL VEINTICINCO "
+            f"TAL COMO SE ACREDITA EN EL CONTRATO DE EXCLUSIVIDAD, PROMOCIÓN Y COMISIÓN POR LA VENTA DEL BIEN INMUEBLE DE FECHA SEIS DE ENERO DE DOS MIL VEINTICINCO, "
             f"OTORGADO POR EL C. JORGE EMILIO ALAVEZ AGUILAR."
         )
 
@@ -3097,7 +3097,7 @@ def build_contrato_canario_pagos_varios_context(fin, cli, ven, cliente2=None, re
     else:
         claus_b = (
             f"QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, AL IGUAL QUE CON LAS FACULTADES Y AUTORIZACIÓN SUFICIENTE PARA OBLIGARSE EN LOS TÉRMINOS DE ESTE, "
-            f"TAL COMO SE ACREDITA EN EL CONTRATO DE EXCLUSIVIDAD, PROMOCIÓN Y COMISIÓN POR LA VENTA DEL BIEN INMUEBLE DE FECHA SEIS DE ENERO DE DOS MIL VEINTICINCO "
+            f"TAL COMO SE ACREDITA EN EL CONTRATO DE EXCLUSIVIDAD, PROMOCIÓN Y COMISIÓN POR LA VENTA DEL BIEN INMUEBLE DE FECHA SEIS DE ENERO DE DOS MIL VEINTICINCO, "
             f"OTORGADO POR EL C. JORGE EMILIO ALAVEZ AGUILAR."
         )
 
@@ -3237,6 +3237,7 @@ def build_contrato_canario_pagos_varios_context(fin, cli, ven, cliente2=None, re
     })
 
     return context
+
 
 
 
