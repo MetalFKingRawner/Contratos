@@ -1209,7 +1209,7 @@ def build_contrato_propiedad_pagos_context(fin, cli, ven, request=None, tpl=None
         'CANTIDAD_ENGANCHE_FINANCIAMIENTO': fmt_money(cant_eng),
         'LETRA_ENGANCHE':                   letra_eng,
 
-        'MENSUALIADES_FINANCIAMIENTO':     num_men,
+        'MENSUALIDADES_FINANCIAMIENTO':     num_men,
         'MENSUALIDADES': num_men-1,
         'MENSUALIDADES_FIJAS':             num_men-1,
         'CANTIDAD_MENSUALIDAD_FIJA':       fmt_money(fija),
@@ -1476,7 +1476,7 @@ def build_contrato_propiedad_pagos_varios_context(fin, cli, ven, cliente2=None, 
         'CANTIDAD_ENGANCHE_FINANCIAMIENTO': fmt_money(cant_eng),
         'LETRA_ENGANCHE':                   letra_eng,
 
-        'MENSUALIADES_FINANCIAMIENTO':     num_men,
+        'MENSUALIDADES_FINANCIAMIENTO':     num_men,
         'MENSUALIDADES': num_men-1,
         'MENSUALIDADES_FIJAS':             f"{fija:.2f}",
         'CANTIDAD_MENSUALIDAD_FIJA':       fmt_money(fija),
@@ -2098,7 +2098,7 @@ def build_contrato_ejidal_pagos_context(fin, cli, ven, request=None, tpl=None, f
         'CANTIDAD_ENGANCHE_FINANCIAMIENTO': fmt_money(cant_eng),
         'LETRA_ENGANCHE':                  letra_eng,
 
-        'MENSUALIADES_FINANCIAMIENTO':     num_men,
+        'MENSUALIDADES_FINANCIAMIENTO':     num_men,
         'MENSUALIDADES': num_men-1,
         'MENSUALIDADES_FIJAS':             num_men-1,
         'CANTIDAD_MENSUALIDAD_FIJA':       fmt_money(monto_fija),
@@ -2351,7 +2351,7 @@ def build_contrato_ejidal_pagos_varios_context(fin, cli, ven, cliente2=None,requ
         'CANTIDAD_ENGANCHE_FINANCIAMIENTO': fmt_money(cant_eng),
         'LETRA_ENGANCHE':                  letra_eng,
 
-        'MENSUALIADES_FINANCIAMIENTO':     num_men,
+        'MENSUALIDADES_FINANCIAMIENTO':     num_men,
         'MENSUALIDADES': num_men-1,
         'MENSUALIDADES_FIJAS':             num_men-1,
         'CANTIDAD_MENSUALIDAD_FIJA':       fmt_money(monto_fija),
@@ -2940,7 +2940,7 @@ def build_contrato_canario_pagos_context(fin, cli, ven, request=None, tpl=None, 
         'CANTIDAD_ENGANCHE_FINANCIAMIENTO': fmt_money(cant_eng),
         'LETRA_ENGANCHE':                   letra_eng,
 
-        'MENSUALIADES_FINANCIAMIENTO':     num_men,
+        'MENSUALIDADES_FINANCIAMIENTO':     num_men,
         'MENSUALIDADES': num_men-1,
         'MENSUALIDADES_FIJAS':             num_men-1,
         'CANTIDAD_MENSUALIDAD_FIJA':       fmt_money(fija),
@@ -3179,7 +3179,7 @@ def build_contrato_canario_pagos_varios_context(fin, cli, ven, cliente2=None, re
         'CANTIDAD_ENGANCHE_FINANCIAMIENTO': fmt_money(cant_eng),
         'LETRA_ENGANCHE':                   letra_eng,
 
-        'MENSUALIADES_FINANCIAMIENTO':     num_men,
+        'MENSUALIDADES_FINANCIAMIENTO':     num_men,
         'MENSUALIDADES': num_men-1,
         'MENSUALIDADES_FIJAS':             f"{fija:.2f}",
         'CANTIDAD_MENSUALIDAD_FIJA':       fmt_money(fija),
@@ -3237,6 +3237,7 @@ def build_contrato_canario_pagos_varios_context(fin, cli, ven, cliente2=None, re
     })
 
     return context
+
 
 
 
