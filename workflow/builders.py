@@ -2072,6 +2072,9 @@ def build_contrato_ejidal_pagos_context(fin, cli, ven, request=None, tpl=None, f
         'DIA_CESION':  DIA_CESION,
         'MES_CESION':  MES_CESION,
 
+        'FECHA_DOCUMENTO': fecha_posesion,
+        'NOMBRE_CESION': autoridad,
+
         'ID_INE':             prop.ine,
         'INSTRUMENTO_PUBLICO':prop.instrumento_publico or '',
         'NOTARIO':            prop.notario_publico or '',
@@ -2175,8 +2178,8 @@ def build_contrato_ejidal_pagos_varios_context(fin, cli, ven, cliente2=None,requ
     # El “propietario” del lote:
     prop = fin.lote.proyecto.propietario.first()  # instancia Propietario
     SEXO_5 = art(prop.sexo, 'EL', 'LA')
-    SEXO_7 = art(ven.sexo, 'AL', 'A LA')
-    SEXO_8 = art(ven.sexo, 'DEL', 'DE LA')
+    SEXO_7 = art(ven.sexo, 'AL "', 'A "LA ')
+    SEXO_8 = art(ven.sexo, 'DEL "', 'DE "LA ')
 
     # 2) Fecha de cesión (hoy, o fin.fecha_enganche)
     if fecha == None:
@@ -2185,7 +2188,7 @@ def build_contrato_ejidal_pagos_varios_context(fin, cli, ven, cliente2=None,requ
         cesion = fecha
     meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio",
              "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]
-    DIA_CESION = numero_a_letras(float(cesion.day))
+    DIA_CESION = numero_a_letras(float(cesion.day), apocopado=False)
     MES_CESION = meses[cesion.month-1].upper()
 
     # 2) Pronombres PLURALES para DOS COMPRADORES
@@ -2199,6 +2202,7 @@ def build_contrato_ejidal_pagos_varios_context(fin, cli, ven, cliente2=None,requ
             SEXO_6 = 'DE "LOS '
             SEXO_9 = 'A "LOS '
             SEXO_10 = 'O'
+            SEXO_11 = 'A LOS'
         else:
             # Ambos femeninos -> femenino plural
             SEXO_2 = 'LAS'               # cedatario (comprador)
@@ -2206,6 +2210,7 @@ def build_contrato_ejidal_pagos_varios_context(fin, cli, ven, cliente2=None,requ
             SEXO_6 = 'DE "LAS '
             SEXO_9 = 'A "LAS '
             SEXO_10 = 'A'
+            SEXO_11 = 'A LAS'
     else:
         # Por si acaso (aunque esta función es para varios)
         SEXO_2 = 'LOS'               # cedatario (comprador)
@@ -2213,6 +2218,7 @@ def build_contrato_ejidal_pagos_varios_context(fin, cli, ven, cliente2=None,requ
         SEXO_6 = 'DE "LOS '
         SEXO_9 = 'A "LOS '
         SEXO_10 = 'O'
+        SEXO_11 = 'A LOS'
 
     # 3) Coordenadas (igual)
     def _parse_coord(text):
@@ -2303,6 +2309,7 @@ def build_contrato_ejidal_pagos_varios_context(fin, cli, ven, cliente2=None,requ
         'SEXO_8': SEXO_8,
         'SEXO_9': SEXO_9,
         'SEXO_10': SEXO_10,
+        'SEXO_11': SEXO_11,
 
         'NOMBRE_VENDEDOR':    ven.nombre_completo.upper(),
         'NOMBRE_COMPRADOR':   cli.nombre_completo.upper(),
@@ -2313,6 +2320,9 @@ def build_contrato_ejidal_pagos_varios_context(fin, cli, ven, cliente2=None,requ
 
         'DIA_CESION':  DIA_CESION,
         'MES_CESION':  MES_CESION,
+
+        'FECHA_DOCUMENTO': fecha_posesion,
+        'NOMBRE_CESION': autoridad,
 
         'ID_INE':             prop.ine,
         'INSTRUMENTO_PUBLICO':prop.instrumento_publico or '',
@@ -3237,6 +3247,7 @@ def build_contrato_canario_pagos_varios_context(fin, cli, ven, cliente2=None, re
     })
 
     return context
+
 
 
 
