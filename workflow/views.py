@@ -35,6 +35,18 @@ from django.conf import settings
 from pdfs.utils import fill_word_template, convert_docx_to_pdf
 
 from core.models import Lote
+import time
+from django.views.decorators.csrf import csrf_exempt
+
+@csrf_exempt
+def health_check(request):
+    """Endpoint simple para health checks - mantener activa la app"""
+    return JsonResponse({
+        "status": "ok", 
+        "timestamp": time.time(),
+        "message": "Application is alive", 
+        "app": "workflow"
+    })
 
 def ajax_lotes(request, proyecto_id):
     lotes = Lote.objects.filter(proyecto_id=proyecto_id, activo=True).order_by('identificador')
@@ -833,6 +845,7 @@ class Paso1FinanciamientoView(TemplateView):
         # Guardar en sesión para los pasos siguientes
         request.session['financiamiento_id'] = int(plan_id)
         return redirect('workflow:paso2_cliente')
+
 
 
 
