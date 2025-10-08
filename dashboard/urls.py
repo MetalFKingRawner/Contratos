@@ -50,4 +50,7 @@ urlpatterns = [
     path("lotes/<int:pk>/", views.LoteDetailView.as_view(), name="lote_detail"),
     path("lotes/<int:pk>/edit/", views.LoteUpdateView.as_view(), name="lote_edit"),
     path("lotes/<int:pk>/delete/", views.LoteDeleteView.as_view(), name="lote_delete"),
+
+    path('health-check/', views.health_check, name='health_check'),
 ]
+
