@@ -264,5 +264,34 @@
       }
     });
   </script>
+  <!-- MANTENER APLICACIÓN ACTIVA - PING AUTOMÁTICO -->
+  <script>
+  document.addEventListener('DOMContentLoaded', function() {
+      function keepAlive() {
+          fetch('/dashboard/health-check/')
+              .then(response => {
+                  if (!response.ok) throw new Error('Error en response');
+                  return response.json();
+              })
+              .then(data => {
+                  console.log('✅ Dashboard activo:', new Date().toLocaleTimeString());
+              })
+              .catch(error => {
+                  console.log('⚠️ Error en ping dashboard:', error);
+              });
+      }
+      
+      // Ping cada 8 minutos (más seguro que 10)
+      setInterval(keepAlive, 4 * 60 * 1000);
+      
+      // Ping en interacciones del usuario
+      ['click', 'keypress', 'scroll'].forEach(event => {
+          document.addEventListener(event, keepAlive, { passive: true });
+      });
+      
+      // Primer ping al cargar
+      setTimeout(keepAlive, 2000);
+  });
+  </script>
 </body>
 </html>
