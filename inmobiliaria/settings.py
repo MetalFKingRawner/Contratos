@@ -130,14 +130,31 @@ WSGI_APPLICATION = 'inmobiliaria.wsgi.application'
 #        "PORT": "5432",
 #    }
 #}
+#DATABASES = {
+#    'default': dj_database_url.config(
+#        default=f"postgresql://neondb_owner:npg_QcEmihO6J0pb@ep-withered-term-afo0e7o2-pooler.c-2.us-west-2.aws.neon.tech/Inmobiliaria_db",  # URL local para pruebas
+#        conn_max_age=600,
+#        ssl_require=True  # Neon y Railway pueden requerir SSL
+#    )
+#}
+
 DATABASES = {
     'default': dj_database_url.config(
-        default=f"postgresql://neondb_owner:npg_QcEmihO6J0pb@ep-withered-term-afo0e7o2-pooler.c-2.us-west-2.aws.neon.tech/Inmobiliaria_db",  # URL local para pruebas
-        conn_max_age=600,
-        ssl_require=True  # Neon y Railway pueden requerir SSL
+        default=f"postgresql://neondb_owner:npg_QcEmihO6J0pb@ep-withered-term-afo0e7o2-pooler.c-2.us-west-2.aws.neon.tech/Inmobiliaria_db",
+        conn_max_age=300,  # Cambiado de 600 a 300 (5 minutos)
+        ssl_require=True
     )
 }
 
+# SOBREESCRIBIR LAS OPCIONES ESPECÍFICAS PARA NEON
+DATABASES['default']['OPTIONS'] = {
+    "connect_timeout": 30,
+    "keepalives": 1,
+    "keepalives_idle": 30,
+    "keepalives_interval": 10,
+    "keepalives_count": 5,
+    "sslmode": "require",  # Específico para Neon
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
@@ -188,4 +205,5 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage' 
 LOGIN_URL = '/accounts/login/'           # o el name: 'core:login'
 LOGIN_REDIRECT_URL = '/'                 # a dónde ir tras login
 LOGOUT_REDIRECT_URL = '/'
+
 
