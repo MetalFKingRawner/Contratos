@@ -1245,6 +1245,19 @@ def home(request):
                   'dashboard/home.html',
                   ctx)
 
+import time
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+
+@csrf_exempt
+def health_check(request):
+    """Endpoint simple para health checks - mantener activa la app"""
+    return JsonResponse({
+        "status": "ok", 
+        "timestamp": time.time(),
+        "message": "Application is alive",
+        "app": "dashboard"
+    })
 
 
 
