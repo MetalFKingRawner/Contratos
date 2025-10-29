@@ -56,6 +56,11 @@
                 <i class="fas fa-info-circle"></i>
                 {{ object.get_estado_display|default:"Pendiente" }}
               </span>
+              <!-- Estado de firmas -->
+              <span class="detail-item">
+                <i class="fas fa-signature"></i>
+                Firmas: {{ object.porcentaje_firmas }}% completadas
+              </span>
             </div>
           </div>
         </div>
@@ -65,8 +70,26 @@
             <h5 class="warning-title">¿Estás completamente seguro?</h5>
             <p class="warning-text">
               Al eliminar este trámite se perderá toda su información, incluyendo 
-              <strong>datos del cliente, financiamiento y documentos asociados</strong>. Esta acción es permanente y no se puede revertir.
+              <strong>datos del cliente, financiamiento, documentos asociados y firmas digitales</strong>. 
+              Esta acción es permanente y no se puede revertir.
             </p>
+            
+            <!-- Advertencia especial si hay firmas pendientes -->
+            {% if tiene_firmas_pendientes %}
+            <div class="firmas-warning">
+              <div class="firmas-warning-icon">
+                <i class="fas fa-exclamation-circle"></i>
+              </div>
+              <div class="firmas-warning-content">
+                <span class="firmas-count-warning">
+                  {{ firmas_pendientes_count }} firma(s) pendiente(s)
+                </span>
+                <span class="firmas-text-warning">
+                  Se perderán los enlaces de firma activos y cualquier progreso de firmas digitales.
+                </span>
+              </div>
+            </div>
+            {% endif %}
             
             <!-- Información adicional de financiamiento -->
             <div class="documents-warning">
@@ -75,9 +98,9 @@
               </div>
               <div class="documents-warning-content">
                 <span class="documents-count-warning">
-                  Datos financieros
+                  Datos financieros y cláusulas especiales
                 </span>
-                <span class="documents-text-warning">también se eliminarán</span>
+                <span class="documents-text-warning">también se eliminarán permanentemente</span>
               </div>
             </div>
           </div>
@@ -103,6 +126,7 @@
                 hx-post="{{ request.path }}" 
                 hx-target="#content" 
                 hx-swap="innerHTML"
+                hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
                 class="delete-form">
             {% csrf_token %}
             <button type="submit" class="modal-btn danger delete-confirm-btn">
@@ -742,6 +766,137 @@
 * {
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
+
+/* ========== ESTILOS PARA MEJORAS EN EL MODAL DE ELIMINACIÓN ========== */
+
+/* Advertencia de firmas pendientes */
+.firmas-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem;
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: 8px;
+  margin: 1rem 0;
+  color: #D97706;
+}
+
+.firmas-warning-icon {
+  width: 40px;
+  height: 40px;
+  background: rgba(245, 158, 11, 0.2);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+}
+
+.firmas-warning-icon i {
+  font-size: 1.1rem;
+}
+
+.firmas-warning-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+}
+
+.firmas-count-warning {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.firmas-text-warning {
+  font-size: 0.85rem;
+  opacity: 0.9;
+  line-height: 1.4;
+}
+
+/* Animación de shake para el botón de confirmación */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+/* Animación de pulso para el botón de peligro */
+@keyframes dangerPulse {
+  0%, 100% { 
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); 
+  }
+  50% { 
+    box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); 
+  }
+}
+
+/* Estados de loading */
+.modal-btn.loading {
+  opacity: 0.7;
+  cursor: not-allowed;
+  position: relative;
+  overflow: hidden;
+}
+
+.modal-btn.loading::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  animation: loadingShine 1.5s infinite;
+}
+
+@keyframes loadingShine {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+/* Detalle adicional en la preview */
+.tramite-details-preview .detail-item:last-child {
+  color: #F59E0B;
+  font-weight: 500;
+}
+
+/* Mejoras responsive */
+@media (max-width: 768px) {
+  .modal-actions {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .firmas-warning {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.75rem;
+  }
+  
+  .firmas-warning-icon {
+    align-self: center;
+  }
+  
+  .security-note {
+    text-align: center;
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .tramite-preview {
+    flex-direction: column;
+    text-align: center;
+    gap: 1rem;
+  }
+  
+  .tramite-details-preview {
+    justify-content: center;
+  }
+}
 </style>
 
 <script>
@@ -784,6 +939,9 @@ function initDeleteTramiteModal() {
   const originalText = deleteBtn.querySelector('span').textContent;
   
   if (deleteBtn) {
+    // Añadir animación de pulso inicial
+    deleteBtn.style.animation = 'dangerPulse 3s infinite';
+    
     deleteBtn.addEventListener('click', function(e) {
       confirmClicks++;
       
@@ -802,15 +960,26 @@ function initDeleteTramiteModal() {
         
         return false;
       }
+      
+      // Si es el segundo clic, permitir el envío del formulario
+      this.querySelector('span').textContent = 'Eliminando...';
     });
   }
 
   // Loading state en submit
   if (deleteForm) {
-    deleteForm.addEventListener('submit', function() {
+    deleteForm.addEventListener('submit', function(e) {
+      if (confirmClicks < 2) {
+        e.preventDefault();
+        return false;
+      }
+      
       deleteBtn.classList.add('loading');
       deleteBtn.disabled = true;
       deleteBtn.querySelector('span').textContent = 'Eliminando trámite...';
+      
+      // Prevenir múltiples envíos
+      deleteForm.style.pointerEvents = 'none';
     });
   }
 
@@ -822,23 +991,22 @@ function initDeleteTramiteModal() {
   }
 
   function closeModal() {
-    // Navegar de vuelta al detalle del trámite
+    // Navegar de vuelta al detalle del trámite usando HTMX
     const tramiteId = document.querySelector('.tramite-name-preview').textContent.replace('Trámite #', '');
-    // Aquí podrías usar HTMX para cargar la vista de detalle o simplemente recargar
-    window.history.back();
+    htmx.ajax('GET', `/dashboard/tramites/${tramiteId}/`, '#content');
   }
 
   // Efectos de hover mejorados
   const modalBtns = document.querySelectorAll('.modal-btn');
   modalBtns.forEach(btn => {
+    if (btn.classList.contains('danger')) return; // No aplicar a botón de eliminar
+    
     btn.addEventListener('mouseenter', function() {
       this.style.transform = 'translateY(-2px) scale(1.02)';
     });
     
     btn.addEventListener('mouseleave', function() {
-      if (!this.classList.contains('danger')) {
-        this.style.transform = 'translateY(0) scale(1)';
-      }
+      this.style.transform = 'translateY(0) scale(1)';
     });
   });
 
@@ -847,15 +1015,30 @@ function initDeleteTramiteModal() {
     modal.style.transform = 'scale(1)';
     modal.style.opacity = '1';
   }, 50);
+
+  // Mostrar información contextual sobre las firmas
+  const firmasWarning = document.querySelector('.firmas-warning');
+  if (firmasWarning) {
+    firmasWarning.addEventListener('mouseenter', function() {
+      this.style.transform = 'translateX(5px)';
+      this.style.transition = 'transform 0.3s ease';
+    });
+    
+    firmasWarning.addEventListener('mouseleave', function() {
+      this.style.transform = 'translateX(0)';
+    });
+  }
 }
 
-// Prevenir cierre accidental
-window.addEventListener('beforeunload', function(e) {
-  const deleteModal = document.querySelector('.delete-modal');
-  if (deleteModal) {
-    e.preventDefault();
-    e.returnValue = '';
-    return '';
-  }
-});
+// Prevenir cierre accidental (solo en modo producción)
+if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+  window.addEventListener('beforeunload', function(e) {
+    const deleteModal = document.querySelector('.delete-modal');
+    if (deleteModal) {
+      e.preventDefault();
+      e.returnValue = '';
+      return '';
+    }
+  });
+}
 </script>
