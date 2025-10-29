@@ -51,6 +51,24 @@ urlpatterns = [
     path("lotes/<int:pk>/edit/", views.LoteUpdateView.as_view(), name="lote_edit"),
     path("lotes/<int:pk>/delete/", views.LoteDeleteView.as_view(), name="lote_delete"),
 
+    # Beneficiarios
+    path('beneficiarios/', views.BeneficiarioListView.as_view(), name='beneficiario_list'),
+    path('beneficiarios/create/', views.BeneficiarioCreateView.as_view(), name='beneficiario_create'),
+    path('beneficiarios/<int:pk>/', views.BeneficiarioDetailView.as_view(), name='beneficiario_detail'),
+    path('beneficiarios/<int:pk>/edit/', views.BeneficiarioUpdateView.as_view(), name='beneficiario_update'),
+    path('beneficiarios/<int:pk>/delete/', views.BeneficiarioDeleteView.as_view(), name='beneficiario_delete'),
+
     path('health-check/', views.health_check, name='health_check'),
+    path('tramites/<int:pk>/generate-links/', views.TramiteGenerateLinksView.as_view(), name='tramite_generate_links'),
+    #path('tramites/<int:pk>/send-links/', views.TramiteSendLinksView.as_view(), name='tramite_send_links'),
+
+    # Cartas de Intención
+    path('cartas-intencion/', views.CartaIntencionListView.as_view(), name='cartaintencion_list'),
+    path('cartas-intencion/crear/', views.CartaIntencionCreateView.as_view(), name='cartaintencion_create'),
+    path('cartas-intencion/<int:pk>/', views.CartaIntencionDetailView.as_view(), name='cartaintencion_detail'),
+    path('cartas-intencion/<int:pk>/editar/', views.CartaIntencionUpdateView.as_view(), name='cartaintencion_update'),
+    path('cartas-intencion/<int:pk>/eliminar/', views.CartaIntencionDeleteView.as_view(), name='cartaintencion_delete'),
+    path('cartas-intencion/<int:pk>/descargar/<str:formato>/', views.CartaIntencionDownloadView.as_view(), name='cartaintencion_download'),
 ]
+
 
