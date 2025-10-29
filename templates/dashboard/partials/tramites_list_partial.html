@@ -21,6 +21,12 @@
           <span class="stat-number">{{ tramites_activos }}</span>
           <span class="stat-label">Activos</span>
         </div>
+        <!-- NUEVO: Estadística de firmas pendientes -->
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <span class="stat-number" style="color: #EF4444;">{{ tramites_con_firmas_pendientes }}</span>
+          <span class="stat-label">Firmas Pendientes</span>
+        </div>
       </div>
     </div>
     
@@ -30,7 +36,6 @@
           <i class="fas fa-search search-icon"></i>
           <input type="text" name="search" placeholder="Buscar trámite..." 
                 class="search-input" id="tramiteSearch" value="{{ termino_busqueda_actual }}">
-          <!-- Campos ocultos para mantener otros filtros -->
           {% if filtro_usuario_actual %}
               <input type="hidden" name="usuario" value="{{ filtro_usuario_actual }}">
           {% endif %}
@@ -47,10 +52,6 @@
               {% endfor %}
           </select>
       </div>
-      <!--<button class="btn-add-tramite" hx-get="{% url 'dashboard:tramite_create' %}" hx-target="#content" hx-swap="innerHTML">
-        <i class="fas fa-plus"></i>
-        <span>Nuevo Trámite</span>
-      </button> -->
     </div>
   </div>
 
@@ -64,6 +65,16 @@
               <div class="tramite-avatar">
                 <span class="avatar-initials">{{ t.cliente.nombre_completo|slice:":2"|upper }}</span>
               </div>
+              
+              <!-- NUEVO: Badge de estado de firmas -->
+              <div class="firmas-status">
+                <div class="firmas-badge {% if t.porcentaje_firmas == 100 %}completed{% elif t.porcentaje_firmas > 0 %}in-progress{% else %}pending{% endif %}"
+                     title="Progreso de firmas: {{ t.porcentaje_firmas }}% - {{ t.estado_firmas|title }}">
+                  <i class="fas fa-signature me-1"></i>
+                  {{ t.porcentaje_firmas }}%
+                </div>
+              </div>
+              
               <div class="tramite-status-badge {{ t.estado|default:'completado'|lower }}">
                 <div class="status-dot"></div>
                 <span class="status-text">{{ t.estado|default:"Completado" }}</span>
@@ -103,6 +114,25 @@
                     <span class="info-value">{{ t.creado_en|date:"d/m/Y H:i" }}</span>
                   </div>
                 </div>
+
+                <!-- NUEVO: Información adicional sobre firmas -->
+                <div class="info-item">
+                  <div class="info-icon signature">
+                    <i class="fas fa-pen-fancy"></i>
+                  </div>
+                  <div class="info-content">
+                    <span class="info-label">Estado Firmas</span>
+                    <span class="info-value">
+                      {% if t.estado_firmas == 'completado' %}
+                        <span style="color: #22C55E;">✓ Completadas</span>
+                      {% elif t.estado_firmas == 'en_proceso' %}
+                        <span style="color: #F59E0B;">⏳ En proceso</span>
+                      {% else %}
+                        <span style="color: #EF4444;">⌛ Pendientes</span>
+                      {% endif %}
+                    </span>
+                  </div>
+                </div>
                 
                 {% if t.fecha_vencimiento %}
                 <div class="info-item">
@@ -128,6 +158,7 @@
                 </div>
                 {% endif %}
               </div>
+              
               <div class="info-item">
                 <div class="info-icon user">
                   <i class="fas fa-user-check"></i>
@@ -165,10 +196,6 @@
                         title="Editar">
                   <i class="fas fa-edit"></i>
                 </button>
-                <!--<button class="action-btn document"
-                        title="Generar Documento">
-                  <i class="fas fa-file-pdf"></i>
-                </button> -->
                 <button class="action-btn delete"
                       hx-get="{% url 'dashboard:tramite_delete' t.pk %}"
                       hx-target="#content" 
@@ -236,11 +263,6 @@
           <i class="fas fa-file-alt"></i>
         </div>
         <h3 class="empty-title">No hay trámites registrados</h3>
-        <!-- <p class="empty-subtitle">Comienza creando tu primer trámite para gestionar los procesos legales</p>
-        <button class="btn-empty-action" hx-get="{% url 'dashboard:tramite_create' %}" hx-target="#content" hx-swap="innerHTML">
-          <i class="fas fa-plus"></i>
-          Crear Primer Trámite
-        </button> -->
       </div>
     {% endif %}
   </div>
@@ -967,7 +989,83 @@
     font-size: 1.8rem;
   }
 }
+/* ==== NUEVOS ESTILOS PARA FIRMAS ==== */
 
+/* Badge de estado de firmas */
+.firmas-status {
+  margin-left: auto;
+  margin-right: 8px;
+}
+
+.firmas-badge {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  border: 1px solid;
+  transition: all 0.3s ease;
+}
+
+.firmas-badge.completed {
+  background: rgba(34, 197, 94, 0.1);
+  color: #16A34A;
+  border-color: rgba(34, 197, 94, 0.3);
+}
+
+.firmas-badge.in-progress {
+  background: rgba(245, 158, 11, 0.1);
+  color: #D97706;
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+.firmas-badge.pending {
+  background: rgba(239, 68, 68, 0.1);
+  color: #DC2626;
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.firmas-badge i {
+  font-size: 0.6rem;
+}
+
+/* Nuevo icono para firma en info-item */
+.info-icon.signature {
+  background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+}
+
+/* Botón de firma especial */
+.action-btn.signature-btn:hover {
+  background: rgba(239, 68, 68, 0.2) !important;
+  transform: scale(1.1);
+}
+
+/* Ajustes para el header de estadísticas */
+.stat-item .stat-number[style*="color: #EF4444"] {
+  animation: pulse-red 2s infinite;
+}
+
+@keyframes pulse-red {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* Mantener todos tus estilos existentes... */
+/* ==== HEADER DE TRÁMITES ==== */
+.tramites-header-section {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  border-radius: var(--border-radius);
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--glass-border);
+  position: relative;
+  overflow: hidden;
+  animation: fadeInUp 0.6s ease;
+}
 </style>
 
 <script>
@@ -1057,6 +1155,16 @@ function initTramiteSearch() {
   addClearFiltersButton();
 }
 
+// NUEVO: Tooltips para badges de firmas
+function initFirmasTooltips() {
+  const firmasBadges = document.querySelectorAll('.firmas-badge');
+  firmasBadges.forEach(badge => {
+    badge.addEventListener('mouseenter', function() {
+      // Podrías añadir tooltips avanzados aquí si quieres
+    });
+  });
+}
+  
 // Inicializar la búsqueda cuando el contenido se carga
 initTramiteSearch();
 
@@ -1115,7 +1223,8 @@ document.addEventListener('DOMContentLoaded', function() {
         initTramiteAnimations();
         initTramiteHover();
         updateTramiteStats();
-        addClearFiltersButton(); // Añadir el botón al cargar la página
+        initFirmasTooltips();
+        //addClearFiltersButton(); // Añadir el botón al cargar la página
     }
 });
 
@@ -1127,7 +1236,8 @@ document.body.addEventListener('htmx:afterSwap', function(evt) {
             initTramiteAnimations();
             initTramiteHover();
             updateTramiteStats();
-            addClearFiltersButton(); // Añadir el botón después de un swap de HTMX
+            initFirmasTooltips();
+            //addClearFiltersButton(); // Añadir el botón después de un swap de HTMX
         }, 50);
     }
 });
@@ -1169,3 +1279,4 @@ function updateTramiteStats() {
 //  }
 //});
 </script>
+
