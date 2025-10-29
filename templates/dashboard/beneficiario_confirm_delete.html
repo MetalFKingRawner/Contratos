@@ -1,0 +1,6 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Eliminar Beneficiario: {{ object.nombre_completo }} – Dashboard{% endblock %}
+
+{% block content %}
+  {% include "dashboard/partials/beneficiario_delete_confirm_partial.html" %}
+{% endblock %}

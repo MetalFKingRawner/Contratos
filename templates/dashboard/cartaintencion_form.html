@@ -1,0 +1,8 @@
+{% extends "dashboard/base.html" %}
+{% block title %}
+  {% if creating %}Nueva Carta de Intención{% else %}Editar Carta de Intención: {{ object.nombre_cliente }}{% endif %} – Dashboard
+{% endblock %}
+
+{% block content %}
+  {% include "dashboard/partials/cartaintencion_form_partial.html" %}
+{% endblock %}

@@ -1,0 +1,8 @@
+{% extends "dashboard/base.html" %}
+{% block title %}
+  {% if creating %}Nuevo Beneficiario{% else %}Editar {{ beneficiario.nombre_completo }}{% endif %} – Dashboard
+{% endblock %}
+
+{% block content %}
+  {% include "dashboard/partials/beneficiario_form_partial.html" %}
+{% endblock %}

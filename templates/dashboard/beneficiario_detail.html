@@ -1,0 +1,6 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Beneficiario: {{ beneficiario.nombre_completo }} – Dashboard{% endblock %}
+
+{% block content %}
+  {% include "dashboard/partials/beneficiario_detail_partial.html" %}
+{% endblock %}
