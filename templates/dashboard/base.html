@@ -105,6 +105,18 @@
             <span class="nav-badge">{{ num_propietarios }}</span>
           </a>
         </li>
+        <li class="nav-item">
+          <a href="#" 
+            class="nav-link"
+            hx-get="{% url 'dashboard:beneficiario_list' %}"
+            hx-target="#content" 
+            hx-swap="innerHTML"
+            hx-push-url="true">
+            <i class="fas fa-user-friends"></i>
+            <span class="nav-link-text">Beneficiarios</span>
+            <span class="nav-badge">{{ num_beneficiarios }}</span>
+          </a>
+        </li>
       </ul>
     </div>
 
@@ -163,6 +175,18 @@
             <i class="fas fa-file-alt"></i>
             <span class="nav-link-text">Trámites</span>
             <span class="nav-badge">{{ num_tramites }}</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="#" 
+            class="nav-link"
+            hx-get="{% url 'dashboard:cartaintencion_list' %}"
+            hx-target="#content" 
+            hx-swap="innerHTML"
+            hx-push-url="true">
+            <i class="fas fa-file-signature"></i>
+            <span class="nav-link-text">Cartas Intención</span>
+            <span class="nav-badge">{{ num_cartas_intencion }}</span>
           </a>
         </li>
       </ul>
@@ -295,3 +319,4 @@
   </script>
 </body>
 </html>
+
