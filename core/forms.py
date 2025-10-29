@@ -130,3 +130,30 @@ class StaffAuthenticationForm(AuthenticationForm):
                 code='invalid_login',
             )
 
+class BeneficiarioForm(forms.ModelForm):
+    class Meta:
+        model = Beneficiario
+        fields = ['nombre_completo', 'sexo', 'telefono', 'email', 'numero_id']
+        widgets = {
+            'nombre_completo': forms.TextInput(attrs={
+                'placeholder': 'Nombre completo del beneficiario *',
+                'class': 'form-control'
+            }),
+            'telefono': forms.TextInput(attrs={
+                'placeholder': 'Número telefónico (opcional)',
+                'class': 'form-control'
+            }),
+            'email': forms.EmailInput(attrs={
+                'placeholder': 'correo@ejemplo.com (opcional)',
+                'class': 'form-control'
+            }),
+            'numero_id': forms.TextInput(attrs={
+                'placeholder': 'Número de INE (opcional)',
+                'class': 'form-control'
+            }),
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Hacer el campo de teléfono opcional si lo prefieres
+        self.fields['telefono'].required = False
