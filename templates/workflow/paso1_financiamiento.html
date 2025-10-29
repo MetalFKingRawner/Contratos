@@ -471,6 +471,7 @@
 
       <div class="plan-cards">
         {% for plan in financiamientos %}
+        {% if plan.activo and not plan.es_cotizacion %}
         <label class="plan-card" for="fin_{{ plan.id }}">
           <input 
             type="radio" 
@@ -488,6 +489,7 @@
             Ubicación: {{ plan.lote.proyecto.ubicacion }}<br>
           </div>
         </label>
+        {% endif %}
         {% empty %}
         <p>No hay planes disponibles por el momento.</p>
         {% endfor %}
