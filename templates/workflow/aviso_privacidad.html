@@ -586,7 +586,7 @@
     </object>
   </div>
 
-  <form method="post" novalidate>
+  <form method="post" novalidate id="privacyForm">
     {% csrf_token %}
 
     <!-- 1) Elección de firma digital -->
@@ -617,8 +617,10 @@
         Firma de aceptación
       </h3>
       <div class="signature-canvas-container">
-        <label class="form-label mb-3">Dibuja tu firma:</label>
-        <canvas id="sig-canvas" class="signature-canvas"></canvas>
+        <label class="form-label mb-3">Dibuja tu firma en el área de abajo:</label>
+        <canvas id="sig-canvas"
+                width="400" height="150"
+                class="signature-canvas"></canvas>
       </div>
       <div class="signature-controls">
         <button id="sig-clear" type="button" class="btn-clear">
@@ -629,6 +631,9 @@
           Tu firma aparecerá en los documentos legales
         </div>
       </div>
+      <!-- Campo oculto para la firma CON ID FIJO -->
+      <input type="hidden" name="firma_data" id="firmaData">
+      
       {{ form.firma_data }}
     </div>
 
@@ -669,41 +674,40 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
   const canvas = document.getElementById('sig-canvas');
+  const form = document.getElementById('privacyForm');
+  const hiddenInput = document.getElementById('firmaData');
   const sigPad = new SignaturePad(canvas, {
-    minWidth: 1,
-    maxWidth: 3,
-    penColor: "#2c3e50"
+    minWidth: 0.5,
+    maxWidth: 2.5,
+    penColor: "#2c3e50",
+    throttle: 5,
+    velocityFilterWeight: 0.7
   });
   
   // Función corregida para redimensionar el canvas
   function resizeCanvas() {
     const ratio = Math.max(window.devicePixelRatio || 1, 1);
-  
-    const container = canvas.closest('.signature-canvas-container');
-    const containerWidth = container.clientWidth;
-    const containerHeight = container.clientHeight - 30;
-  
-    // Establecer el tamaño real del canvas considerando el ratio
-    canvas.width = containerWidth * ratio;
-    canvas.height = containerHeight * ratio;
-  
-    // Mostrar el canvas en CSS con el tamaño deseado (sin escalado)
-    canvas.style.width = `${containerWidth}px`;
-    canvas.style.height = `${containerHeight}px`;
-  
-    // Escalar el contexto para que la firma no se vea distorsionada
+    const width = canvas.offsetWidth;
+    const height = 150;
+        
+    canvas.width = width * ratio;
+    canvas.height = height * ratio;
+    canvas.style.width = width + 'px';
+    canvas.style.height = height + 'px';
+        
     const ctx = canvas.getContext("2d");
-    ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+    ctx.scale(ratio, ratio);
   
     // Redibujar si ya había una firma
-    if (!sigPad.isEmpty()) {
-      sigPad.fromData(sigPad.toData());
-    }
+    //if (!sigPad.isEmpty()) {
+      //sigPad.fromData(sigPad.toData());
+    //}
+    sigPad.clear();
   }
   
   // Inicializar y ajustar tamaño
-  resizeCanvas();
   window.addEventListener('resize', resizeCanvas);
+  resizeCanvas();
   
   // Botón borrar
   document.getElementById('sig-clear').onclick = () => {
@@ -711,18 +715,29 @@ document.addEventListener('DOMContentLoaded', function() {
     canvas.style.borderColor = "rgba(46, 143, 204, 0.2)";
   };
   
-  // Manejar envío del formulario
-  document.querySelector('form').addEventListener('submit', (e) => {
-    const hidden = document.getElementById('{{ form.firma_data.id_for_label }}');
-    
-    //if (sigPad.isEmpty()) {
-    //  canvas.style.borderColor = "#dc3545";
-    //  e.preventDefault();
-    //  alert('Por favor, proporciona tu firma');
-    //  return;
-    //}
-    
-    hidden.value = sigPad.toDataURL('image/png');
+  // Manejar envío del formulario - VERSIÓN CORREGIDA
+  form.addEventListener('submit', function(e) {
+      console.log('Formulario enviándose...');
+        
+      // CORREGIDO: usa signaturePad
+      if (sigPad.isEmpty()) {
+          canvas.style.borderColor = "#dc3545";
+          e.preventDefault();
+          alert('Por favor, proporciona tu firma');
+          console.log('Firma vacía - formulario bloqueado');
+          return;
+      }
+        
+      // Obtener la firma y asignarla al campo hidden
+      const firmaData = sigPad.toDataURL('image/png'); // ← CORREGIDO: usa signaturePad
+      hiddenInput.value = firmaData;
+      
+      console.log('Firma guardada en hidden input:', firmaData.substring(0, 100) + '...');
+      console.log('Longitud de la firma:', firmaData.length);
+      console.log('Valor del hidden input:', hiddenInput.value ? 'TIENE VALOR' : 'VACÍO');
+        
+      // Continuar con el envío normal
+      // No llamamos e.preventDefault() porque queremos que se envíe
   });
   
   // Cambiar estilo al dibujar
@@ -756,4 +771,5 @@ if (document.querySelector('input[name="firmar"]:checked')?.value !== 'sí') {
 }
 </script>
 {% endblock %}
+
 
