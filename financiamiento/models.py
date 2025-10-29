@@ -1,5 +1,5 @@
 from django.db import models
-from core.models import Lote  # asume que el modelo Lote ya existe
+from core.models import Lote, Vendedor  # asume que el modelo Lote ya existe
 
 class Financiamiento(models.Model):
     TIPO_PAGO_CHOICES = [
@@ -118,3 +118,4 @@ class CartaIntencion(models.Model):
             'proyecto': self.financiamiento.lote.proyecto.nombre,
             'ubicacion': self.financiamiento.lote.proyecto.ubicacion,
         }
+
