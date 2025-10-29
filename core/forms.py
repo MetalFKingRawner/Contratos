@@ -1,7 +1,7 @@
 # core/forms.py
 
 from django import forms
-from .models import Cliente, Vendedor
+from .models import Cliente, Vendedor, Beneficiario
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
 
@@ -157,3 +157,4 @@ class BeneficiarioForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         # Hacer el campo de teléfono opcional si lo prefieres
         self.fields['telefono'].required = False
+
