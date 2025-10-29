@@ -27,10 +27,35 @@ urlpatterns = [
     path('clausulas-especiales/', ClausulasEspecialesView.as_view(), name='clausulas_especiales'),
     path('health-check/', views.health_check, name='health_check'),
     # reemplaza AvancePruebaView por la vista real cuando la crees
+    # URLs para firmas digitales
+    path('firmar/cliente/<str:token>/', 
+         views.FirmaClienteView.as_view(), 
+         name='firma_cliente'),
+    
+    path('firmar/segundo-cliente/<str:token>/', 
+         views.FirmaSegundoClienteView.as_view(), 
+         name='firma_segundo_cliente'),
+    
+    path('firmar/beneficiario/<str:token>/', 
+         views.FirmaBeneficiarioView.as_view(), 
+         name='firma_beneficiario'),
+    
+    path('firmar/testigo1/<str:token>/', 
+         views.FirmaTestigo1View.as_view(), 
+         name='firma_testigo1'),
+    
+    path('firmar/testigo2/<str:token>/', 
+         views.FirmaTestigo2View.as_view(), 
+         name='firma_testigo2'),
+    
+    path('firma-exitosa/', 
+         views.FirmaExitosaView.as_view(), 
+         name='firma_exitosa'),
 ]
 
 class SeleccionDocumentoView(TemplateView):
     template_name = "inicio.html"
+
 
 
 
