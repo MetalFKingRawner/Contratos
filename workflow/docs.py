@@ -17,7 +17,8 @@ from workflow.builders import (
     build_contrato_canario_contado_context,
     build_contrato_canario_contado_varios_context,
     build_contrato_canario_pagos_context,
-    build_contrato_canario_pagos_varios_context
+    build_contrato_canario_pagos_varios_context,
+    build_financiamiento_context
 )
 
 DOCUMENTOS = {
@@ -41,6 +42,13 @@ DOCUMENTOS = {
         "descripcion":"Información previa para tu contrato.",
         "plantilla":  "pdfs/templates/pdfs/solicitud_contrato.docx",
         "builder":    build_solicitud_contrato_context,
+    },
+    # Tabla de financiamiento
+    "financiamiento": {
+        "titulo":     "Tabla de financiamiento",
+        "descripcion":"Información detallada del financiamiento.",
+        "plantilla":  "pdfs/templates/pdfs/financiamiento.docx",
+        "builder":    build_financiamiento_context,
     },
     # Contratos Definitiva – Financiamiento
     "contrato_definitiva_pagos": {
@@ -117,7 +125,7 @@ DOCUMENTOS = {
         "plantilla":  "pdfs/templates/pdfs/contrato_pequeña_pagos_varios.docx",
         "builder":    build_contrato_propiedad_pagos_varios_context,
     },
-    
+
     # Contratos pequeña propiedad – Financiamiento
     "contrato_canario_pagos": {
         "titulo":     "Contrato Casa Canario (Pagos)",
@@ -143,12 +151,4 @@ DOCUMENTOS = {
         "plantilla":  "pdfs/templates/pdfs/casa_canario_pagos_varios.docx",
         "builder":    build_contrato_canario_pagos_varios_context,
     },
-
 }
-
-
-
-
-
-
-
