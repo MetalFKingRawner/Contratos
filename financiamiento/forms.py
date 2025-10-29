@@ -1,8 +1,8 @@
 # financiamiento/forms.py
 
 from django import forms
-from core.models import Proyecto, Lote
-from .models import Financiamiento
+from core.models import Proyecto, Lote, Vendedor
+from .models import Financiamiento, CartaIntencion
 
 class FinanciamientoForm(forms.ModelForm):
     proyecto = forms.ModelChoiceField(
@@ -294,3 +294,4 @@ class CartaIntencionForm(forms.ModelForm):
                 )
         
         return oferta
+
