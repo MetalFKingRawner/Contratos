@@ -1,15 +1,15 @@
 from django.shortcuts import render
 
 # Create your views here.
-from django.views.generic import TemplateView
+from django.views.generic import TemplateView, FormView
 from django.urls import reverse_lazy
 from .forms import SolicitudContratoForm, Paso1Form
 from django.views.generic import FormView
 from django.http import JsonResponse
 from core.models import Vendedor, Propietario
 from financiamiento.models import Financiamiento
-from core.forms import ClienteForm
-from core.models import Cliente
+from core.forms import ClienteForm, BeneficiarioForm
+from core.models import Cliente, Beneficiario
 from django.shortcuts import get_object_or_404, redirect
 from .forms import VendorSelectForm
 from django import forms
@@ -25,7 +25,7 @@ from docxtpl import DocxTemplate
 from django.views import View
 from django.http import FileResponse, Http404
 from django.utils import timezone
-from .forms import SolicitudContratoForm
+from .forms import SolicitudContratoForm, FirmaForm
 #from .views import SolicitudContratoView  # si lo necesitas
 from .models import ClausulasEspeciales, Tramite
 from django.shortcuts import redirect
@@ -334,6 +334,11 @@ class ClienteDataView(FormView):
         # segundo_form con prefix (si ya existe en contexto, respetarlo)
         if 'segundo_form' not in ctx:
             ctx['segundo_form'] = SegundoClienteForm(prefix='second')
+        
+        # Agregar formulario de beneficiario al contexto
+        if 'beneficiario_form' not in ctx:
+            ctx['beneficiario_form'] = BeneficiarioForm(prefix='benef')
+
         return ctx
 
     #def form_valid(self, form):
@@ -346,9 +351,12 @@ class ClienteDataView(FormView):
         """Manejamos ambos formularios: el principal y el segundo (opcional)."""
         main_form = self.get_form(self.get_form_class())  # ClienteForm
         segundo_form = SegundoClienteForm(request.POST or None, prefix='second')
+        beneficiario_form = BeneficiarioForm(request.POST or None, prefix='benef')  # NUEVO FORMULARIO
 
         # detecta checkbox en la plantilla que active el segundo cliente
         add_second = request.POST.get('second_add') == 'on'
+        add_testigos = request.POST.get('testigos_add') == 'on'
+        add_beneficiarios = request.POST.get('beneficiarios_add') == 'on'
 
         if not main_form.is_valid():
             # forzamos render con errores (y pasamos segundo_form para que mantenga valores)
@@ -386,12 +394,34 @@ class ClienteDataView(FormView):
             # si no lo seleccionó, nos aseguramos de limpiar la sesión
             self.request.session.pop('cliente2_data', None)
 
+        # Manejar testigos (opcionales)
+        testigos_data = {}
+        if add_testigos:
+            # Testigo 2 es opcional (el testigo 1 se asignará automáticamente como vendedor)
+            testigo2_nombre = request.POST.get('testigo2_nombre', '').strip()
+            if testigo2_nombre:
+                testigos_data['testigo2_nombre'] = testigo2_nombre
+        
+        self.request.session['testigos_data'] = testigos_data
+
+        # NUEVO: Manejar beneficiario (opcional)
+        beneficiario_data = {}
+        if add_beneficiarios:
+            if not beneficiario_form.is_valid():
+                return self.form_invalid(main_form, segundo_form, beneficiario_form)
+
+            # beneficiario válido -> guardamos sus datos en sesión
+            beneficiario_data = beneficiario_form.cleaned_data
+        
+        self.request.session['beneficiario_data'] = beneficiario_data
+        
         # redirigir al siguiente paso
         return redirect('workflow:paso_vendedor')
     
-    def form_invalid(self, main_form, segundo_form=None):
+    def form_invalid(self, main_form, segundo_form=None, beneficiario_form=None):
         ctx = self.get_context_data(form=main_form)
         ctx['segundo_form'] = segundo_form or SegundoClienteForm(prefix='second')
+        ctx['beneficiario_form'] = beneficiario_form or BeneficiarioForm(prefix='benef')
         return self.render_to_response(ctx)
     
 class SeleccionVendedorView(FormView):
@@ -609,6 +639,12 @@ class SeleccionDocumentosView(FormView):
         
         tramite_id = self.request.session.get('tramite_id')
         tramite = get_object_or_404(Tramite, id=tramite_id) if tramite_id else None
+
+        # ✅ GENERAR LOS LINKS SI NO EXISTEN
+        if not tramite.link_firma_cliente:  # Si no hay links generados
+            print("⚠️ Links no generados - generando ahora...")
+            tramite.generar_links_inteligentes()  # Usa el método mejorado
+        ctx['tramite'] = tramite
         slugs = self.get_form_kwargs()['available_slugs']
         
         # Construimos la lista de docs con toda la info
@@ -678,7 +714,8 @@ class SeleccionDocumentosView(FormView):
                         tpl=tpl, 
                         firma_data=tramite.firma_cliente, 
                         clausulas_adicionales=clausulas_adicionales,
-                        cliente2=cli2
+                        cliente2=cli2,
+                        tramite = tramite
                     )
                 except TypeError:
                     try:
@@ -688,11 +725,12 @@ class SeleccionDocumentosView(FormView):
                             request=self.request, 
                             tpl=tpl, 
                             firma_data=tramite.firma_cliente, 
-                            clausulas_adicionales=clausulas_adicionales
+                            clausulas_adicionales=clausulas_adicionales,
+                            tramite = tramite
                         )
                     except TypeError:
                         # Versión mínima
-                        context = doc_info['builder'](fin, cli, ven)
+                        context = doc_info['builder'](fin, cli, ven,request=self.request, tpl=tpl,firma_data=tramite.firma_cliente, tramite = tramite)
 
                 # 2) rellenar plantilla Word
                 tmp_docx = os.path.join(settings.MEDIA_ROOT, 'temp', f"{slug}.docx")
@@ -728,25 +766,34 @@ class AvisoForm(forms.Form):
         initial='sí',
     )
     aceptar = forms.BooleanField(label="He leído y acepto el Aviso de Privacidad")
-    firma_data = forms.CharField(widget=forms.HiddenInput(), required=False)
+    firma_data = forms.CharField(
+        widget=forms.HiddenInput(attrs={'id': 'firmaData'}),  # ← AGREGAR ID
+        required=False
+    )
 
 class AvisoPrivacidadView(FormView):
     template_name = "workflow/aviso_privacidad.html"
     form_class    = AvisoForm
 
     def form_valid(self, form):
+        print("=== INICIANDO form_valid ===")  # Esto debería aparecer
         # 1) Guarda aceptación y firma en sesión
         self.request.session['privacy_accepted'] = True
         firma = form.cleaned_data.get('firma_data')
+        print(f"Firma obtenida: {firma[:50] if firma else 'None'}...")  # Debug
         if firma:
             self.request.session['firma_cliente_data'] = firma
-
+        
         # 2) Recupera IDs de pasos previos (deben existir en sesión)
         fin_id = self.request.session.get('financiamiento_id')
         cli_id = self.request.session.get('cliente_id')
         persona_tipo = self.request.session.get('persona_tipo')  # 'vendedor' o 'propietario'
         persona_id = self.request.session.get('persona_id')      # ID correspondiente
         cliente2_data = self.request.session.get('cliente2_data')
+        testigos_data = self.request.session.get('testigos_data', {})
+        beneficiario_data = self.request.session.get('beneficiario_data', {})  # CAMBIO: ahora es beneficiario_data (singular)
+
+        print(f"Datos sesión - fin_id: {fin_id}, cli_id: {cli_id}, persona_tipo: {persona_tipo}")
 
         # Si falta alguno, aborta o redirige al inicio
         if not (fin_id and cli_id and persona_tipo and persona_id):
@@ -769,27 +816,62 @@ class AvisoPrivacidadView(FormView):
         cliente2 = None
         if cliente2_data:
             cliente2 = Cliente.objects.create(**cliente2_data)
-        
+
+        # 3.3) NUEVO: Crear beneficiario si existe
+        beneficiario = None
+        if beneficiario_data:
+            beneficiario = Beneficiario.objects.create(**beneficiario_data)
+            print(f"Beneficiario creado: {beneficiario.nombre_completo}")
+
         # 4) Crea o actualiza el Tramite
         tramite_id = self.request.session.get('tramite_id')
+        print(f"Tramite ID en sesión: {tramite_id}")
+
         if tramite_id:
             # Si ya existe, actualiza
             tramite = get_object_or_404(Tramite, id=tramite_id)
+            print(f"Actualizando trámite existente: {tramite.id}")
             tramite.financiamiento = financiamiento
             tramite.cliente = cliente
             tramite.vendedor = vendedor
             tramite.propietario = propietario
-            tramite.firma_cliente = firma or tramite.firma_cliente
+            if firma:
+                tramite.firma_vendedor = firma
+                print("Firma asignada a firma_vendedor")
+            #tramite.firma_vendedor = firma or tramite.firma_cliente
             if cliente2:
                 tramite.cliente_2 = cliente2
 
             # Asignar usuario creador si no está asignado (para trámites existentes)
             if not tramite.usuario_creador:
                 tramite.usuario_creador = self.request.user
+
+            # Actualizar testigos y beneficiarios si existen
+            if testigos_data:
+                # Testigo 1 es el vendedor automáticamente
+                if vendedor:
+                    tramite.testigo_1_nombre = f"{vendedor.nombre} {vendedor.apellido}"
+                elif propietario:
+                    tramite.testigo_1_nombre = f"{propietario.nombre} {propietario.apellido}"
+                
+                # Testigo 2 opcional
+                tramite.testigo_2_nombre = testigos_data.get('testigo2_nombre', '')
             
+            # NUEVO: Actualizar beneficiario si existe
+            if beneficiario:
+                tramite.beneficiario_1 = beneficiario
+
             tramite.save()
+            print(f"Trámite {tramite.id} actualizado correctamente")
         else:
-            # Nuevo trámite
+            print("Creando nuevo trámite")
+            # Nuevo trámite - asignar testigos y beneficiarios
+            testigo_1_nombre = ""
+            if vendedor:
+                testigo_1_nombre = f"{vendedor.nombre_completo}"
+            elif propietario:
+                testigo_1_nombre = f"{propietario.nombre_completo}"
+
             tramite = Tramite.objects.create(
                 financiamiento=financiamiento,
                 cliente=cliente,
@@ -797,15 +879,25 @@ class AvisoPrivacidadView(FormView):
                 propietario=propietario,
                 persona_tipo=persona_tipo,
                 persona_id=persona_id,
-                firma_cliente=firma or "",
+                firma_vendedor=firma or "",  # CORRECCIÓN: usar firma_vendedor
                 cliente_2=cliente2,
-                usuario_creador=self.request.user  # ← Aquí asignamos el usuario
+                usuario_creador=self.request.user,  # ← Aquí asignamos el usuario
+                # Asignar testigos
+                testigo_1_nombre=testigo_1_nombre,
+                testigo_2_nombre=testigos_data.get('testigo2_nombre', ''),
+                # NUEVO: Asignar beneficiario (puede ser None)
+                beneficiario_1=beneficiario
             )
             self.request.session['tramite_id'] = tramite.id
 
-        # Limpiar datos temporales del segundo cliente
-        if 'cliente2_data' in self.request.session:
-            del self.request.session['cliente2_data']
+        # 5) Generar los links de firma para todos los involucrados
+        tramite.generar_links_firma()
+
+        # Limpiar datos temporales de la sesión
+        session_keys = ['cliente2_data', 'testigos_data', 'beneficiario_data']  # CAMBIO: beneficiarios_data -> beneficiario_data
+        for key in session_keys:
+            if key in self.request.session:
+                del self.request.session[key]
 
         # 5) Vamos a la selección de documentos
         return redirect('workflow:clausulas_especiales')
@@ -846,9 +938,125 @@ class Paso1FinanciamientoView(TemplateView):
         request.session['financiamiento_id'] = int(plan_id)
         return redirect('workflow:paso2_cliente')
 
+# Vista base para todas las firmas
+class FirmaBaseView(FormView):
+    template_name = None  # Cada vista hija debe definir su template
+    form_class = FirmaForm  # Necesitamos crear este formulario
+    
+    def get_tramite_desde_token(self, token):
+        """Encuentra el trámite a partir de cualquier token de firma"""
+        # Buscar en todos los campos posibles
+        campos_busqueda = [
+            ('link_firma_cliente', 'cliente'),
+            ('link_firma_cliente2', 'segundo_cliente'),
+            ('link_firma_beneficiario1', 'beneficiario'),
+            ('link_firma_testigo1', 'testigo1'),
+            ('link_firma_testigo2', 'testigo2')
+        ]
+        
+        for campo, tipo in campos_busqueda:
+            try:
+                tramite = Tramite.objects.get(**{campo: token})
+                return tramite, tipo
+            except Tramite.DoesNotExist:
+                continue
+        
+        return None, None
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        token = self.kwargs['token']
+        tramite, tipo_firmante = self.get_tramite_desde_token(token)
+        
+        if not tramite:
+            raise Http404("Token no válido o enlace expirado.")
+        
+        # Definir título y subtítulo según el tipo de firmante
+        titulos = {
+            'cliente': ('Firma - Cliente Principal', 'Proporciona tu firma para completar el contrato'),
+            'segundo_cliente': ('Firma - Segundo Cliente', 'Proporciona tu firma como co-acreditado'),
+            'beneficiario': ('Firma - Beneficiario', 'Completa tus datos y proporciona tu firma'),
+            'testigo1': ('Firma - Testigo 1', 'Certifica la autenticidad del documento'),
+            'testigo2': ('Firma - Testigo 2', 'Certifica la autenticidad del documento'),
+        }
+        
+        titulo, subtitulo = titulos.get(tipo_firmante, ('Firma Digital', 'Complete el proceso de firma'))
+        
+        context.update({
+            'tramite': tramite,
+            'tipo_firmante': tipo_firmante,
+            'titulo': titulo,
+            'subtitulo': subtitulo,
+        })
+        
+        return context
 
+    def form_valid(self, form):
+        token = self.kwargs['token']
+        tramite, tipo_firmante = self.get_tramite_desde_token(token)
+        firma_data = form.cleaned_data['firma_data']
+        
+        # Guardar la firma según el tipo de firmante
+        if tipo_firmante == 'cliente':
+            tramite.firma_cliente = firma_data
+        elif tipo_firmante == 'segundo_cliente':
+            tramite.firma_cliente2 = firma_data
+        elif tipo_firmante == 'beneficiario':
+            tramite.beneficiario_1_firma = firma_data
+        elif tipo_firmante == 'testigo1':
+            tramite.testigo_1_firma = firma_data
+        elif tipo_firmante == 'testigo2':
+            tramite.testigo_2_firma = firma_data
+        
+        tramite.save()
+        
+        # Redirigir a página de éxito
+        return redirect('workflow:firma_exitosa')
 
+# Vistas específicas para cada tipo de firmante
+class FirmaClienteView(FirmaBaseView):
+    template_name = 'workflow/firma_cliente.html'
 
+class FirmaSegundoClienteView(FirmaBaseView):
+    template_name = 'workflow/firma_segundo_cliente.html'
 
+class FirmaBeneficiarioView(FirmaBaseView):
+    template_name = 'workflow/firma_beneficiario.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Agregar formulario de datos del beneficiario si no están completos
+        if context['tramite'].beneficiario_1:
+            from core.forms import BeneficiarioForm
+            context['beneficiario_form'] = BeneficiarioForm(
+                instance=context['tramite'].beneficiario_1
+            )
+        return context
+    
+    def post(self, request, *args, **kwargs):
+        # Manejar tanto los datos del beneficiario como la firma
+        token = self.kwargs['token']
+        tramite, tipo_firmante = self.get_tramite_desde_token(token)
+        
+        # Si el beneficiario existe, actualizar sus datos
+        if tramite.beneficiario_1:
+            from core.forms import BeneficiarioForm
+            beneficiario_form = BeneficiarioForm(
+                request.POST, 
+                instance=tramite.beneficiario_1
+            )
+            if beneficiario_form.is_valid():
+                beneficiario_form.save()
+        
+        # Luego manejar la firma normalmente
+        return super().post(request, *args, **kwargs)
 
+class FirmaTestigo1View(FirmaBaseView):
+    template_name = 'workflow/firma_testigo.html'
+
+class FirmaTestigo2View(FirmaBaseView):
+    template_name = 'workflow/firma_testigo.html'
+
+# Vista de éxito después de firmar
+class FirmaExitosaView(TemplateView):
+    template_name = 'workflow/firma_exitosa.html'
