@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 {% block title %}Descarga de Documentos{% endblock %}
 
 {% block extra_css %}
@@ -548,6 +549,610 @@
     opacity: 1; 
   }
 }
+/* Estilos adicionales para el QR */
+.qr-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 1.5rem;
+  padding: 1rem;
+}
+
+.qr-box {
+  background: white;
+  border-radius: 20px;
+  padding: 2rem;
+  box-shadow: 0 15px 35px rgba(46, 143, 204, 0.15);
+  border: 2px solid rgba(46, 143, 204, 0.1);
+  text-align: center;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  max-width: 400px;
+  animation: qrFloat 3s ease-in-out infinite;
+}
+
+.qr-box:hover {
+  transform: scale(1.05);
+  box-shadow: 0 20px 45px rgba(46, 143, 204, 0.25);
+  border-color: rgba(46, 143, 204, 0.3);
+}
+
+.qr-image {
+  width: 250px;
+  height: 250px;
+  max-width: 100%;
+  border-radius: 10px;
+  margin-bottom: 1rem;
+  background: white;
+  padding: 10px;
+  transition: transform 0.3s ease;
+}
+
+.qr-box:hover .qr-image {
+  transform: scale(1.02);
+}
+
+.qr-instruction {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  margin-top: 1rem;
+  margin-bottom: 0;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.qr-instruction i {
+  color: var(--bs-primary);
+  font-size: 1.1rem;
+  animation: cameraPulse 2s ease-in-out infinite;
+}
+
+@keyframes qrFloat {
+  0%, 100% { 
+    transform: translateY(0px); 
+  }
+  50% { 
+    transform: translateY(-10px); 
+  }
+}
+
+@keyframes cameraPulse {
+  0%, 100% { 
+    transform: scale(1); 
+    opacity: 0.8;
+  }
+  50% { 
+    transform: scale(1.15); 
+    opacity: 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .qr-box {
+    padding: 1.5rem;
+    max-width: 90%;
+  }
+  
+  .qr-image {
+    width: 200px;
+    height: 200px;
+  }
+  
+  .qr-instruction {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .qr-box {
+    padding: 1rem;
+  }
+  
+  .qr-image {
+    width: 180px;
+    height: 180px;
+  }
+  
+  .qr-instruction {
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+}
+
+.links-firma-section {
+  margin-top: 3rem;
+  padding: 3rem 2.5rem;
+  background: linear-gradient(135deg, rgba(46, 143, 204, 0.08) 0%, rgba(46, 143, 204, 0.03) 100%);
+  border-radius: 25px;
+  border: 2px solid rgba(46, 143, 204, 0.15);
+  box-shadow: 0 10px 30px rgba(46, 143, 204, 0.1);
+  position: relative;
+  overflow: hidden;
+  animation: fadeInUp 1s ease 1.2s forwards;
+  opacity: 0;
+}
+
+.links-firma-section::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(46, 143, 204, 0.03) 0%, transparent 70%);
+  animation: rotateBackground 25s linear infinite;
+  z-index: 0;
+}
+
+.links-firma-section > * {
+  position: relative;
+  z-index: 1;
+}
+
+.links-title {
+  font-size: 2rem;
+  margin-bottom: 0.75rem;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.links-title i {
+  color: var(--bs-primary);
+  font-size: 2rem;
+  animation: linksPulse 2s ease-in-out infinite;
+}
+
+.links-subtitle {
+  font-size: 1.05rem;
+  color: var(--text-secondary);
+  margin-bottom: 2.5rem;
+  line-height: 1.6;
+  text-align: center;
+  font-weight: 400;
+}
+
+.links-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+.link-category {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  padding: 2rem;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(46, 143, 204, 0.1);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.link-category::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 5px;
+  background: var(--primary-gradient);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.5s ease;
+}
+
+.link-category:hover::before {
+  transform: scaleX(1);
+}
+
+.link-category:hover {
+  box-shadow: 0 12px 35px rgba(46, 143, 204, 0.15);
+  transform: translateY(-3px);
+}
+
+.link-category h3 {
+  font-size: 1.5rem;
+  margin-bottom: 1.75rem;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid rgba(46, 143, 204, 0.2);
+  font-weight: 600;
+}
+
+.link-category h3 i {
+  width: 35px;
+  height: 35px;
+  border-radius: 10px;
+  background: var(--primary-gradient);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  box-shadow: 0 4px 15px rgba(46, 143, 204, 0.3);
+}
+
+.link-card {
+  background: white;
+  border-radius: 15px;
+  padding: 1.75rem;
+  margin-bottom: 1rem;
+  border: 2px solid rgba(46, 143, 204, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  position: relative;
+  overflow: hidden;
+}
+
+.link-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--primary-gradient);
+  transform: scaleY(0);
+  transform-origin: bottom;
+  transition: transform 0.4s ease;
+}
+
+.link-card:hover::before {
+  transform: scaleY(1);
+  transform-origin: top;
+}
+
+.link-card:hover {
+  box-shadow: 0 10px 30px rgba(46, 143, 204, 0.2);
+  transform: translateX(5px);
+  border-color: rgba(46, 143, 204, 0.3);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 1) 0%, rgba(46, 143, 204, 0.03) 100%);
+}
+
+.link-card:last-child {
+  margin-bottom: 0;
+}
+
+.link-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  flex: 1;
+  min-width: 200px;
+}
+
+.link-header i {
+  color: var(--bs-primary);
+  font-size: 1.5rem;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(46, 143, 204, 0.1);
+  border-radius: 10px;
+  transition: all 0.3s ease;
+  margin-top: 0.25rem; /* Alinea mejor el ícono con el texto */
+}
+
+.link-card:hover .link-header i {
+  background: var(--primary-gradient);
+  color: white;
+  transform: scale(1.1) rotate(5deg);
+}
+
+.link-header strong {
+  font-size: 1.15rem;
+  color: var(--text-primary);
+  font-weight: 600;
+  transition: color 0.3s ease;
+}
+
+.link-card:hover .link-header strong {
+  color: var(--bs-primary);
+}
+
+.badge {
+  background: linear-gradient(135deg, rgba(46, 143, 204, 0.15) 0%, rgba(46, 143, 204, 0.08) 100%);
+  color: var(--bs-primary);
+  padding: 0.35rem 1rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border: 1px solid rgba(46, 143, 204, 0.2);
+  transition: all 0.3s ease;
+}
+
+.link-card:hover .badge {
+  background: var(--primary-gradient);
+  color: white;
+  border-color: transparent;
+  transform: scale(1.05);
+}
+
+.link-url {
+  flex: 2;
+  font-family: 'Courier New', monospace;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  padding: 1rem 1.25rem;
+  border-radius: 10px;
+  word-break: break-all;
+  font-size: 0.9rem;
+  border: 1px solid #dee2e6;
+  color: #495057;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.link-url::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(46, 143, 204, 0.1), transparent);
+  transition: left 0.5s;
+}
+
+.link-card:hover .link-url::before {
+  left: 100%;
+}
+
+.link-card:hover .link-url {
+  background: linear-gradient(135deg, #fff 0%, rgba(46, 143, 204, 0.05) 100%);
+  border-color: rgba(46, 143, 204, 0.3);
+  box-shadow: inset 0 2px 8px rgba(46, 143, 204, 0.05);
+}
+
+.btn-copy {
+  background: var(--primary-gradient);
+  color: white;
+  border: none;
+  padding: 1rem 1.75rem;
+  border-radius: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  font-weight: 600;
+  white-space: nowrap;
+  font-size: 0.95rem;
+  box-shadow: 0 4px 15px rgba(46, 143, 204, 0.25);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-copy::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.5s;
+}
+
+.btn-copy:hover::before {
+  left: 100%;
+}
+
+.btn-copy:hover {
+  background: linear-gradient(135deg, #1e5f8c 0%, #2e8fcc 100%);
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 8px 25px rgba(46, 143, 204, 0.4);
+}
+
+.btn-copy:active {
+  transform: translateY(0) scale(1);
+}
+
+.btn-copy i {
+  font-size: 1.1rem;
+  transition: transform 0.3s ease;
+}
+
+.btn-copy:hover i {
+  transform: scale(1.2);
+}
+
+.btn-copy.copied {
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+}
+
+.btn-copy.copied:hover {
+  background: linear-gradient(135deg, #218838 0%, #1aa179 100%);
+  box-shadow: 0 8px 25px rgba(40, 167, 69, 0.4);
+}
+
+/* Estilos para tarjetas de error */
+.link-card.error {
+  background: linear-gradient(135deg, rgba(220, 53, 69, 0.05) 0%, rgba(220, 53, 69, 0.02) 100%);
+  border: 2px solid rgba(220, 53, 69, 0.3);
+}
+
+.link-card.error::before {
+  background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+}
+
+.link-card.error .link-header i {
+  color: #dc3545;
+  background: rgba(220, 53, 69, 0.1);
+  animation: errorPulse 2s ease-in-out infinite;
+}
+
+.link-card.error:hover .link-header i {
+  background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+  color: white;
+}
+
+.link-card.error .link-url {
+  background: rgba(220, 53, 69, 0.08);
+  color: #dc3545;
+  font-style: italic;
+  border-color: rgba(220, 53, 69, 0.2);
+}
+
+/* Animaciones */
+@keyframes linksPulse {
+  0%, 100% { 
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  50% { 
+    transform: scale(1.1);
+    filter: brightness(1.2);
+  }
+}
+
+@keyframes errorPulse {
+  0%, 100% { 
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  50% { 
+    transform: scale(1.05);
+    opacity: 1;
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .links-firma-section {
+    padding: 2rem 1.5rem;
+    margin-top: 2rem;
+  }
+  
+  .links-title {
+    font-size: 1.6rem;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .links-title i {
+    font-size: 1.5rem;
+  }
+  
+  .links-subtitle {
+    font-size: 0.95rem;
+  }
+  
+  .link-category {
+    padding: 1.5rem;
+  }
+  
+  .link-category h3 {
+    font-size: 1.3rem;
+  }
+  
+  .link-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.25rem;
+    padding: 1.5rem;
+  }
+  
+  .link-header {
+    width: 100%;
+    min-width: auto;
+  }
+  
+  .link-url {
+    width: 100%;
+    font-size: 0.85rem;
+    padding: 0.875rem 1rem;
+  }
+  
+  .btn-copy {
+    align-self: stretch;
+    justify-content: center;
+    padding: 0.875rem 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .links-firma-section {
+    padding: 1.5rem 1rem;
+  }
+  
+  .links-title {
+    font-size: 1.4rem;
+  }
+  
+  .link-category h3 {
+    font-size: 1.2rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+  
+  .link-header strong {
+    font-size: 1rem;
+  }
+  
+  .badge {
+    font-size: 0.8rem;
+    padding: 0.25rem 0.75rem;
+  }
+}
+.link-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.link-header strong {
+  font-size: 1.15rem;
+  color: var(--text-primary);
+  font-weight: 600;
+  transition: color 0.3s ease;
+  display: block;
+}
+
+.link-info .badge {
+  display: inline-block;
+  width: fit-content;
+}
+
+@media (max-width: 768px) {
+  .link-info {
+    gap: 0.4rem;
+  }
+  
+  .link-header {
+    width: 100%;
+    min-width: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .link-header strong {
+    font-size: 1rem;
+  }
+  
+  .badge {
+    font-size: 0.8rem;
+    padding: 0.25rem 0.75rem;
+  }
+}
+
 </style>
 {% endblock %}
 
@@ -623,7 +1228,134 @@
     </button>
   </form>
 
-  <!-- Nueva sección para reseña de Google -->
+  <!-- ============================================= -->
+  <!-- NUEVA SECCIÓN: ENLACES PARA FIRMAS DIGITALES -->
+  <!-- ============================================= -->
+  <div class="links-firma-section">
+      <h2 class="links-title">
+          <i class="fas fa-signature"></i>
+          Enlaces para Firmas Digitales
+          <i class="fas fa-signature"></i>
+      </h2>
+      <p class="links-subtitle">
+          Comparte estos enlaces personalizados con cada participante para que puedan firmar los documentos de manera segura y digital
+      </p>
+
+      <div class="links-container">
+          <!-- Clientes -->
+          <div class="link-category">
+              <h3><i class="fas fa-users"></i> Clientes</h3>
+              
+              <!-- Cliente Principal - SOLO SI TIENE TOKEN -->
+              {% if tramite.link_firma_cliente %}
+              <div class="link-card">
+                  <div class="link-header">
+                      <i class="fas fa-user"></i>
+                      <strong>Cliente Principal</strong>
+                  </div>
+                  <div class="link-url">
+                      {{ request.scheme }}://{{ request.get_host }}{% url 'workflow:firma_cliente' tramite.link_firma_cliente %}
+                  </div>
+                  <button class="btn-copy" data-link="{{ request.scheme }}://{{ request.get_host }}{% url 'workflow:firma_cliente' tramite.link_firma_cliente %}">
+                      <i class="fas fa-copy"></i> Copiar
+                  </button>
+              </div>
+              {% else %}
+              <div class="link-card error">
+                  <div class="link-header">
+                      <i class="fas fa-exclamation-triangle"></i>
+                      <strong>Cliente Principal - Pendiente</strong>
+                  </div>
+                  <div class="link-url">
+                      ⚠️ Enlace no generado. Contacta al administrador.
+                  </div>
+              </div>
+              {% endif %}
+
+              <!-- Segundo Cliente - SOLO SI EXISTE Y TIENE TOKEN -->
+              {% if tramite.cliente_2 and tramite.link_firma_cliente2 %}
+              <div class="link-card">
+                  <div class="link-header">
+                      <i class="fas fa-user-friends"></i>
+                      <strong>Segundo Cliente</strong>
+                  </div>
+                  <div class="link-url">
+                      {{ request.scheme }}://{{ request.get_host }}{% url 'workflow:firma_segundo_cliente' tramite.link_firma_cliente2 %}
+                  </div>
+                  <button class="btn-copy" data-link="{{ request.scheme }}://{{ request.get_host }}{% url 'workflow:firma_segundo_cliente' tramite.link_firma_cliente2 %}">
+                      <i class="fas fa-copy"></i> Copiar
+                  </button>
+              </div>
+              {% endif %}
+          </div>
+
+          <!-- Beneficiario - SOLO SI EXISTE Y TIENE TOKEN -->
+          {% if tramite.beneficiario_1 and tramite.link_firma_beneficiario1 %}
+          <div class="link-category">
+              <h3><i class="fas fa-hand-holding-heart"></i> Beneficiario</h3>
+              <div class="link-card">
+                  <div class="link-header">
+                      <i class="fas fa-hand-holding-heart"></i>
+                      <strong>Beneficiario</strong>
+                  </div>
+                  <div class="link-url">
+                      {{ request.scheme }}://{{ request.get_host }}{% url 'workflow:firma_beneficiario' tramite.link_firma_beneficiario1 %}
+                  </div>
+                  <button class="btn-copy" data-link="{{ request.scheme }}://{{ request.get_host }}{% url 'workflow:firma_beneficiario' tramite.link_firma_beneficiario1 %}">
+                      <i class="fas fa-copy"></i> Copiar
+                  </button>
+              </div>
+          </div>
+          {% endif %}
+
+          <!-- Testigos - SOLO SI EXISTEN Y TIENEN TOKEN -->
+          {% if tramite.testigo_1_nombre and tramite.link_firma_testigo1 or tramite.testigo_2_nombre and tramite.link_firma_testigo2 %}
+          <div class="link-category">
+              <h3><i class="fas fa-user-check"></i> Testigos</h3>
+              
+              <!-- Testigo 1 -->
+              {% if tramite.testigo_1_nombre and tramite.link_firma_testigo1 %}
+              <div class="link-card">
+                  <div class="link-header">
+                      <i class="fas fa-user-check"></i>
+                      <div class="link-info">
+                          <strong>Testigo 1</strong>
+                          <!--<span class="badge">{{ tramite.testigo_1_nombre }}</span> -->
+                      </div>
+                  </div>
+                  <div class="link-url">
+                      {{ request.scheme }}://{{ request.get_host }}{% url 'workflow:firma_testigo1' tramite.link_firma_testigo1 %}
+                  </div>
+                  <button class="btn-copy" data-link="{{ request.scheme }}://{{ request.get_host }}{% url 'workflow:firma_testigo1' tramite.link_firma_testigo1 %}">
+                      <i class="fas fa-copy"></i> Copiar
+                  </button>
+              </div>
+              {% endif %}
+
+              <!-- Testigo 2 -->
+              {% if tramite.testigo_2_nombre and tramite.link_firma_testigo2 %}
+              <div class="link-card">
+                  <div class="link-header">
+                      <i class="fas fa-user-plus"></i>
+                      <div class="link-info">
+                          <strong>Testigo 2</strong>
+                          <!--<span class="badge">{{ tramite.testigo_2_nombre }}</span> -->
+                      </div>
+                  </div>
+                  <div class="link-url">
+                      {{ request.scheme }}://{{ request.get_host }}{% url 'workflow:firma_testigo2' tramite.link_firma_testigo2 %}
+                  </div>
+                  <button class="btn-copy" data-link="{{ request.scheme }}://{{ request.get_host }}{% url 'workflow:firma_testigo2' tramite.link_firma_testigo2 %}">
+                      <i class="fas fa-copy"></i> Copiar
+                  </button>
+              </div>
+              {% endif %}
+          </div>
+          {% endif %}
+      </div>
+  </div>
+
+  <!-- Nueva sección para reseña de Google con QR -->
   <div class="review-section">
     <div class="review-title">
       <i class="fas fa-star"></i>
@@ -633,13 +1365,19 @@
     <p class="review-subtitle">
       Tu opinión es muy importante para nosotros y nos ayuda a mejorar nuestros servicios
     </p>
-    <a href="https://www.google.com/maps/place/Grupo+Jora/@17.022997,-96.7130501,17z/data=!4m7!3m6!1s0x85c7231eb4abc927:0xdc8607cdac6c90f2!4b1!8m2!3d17.022997!4d-96.7104752!16s%2Fg%2F11vbbxsv4w?entry=ttu&g_ep=EgoyMDI1MDgzMC4wIKXMDSoASAFQAw%3D%3D" 
-       target="_blank" 
-       rel="noopener noreferrer" 
-       class="btn-google-review">
-      <i class="fab fa-google"></i>
-      Escribir Reseña en Google
-    </a>
+    
+    <!-- Contenedor del QR -->
+    <div class="qr-container">
+      <div class="qr-box">
+        <img src="{% static 'img/qr_formulario.png' %}" 
+            alt="Código QR para reseña de Google" 
+            class="qr-image">
+        <p class="qr-instruction">
+          <i class="fas fa-camera"></i>
+          Escanea el código QR con tu cámara para dejarnos una reseña
+        </p>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -682,6 +1420,54 @@ document.addEventListener('DOMContentLoaded', function() {
       card.style.opacity = '1';
       card.style.transform = 'translateY(0)';
     }, 150 * index);
+  });
+  // Funcionalidad para copiar enlaces
+  document.querySelectorAll('.btn-copy').forEach(button => {
+    button.addEventListener('click', function() {
+      const link = this.getAttribute('data-link');
+      const originalText = this.innerHTML;
+      
+      navigator.clipboard.writeText(link).then(() => {
+        // Éxito al copiar
+        this.innerHTML = '<i class="fas fa-check"></i> ¡Copiado!';
+        this.classList.add('copied');
+        
+        setTimeout(() => {
+          this.innerHTML = originalText;
+          this.classList.remove('copied');
+        }, 2000);
+        
+      }).catch(err => {
+        // Fallo al copiar - método alternativo
+        console.error('Error al copiar: ', err);
+        const tempTextArea = document.createElement('textarea');
+        tempTextArea.value = link;
+        document.body.appendChild(tempTextArea);
+        tempTextArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(tempTextArea);
+        
+        this.innerHTML = '<i class="fas fa-check"></i> ¡Copiado!';
+        this.classList.add('copied');
+        
+        setTimeout(() => {
+          this.innerHTML = originalText;
+          this.classList.remove('copied');
+        }, 2000);
+      });
+    });
+  });
+
+  // Animación de entrada para los enlaces
+  const linkCards = document.querySelectorAll('.link-card');
+  linkCards.forEach((card, index) => {
+    card.style.opacity = '0';
+    card.style.transform = 'translateX(-20px)';
+    setTimeout(() => {
+      card.style.transition = 'all 0.5s ease';
+      card.style.opacity = '1';
+      card.style.transform = 'translateX(0)';
+    }, 200 + (index * 100));
   });
 });
 
