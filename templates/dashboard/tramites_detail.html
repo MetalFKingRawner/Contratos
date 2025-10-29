@@ -2,20 +2,5 @@
 {% block title %}Trámite #{{ tramite.id }}{% endblock %}
 
 {% block content %}
-  <h1 class="gradient-text mb-4">Trámite #{{ tramite.id }}</h1>
-
-  <div class="card card-glass mb-4">
-    <div class="card-body">
-      <h5 class="card-subtitle mb-3">Datos generales</h5>
-      <ul class="list-unstyled">
-        <li><strong>Cliente:</strong> {{ tramite.cliente.nombre_completo }}</li>
-        <li><strong>Financiamiento:</strong> {{ tramite.financiamiento }}</li>
-        <li><strong>Creado en:</strong> {{ tramite.creado_en|date:"Y-m-d H:i" }}</li>
-      </ul>
-      <a href="#" class="btn btn-primary mt-3">Editar Trámite</a>
-      <a href="#" class="btn btn-outline-danger mt-3">Eliminar</a>
-    </div>
-  </div>
-
-  {# Aquí luego puedes incrustar otras secciones: encuesta, descargas… #}
+  {% include "dashboard/partials/tramites_detail_partial.html" %}
 {% endblock %}
