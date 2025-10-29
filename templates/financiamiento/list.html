@@ -275,6 +275,83 @@
   text-align: center;
 }
 
+/* NUEVOS ESTILOS PARA COTIZACIÓN Y ACCIONES */
+.cotizacion-badge {
+  padding: 0.4rem 1rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: center;
+  display: inline-block;
+  min-width: 60px;
+}
+
+.cotizacion-si {
+  background: linear-gradient(135deg, #28a745, #20c997);
+  color: white;
+  box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+}
+
+.cotizacion-no {
+  background: linear-gradient(135deg, #953232, #be3232);
+  color: white;
+  box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
+}
+
+.acciones-container {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  align-items: center;
+}
+
+.btn-accion {
+  padding: 0.5rem 1rem;
+  border-radius: 15px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  cursor: pointer;
+}
+
+.btn-editar {
+  background: linear-gradient(135deg, #17a2b8, #138496);
+  color: white;
+  box-shadow: 0 4px 15px rgba(23, 162, 184, 0.3);
+}
+
+.btn-editar:hover {
+  background: linear-gradient(135deg, #138496, #117a8b);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(23, 162, 184, 0.4);
+}
+
+.btn-descargar {
+  background: linear-gradient(135deg, #28a745, #20c997);
+  color: white;
+  box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+}
+
+.btn-descargar:hover {
+  background: linear-gradient(135deg, #218838, #1e7e34);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+}
+
+.btn-descargar:disabled {
+  background: linear-gradient(135deg, #6c757d, #868e96);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
 /* Efectos de partículas flotantes */
 .floating-particles {
   position: absolute;
@@ -352,6 +429,16 @@
     padding: 0.75rem 0.5rem;
     font-size: 0.9rem;
   }
+  
+  .acciones-container {
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+  
+  .btn-accion {
+    width: 100%;
+    justify-content: center;
+  }
 }
 
 @media (max-width: 576px) {
@@ -366,6 +453,12 @@
   
   .page-title {
     font-size: 1.8rem;
+  }
+  
+  .cotizacion-badge {
+    font-size: 0.75rem;
+    padding: 0.3rem 0.6rem;
+    min-width: 50px;
   }
 }
 </style>
@@ -398,6 +491,8 @@
           <th><i class="fas fa-map-marker-alt me-2"></i>Lote</th>
           <th><i class="fas fa-dollar-sign me-2"></i>Precio</th>
           <th><i class="fas fa-calendar-alt me-2"></i>Mensualidades</th>
+          <th><i class="fas fa-file-invoice me-2"></i>Cotización</th>
+          <th><i class="fas fa-cogs me-2"></i>Acciones</th>
         </tr>
       </thead>
       <tbody>
@@ -406,11 +501,47 @@
           <td><span class="cliente-name">{{ p.nombre_cliente }}</span></td>
           <td><span class="data-badge">{{ p.lote }}</span></td>
           <td><span class="precio-highlight">${{ p.precio_lote|floatformat:2 }}</span></td>
-          <td><span class="mensualidades-count">{{ p.num_mensualidades }} meses</span></td>
+          <td>
+            {% if p.num_mensualidades %}
+              <span class="mensualidades-count">{{ p.num_mensualidades }} meses</span>
+            {% else %}
+              <span class="data-badge">Contado</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if p.es_cotizacion %}
+              <span class="cotizacion-badge cotizacion-si">
+                <i class="fas fa-check me-1"></i>Sí
+              </span>
+            {% else %}
+              <span class="cotizacion-badge cotizacion-no">
+                <i class="fas fa-times me-1"></i>No
+              </span>
+            {% endif %}
+          </td>
+          <td>
+            <div class="acciones-container">
+              <!-- Botón Editar -->
+              <a href="{% url 'financiamiento:edit' p.pk %}" class="btn-accion btn-editar">
+                <i class="fas fa-edit"></i>Editar
+              </a>
+              
+              <!-- Botón Descargar (solo para cotizaciones) -->
+              {% if p.es_cotizacion %}
+                <button class="btn-accion btn-descargar" onclick="descargarCotizacion({{ p.pk }})">
+                  <i class="fas fa-download"></i>Descargar
+                </button>
+              {% else %}
+                <button class="btn-accion btn-descargar" disabled title="Solo disponible para cotizaciones">
+                  <i class="fas fa-download"></i>Descargar
+                </button>
+              {% endif %}
+            </div>
+          </td>
         </tr>
         {% empty %}
         <tr>
-          <td colspan="4">
+          <td colspan="6">
             <div class="empty-state">
               <strong>No hay planes de financiamiento registrados</strong>
               <p class="mb-0 mt-2">¡Comienza creando tu primer plan de financiamiento!</p>
@@ -422,5 +553,27 @@
     </table>
   </div>
 </div>
+
+<script>
+// Función placeholder para descargar cotización
+function descargarCotizacion(pk) {
+  // Por ahora solo mostramos un mensaje
+  alert(`Función de descarga para cotización ID: ${pk} - Esta función se implementará próximamente`);
+  
+  // Aquí en el futuro implementaremos:
+  // fetch(`/financiamiento/${pk}/descargar-cotizacion/`)
+  //   .then(response => response.blob())
+  //   .then(blob => {
+  //     const url = window.URL.createObjectURL(blob);
+  //     const a = document.createElement('a');
+  //     a.style.display = 'none';
+  //     a.href = url;
+  //     a.download = `cotizacion-${pk}.pdf`;
+  //     document.body.appendChild(a);
+  //     a.click();
+  //     window.URL.revokeObjectURL(url);
+  //   });
+}
+</script>
 
 {% endblock %}
