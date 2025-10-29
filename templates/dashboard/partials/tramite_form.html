@@ -77,25 +77,42 @@
             {% endif %}
           </div>
 
+          <!-- ========== NUEVA SECCIÓN: PERSONA QUE ATIENDE ========== -->
           <div class="form-group">
             <label class="form-label">
-              Vendedor
-              {% if form.vendedor.field.required %}
-                <span class="required-indicator">*</span>
-              {% endif %}
+              Vendedor/Propietario/Apoderado
+              <span class="required-indicator">*</span>
             </label>
             <div class="input-wrapper">
-              {{ form.vendedor }}
+              {{ form.persona_atendiendo }}
               <div class="input-icon">
-                <i class="fas fa-user-tie"></i>
+                <i class="fas fa-user-check"></i>
               </div>
             </div>
-            {% if form.vendedor.help_text %}
-              <small class="form-help-text">{{ form.vendedor.help_text }}</small>
-            {% endif %}
-            {% if form.vendedor.errors %}
+            <!-- Información contextual dinámica -->
+            <div class="form-context-info" id="persona-context-info">
+              <small class="form-help-text">
+                <span id="proyecto-info">
+                  {% if form.instance.financiamiento %}
+                    Proyecto actual: <strong>{{ form.instance.financiamiento.lote.proyecto.nombre }}</strong>
+                  {% else %}
+                    Seleccione un financiamiento para ver los propietarios disponibles
+                  {% endif %}
+                </span>
+              </small>
+              <small class="form-help-text" id="propietarios-count">
+                {% with propietarios_count=form.fields.persona_atendiendo.choices|length %}
+                  {% if propietarios_count > 0 %}
+                    {{ propietarios_count|add:"-1" }} opciones disponibles
+                  {% else %}
+                    No hay propietarios registrados para este proyecto
+                  {% endif %}
+                {% endwith %}
+              </small>
+            </div>
+            {% if form.persona_atendiendo.errors %}
               <div class="field-errors">
-                {% for error in form.vendedor.errors %}
+                {% for error in form.persona_atendiendo.errors %}
                   <span class="field-error">
                     <i class="fas fa-exclamation-circle"></i>
                     {{ error }}
@@ -104,6 +121,10 @@
               </div>
             {% endif %}
           </div>
+
+          <!-- Campos hidden para vendedor y propietario -->
+          {{ form.vendedor }}
+          {{ form.propietario }}
         </div>
       </div>
 
@@ -164,6 +185,133 @@
             {% if form.cliente_2.errors %}
               <div class="field-errors">
                 {% for error in form.cliente_2.errors %}
+                  <span class="field-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    {{ error }}
+                  </span>
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== NUEVA SECCIÓN: BENEFICIARIOS ========== -->
+      <div class="form-section">
+        <div class="section-header">
+          <div class="section-icon beneficiary">
+            <i class="fas fa-user-tag"></i>
+          </div>
+          <h3 class="section-title">Beneficiarios</h3>
+        </div>
+        
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">
+              Beneficiario 1 (Opcional)
+            </label>
+            <div class="input-wrapper">
+              {{ form.beneficiario_1 }}
+              <div class="input-icon">
+                <i class="fas fa-user-tag"></i>
+              </div>
+            </div>
+            {% if form.beneficiario_1.help_text %}
+              <small class="form-help-text">{{ form.beneficiario_1.help_text }}</small>
+            {% endif %}
+            {% if form.beneficiario_1.errors %}
+              <div class="field-errors">
+                {% for error in form.beneficiario_1.errors %}
+                  <span class="field-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    {{ error }}
+                  </span>
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              Beneficiario 2 (Opcional)
+            </label>
+            <div class="input-wrapper">
+              {{ form.beneficiario_2 }}
+              <div class="input-icon">
+                <i class="fas fa-user-tag"></i>
+              </div>
+            </div>
+            {% if form.beneficiario_2.help_text %}
+              <small class="form-help-text">{{ form.beneficiario_2.help_text }}</small>
+            {% endif %}
+            {% if form.beneficiario_2.errors %}
+              <div class="field-errors">
+                {% for error in form.beneficiario_2.errors %}
+                  <span class="field-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    {{ error }}
+                  </span>
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== NUEVA SECCIÓN: TESTIGOS ========== -->
+      <div class="form-section">
+        <div class="section-header">
+          <div class="section-icon witness">
+            <i class="fas fa-user-check"></i>
+          </div>
+          <h3 class="section-title">Testigos</h3>
+          <div class="section-help">
+            <i class="fas fa-info-circle" title="Los testigos recibirán links para firmar"></i>
+          </div>
+        </div>
+        
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">
+              Testigo 1 (Opcional)
+            </label>
+            <div class="input-wrapper">
+              {{ form.testigo_1_nombre }}
+              <div class="input-icon">
+                <i class="fas fa-user-check"></i>
+              </div>
+            </div>
+            {% if form.testigo_1_nombre.help_text %}
+              <small class="form-help-text">{{ form.testigo_1_nombre.help_text }}</small>
+            {% endif %}
+            {% if form.testigo_1_nombre.errors %}
+              <div class="field-errors">
+                {% for error in form.testigo_1_nombre.errors %}
+                  <span class="field-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    {{ error }}
+                  </span>
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              Testigo 2 (Opcional)
+            </label>
+            <div class="input-wrapper">
+              {{ form.testigo_2_nombre }}
+              <div class="input-icon">
+                <i class="fas fa-user-check"></i>
+              </div>
+            </div>
+            {% if form.testigo_2_nombre.help_text %}
+              <small class="form-help-text">{{ form.testigo_2_nombre.help_text }}</small>
+            {% endif %}
+            {% if form.testigo_2_nombre.errors %}
+              <div class="field-errors">
+                {% for error in form.testigo_2_nombre.errors %}
                   <span class="field-error">
                     <i class="fas fa-exclamation-circle"></i>
                     {{ error }}
@@ -265,7 +413,7 @@
         </div>
       </div>
 
-      <!-- Firma del Cliente -->
+      <!-- Firma del Cliente
       <div class="form-section">
         <div class="section-header">
           <div class="section-icon accent">
@@ -300,7 +448,7 @@
           
         </div>
       </div>
-    </div>
+    </div>-->
 
     <!-- Botones de acción -->
     <div class="form-actions">
@@ -1131,6 +1279,135 @@
 #id_firma_cliente {
   display: none;
 }
+
+/* ========== ESTILOS NUEVOS PARA LAS SECCIONES ========== */
+
+/* Iconos para nuevas secciones */
+.section-icon.beneficiary {
+  background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+}
+
+.section-icon.witness {
+  background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+}
+
+/* Tooltips */
+.section-help {
+  margin-left: auto;
+}
+
+.section-help i {
+  color: var(--text-secondary);
+  cursor: help;
+  transition: color 0.3s ease;
+}
+
+.section-help i:hover {
+  color: var(--logo-blue);
+}
+
+.form-tooltip {
+  position: absolute;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  z-index: 1000;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
+  pointer-events: none;
+}
+
+.form-tooltip.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .section-help {
+    display: none; /* Ocultar tooltips en móvil */
+  }
+}
+/* ========== ESTILOS MEJORADOS PARA LA SECCIÓN DE PERSONA ========== */
+
+/* Estilos para las opciones del select */
+.form-select option {
+    padding: 8px 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin: 2px 0;
+}
+
+.form-select option[value*="vendedor"] {
+    background: rgba(59, 130, 246, 0.08);
+    border-left: 3px solid #3B82F6;
+}
+
+.form-select option[value*="propietario"] {
+    background: rgba(245, 158, 11, 0.08);
+    border-left: 3px solid #D97706;
+}
+
+.form-select option[value*="propietario"]:contains("Apoderado") {
+    background: rgba(139, 92, 246, 0.08);
+    border-left: 3px solid #8B5CF6;
+}
+
+/* Información contextual */
+.form-context-info {
+    margin-top: 0.5rem;
+    padding: 0.75rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.form-context-info .form-help-text {
+    display: block;
+    margin-bottom: 0.25rem;
+}
+
+.form-context-info .form-help-text:last-child {
+    margin-bottom: 0;
+}
+
+/* Ícono dinámico */
+.input-wrapper .input-icon i {
+    transition: all 0.3s ease;
+}
+
+/* Colores para los íconos */
+.input-wrapper .input-icon .fa-user-tie {
+    color: #3B82F6 !important;
+}
+
+.input-wrapper .input-icon .fa-crown {
+    color: #D97706 !important;
+}
+
+/* Estados de la información contextual */
+#propietarios-count[style*="color: #059669"] {
+    font-weight: 500;
+}
+
+#propietarios-count[style*="color: #DC2626"] {
+    font-weight: 500;
+}
+
+/* Mejoras responsive */
+@media (max-width: 768px) {
+    .form-context-info {
+        padding: 0.5rem;
+        font-size: 0.85rem;
+    }
+}
 </style>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/signature_pad/1.5.3/signature_pad.min.js"></script>
@@ -1172,138 +1449,138 @@ function initTramiteFormEnhancements() {
   });
 
   // Inicializar el pad de firma
-  const canvas = document.querySelector(".signature-canvas");
-  if (canvas) {
+  //const canvas = document.querySelector(".signature-canvas");
+  //if (canvas) {
     // Ajustar el tamaño del canvas
-    const resizeCanvas = () => {
-      const ratio = Math.max(window.devicePixelRatio || 1, 1);
-      canvas.width = canvas.offsetWidth * ratio;
-      canvas.height = canvas.offsetHeight * ratio;
-      canvas.getContext("2d").scale(ratio, ratio);
-    };
+    //const resizeCanvas = () => {
+      //const ratio = Math.max(window.devicePixelRatio || 1, 1);
+      //canvas.width = canvas.offsetWidth * ratio;
+      //canvas.height = canvas.offsetHeight * ratio;
+      //canvas.getContext("2d").scale(ratio, ratio);
+    //};
     
-    resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
+    //resizeCanvas();
+    //window.addEventListener('resize', resizeCanvas);
     
-    const signaturePad = new SignaturePad(canvas, {
-      backgroundColor: 'rgba(255, 255, 255, 0.02)',
-      penColor: '#2E8FCC',
-      minWidth: 1,
-      maxWidth: 3,
-      throttle: 16,
-      minPointDistance: 3,
-    });
+    //const signaturePad = new SignaturePad(canvas, {
+      //backgroundColor: 'rgba(255, 255, 255, 0.02)',
+      //penColor: '#2E8FCC',
+      //minWidth: 1,
+      //maxWidth: 3,
+      //throttle: 16,
+      //minPointDistance: 3,
+    //});
 
-    const signatureInput = document.getElementById("id_firma_cliente");
-    const signatureStatus = document.getElementById("signature-status");
+    //const signatureInput = document.getElementById("id_firma_cliente");
+    //const signatureStatus = document.getElementById("signature-status");
     
     // Botón para limpiar
-    const clearBtn = document.querySelector('[data-action="clear"]');
-    if (clearBtn) {
-      clearBtn.addEventListener('click', function() {
-        signaturePad.clear();
-        updateSignatureStatus('empty');
-        if (signatureInput) signatureInput.value = '';
-      });
-    }
+    //const clearBtn = document.querySelector('[data-action="clear"]');
+    //if (clearBtn) {
+      //clearBtn.addEventListener('click', function() {
+        //signaturePad.clear();
+        //updateSignatureStatus('empty');
+        //if (signatureInput) signatureInput.value = '';
+      //});
+    //}
     
     // Botón para guardar
-    const saveBtn = document.querySelector('[data-action="save"]');
-    if (saveBtn) {
-      saveBtn.addEventListener('click', function() {
-        if (signaturePad.isEmpty()) {
-          showSignatureAlert("Por favor, proporcione una firma primero.", 'warning');
-        } else {
-          if (signatureInput) {
-            signatureInput.value = signaturePad.toDataURL();
-            updateSignatureStatus('saved');
-            showSignatureAlert("Firma guardada correctamente.", 'success');
-          }
-        }
-      });
-    }
+    //const saveBtn = document.querySelector('[data-action="save"]');
+    //if (saveBtn) {
+      //saveBtn.addEventListener('click', function() {
+        //if (signaturePad.isEmpty()) {
+          //showSignatureAlert("Por favor, proporcione una firma primero.", 'warning');
+        //} else {
+          //if (signatureInput) {
+            //signatureInput.value = signaturePad.toDataURL();
+            //updateSignatureStatus('saved');
+            //showSignatureAlert("Firma guardada correctamente.", 'success');
+          //}
+        //}
+      //});
+    //}
     
     // Auto-guardar cuando el usuario termina de firmar
-    let signatureTimeout;
-    signaturePad.addEventListener('endStroke', function() {
-      clearTimeout(signatureTimeout);
-      signatureTimeout = setTimeout(() => {
-        if (!signaturePad.isEmpty() && signatureInput) {
-          signatureInput.value = signaturePad.toDataURL();
-          updateSignatureStatus('auto-saved');
-        }
-      }, 1000);
-    });
+    //let signatureTimeout;
+    //signaturePad.addEventListener('endStroke', function() {
+      //clearTimeout(signatureTimeout);
+      //signatureTimeout = setTimeout(() => {
+        //if (!signaturePad.isEmpty() && signatureInput) {
+          //signatureInput.value = signaturePad.toDataURL();
+          //updateSignatureStatus('auto-saved');
+        //}
+      //}, 1000);
+    //});
     
     // Si ya hay una firma, cargarla
-    if (signatureInput && signatureInput.value) {
-      signaturePad.fromDataURL(signatureInput.value);
-      updateSignatureStatus('loaded');
-    }
+    //if (signatureInput && signatureInput.value) {
+      //signaturePad.fromDataURL(signatureInput.value);
+      //updateSignatureStatus('loaded');
+    //}
     
     // Función para actualizar el estado de la firma
-    function updateSignatureStatus(status) {
-      if (!signatureStatus) return;
+    //function updateSignatureStatus(status) {
+      //if (!signatureStatus) return;
       
-      const statusItem = signatureStatus.querySelector('.signature-status-item');
-      const icon = statusItem.querySelector('i');
-      const text = statusItem.querySelector('span');
+      //const statusItem = signatureStatus.querySelector('.signature-status-item');
+      //const icon = statusItem.querySelector('i');
+      //const text = statusItem.querySelector('span');
       
-      signatureStatus.className = 'signature-status';
+      //signatureStatus.className = 'signature-status';
       
-      switch(status) {
-        case 'empty':
-          icon.className = 'fas fa-info-circle';
-          text.textContent = 'Esperando firma del cliente';
-          break;
-        case 'saved':
-          signatureStatus.classList.add('saved');
-          icon.className = 'fas fa-check-circle';
-          text.textContent = 'Firma guardada correctamente';
-          break;
-        case 'auto-saved':
-          signatureStatus.classList.add('saved');
-          icon.className = 'fas fa-check-circle';
-          text.textContent = 'Firma guardada automáticamente';
-          break;
-        case 'loaded':
-          signatureStatus.classList.add('saved');
-          icon.className = 'fas fa-check-circle';
-          text.textContent = 'Firma cargada desde registro anterior';
-          break;
-      }
-    }
+      //switch(status) {
+        //case 'empty':
+          //icon.className = 'fas fa-info-circle';
+          //text.textContent = 'Esperando firma del cliente';
+          //break;
+        //case 'saved':
+          //signatureStatus.classList.add('saved');
+          //icon.className = 'fas fa-check-circle';
+          //text.textContent = 'Firma guardada correctamente';
+          //break;
+        //case 'auto-saved':
+          //signatureStatus.classList.add('saved');
+          //icon.className = 'fas fa-check-circle';
+          //text.textContent = 'Firma guardada automáticamente';
+          //break;
+        //case 'loaded':
+          //signatureStatus.classList.add('saved');
+          //icon.className = 'fas fa-check-circle';
+          //text.textContent = 'Firma cargada desde registro anterior';
+          //break;
+      //}
+    //}
     
     // Función para mostrar alertas de firma
-    function showSignatureAlert(message, type) {
+    //function showSignatureAlert(message, type) {
       // Crear elemento de alerta
-      const alert = document.createElement('div');
-      alert.className = `signature-alert ${type}`;
-      alert.innerHTML = `
-        <div class="alert-content">
-          <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle'}"></i>
-          <span>${message}</span>
-        </div>
-      `;
+      //const alert = document.createElement('div');
+      //alert.className = `signature-alert ${type}`;
+      //alert.innerHTML = `
+        //<div class="alert-content">
+          //<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle'}"></i>
+          //<span>${message}</span>
+        //</div>
+      //`;
       
       // Insertar después del signature-pad
-      const signaturePad = document.getElementById('signature-pad');
-      signaturePad.parentNode.insertBefore(alert, signaturePad.nextSibling);
+      //const signaturePad = document.getElementById('signature-pad');
+      //signaturePad.parentNode.insertBefore(alert, signaturePad.nextSibling);
       
       // Animar entrada
-      setTimeout(() => alert.classList.add('show'), 10);
+      //setTimeout(() => alert.classList.add('show'), 10);
       
       // Remover después de 3 segundos
-      setTimeout(() => {
-        alert.classList.remove('show');
-        setTimeout(() => {
-          if (alert.parentNode) {
-            alert.parentNode.removeChild(alert);
-          }
-        }, 300);
-      }, 3000);
-    }
-  }
+      //setTimeout(() => {
+        //alert.classList.remove('show');
+        //setTimeout(() => {
+          //if (alert.parentNode) {
+            //alert.parentNode.removeChild(alert);
+          //}
+        //}, 300);
+      //}, 3000);
+    //}
+  //}
 
   // Loading state en submit
   const submitBtn = form.querySelector('.form-btn.primary');
@@ -1332,6 +1609,31 @@ function initTramiteFormEnhancements() {
         setTimeout(() => {
           if (errorDiv.style.opacity === '0') {
             errorDiv.style.display = 'none';
+          }
+        }, 300);
+      }
+    });
+  });
+  
+  // ========== NUEVA FUNCIONALIDAD: INFO TOOLTIPS ==========
+  const helpIcons = form.querySelectorAll('.section-help i');
+  helpIcons.forEach(icon => {
+    icon.addEventListener('mouseenter', function() {
+      const tooltip = document.createElement('div');
+      tooltip.className = 'form-tooltip';
+      tooltip.textContent = this.getAttribute('title');
+      this.parentNode.appendChild(tooltip);
+      
+      setTimeout(() => tooltip.classList.add('show'), 10);
+    });
+    
+    icon.addEventListener('mouseleave', function() {
+      const tooltip = this.parentNode.querySelector('.form-tooltip');
+      if (tooltip) {
+        tooltip.classList.remove('show');
+        setTimeout(() => {
+          if (tooltip.parentNode) {
+            tooltip.parentNode.removeChild(tooltip);
           }
         }, 300);
       }
@@ -1388,4 +1690,113 @@ if (!document.getElementById('signature-alert-styles')) {
   style.textContent = additionalStyles;
   document.head.appendChild(style);
 }
+
+// ========== MEJORAS MEJORADAS PARA EL CAMPO UNIFICADO DE PERSONA ==========
+function enhancePersonaAtendiendoField() {
+    const personaSelect = document.getElementById('id_persona_atendiendo');
+    const financiamientoSelect = document.getElementById('id_financiamiento');
+    
+    if (!personaSelect) return;
+
+    // Mejorar las opciones visualmente
+    const options = personaSelect.querySelectorAll('option');
+    options.forEach(option => {
+        if (option.value) {
+            // Añadir estilos según el tipo
+            if (option.text.includes('🧑‍💼')) {
+                option.style.fontWeight = '500';
+                option.style.paddingLeft = '10px';
+                option.style.borderLeft = '3px solid #3B82F6';
+            } else if (option.text.includes('👑')) {
+                option.style.fontWeight = '500';
+                option.style.paddingLeft = '10px';
+                option.style.borderLeft = '3px solid #D97706';
+                option.style.color = '#B45309';
+            } else if (option.text.includes('⚖️')) {
+                option.style.fontWeight = '500';
+                option.style.paddingLeft = '10px';
+                option.style.borderLeft = '3px solid #7C3AED';
+                option.style.color = '#6D28D9';
+            }
+        }
+    });
+
+    // Actualizar ícono dinámicamente según selección
+    personaSelect.addEventListener('change', function() {
+        updatePersonaIcon(this);
+        updateContextInfo();
+    });
+
+    // Actualizar información cuando cambie el financiamiento
+    if (financiamientoSelect) {
+        financiamientoSelect.addEventListener('change', function() {
+            setTimeout(updateContextInfo, 100);
+        });
+    }
+
+    // Disparar el evento change al cargar
+    personaSelect.dispatchEvent(new Event('change'));
+    updateContextInfo();
+}
+
+function updatePersonaIcon(selectElement) {
+    const selectedOption = selectElement.options[selectElement.selectedIndex];
+    const icon = selectElement.closest('.input-wrapper').querySelector('.input-icon i');
+    
+    if (selectedOption.text.includes('🧑‍💼')) {
+        icon.className = 'fas fa-user-tie';
+        icon.style.color = '#3B82F6';
+    } else if (selectedOption.text.includes('👑') || selectedOption.text.includes('⚖️')) {
+        icon.className = 'fas fa-crown';
+        icon.style.color = '#D97706';
+    } else {
+        icon.className = 'fas fa-user-check';
+        icon.style.color = '';
+    }
+}
+
+function updateContextInfo() {
+    const financiamientoSelect = document.getElementById('id_financiamiento');
+    const personaSelect = document.getElementById('id_persona_atendiendo');
+    const proyectoInfo = document.getElementById('proyecto-info');
+    const propietariosCount = document.getElementById('propietarios-count');
+    
+    if (!financiamientoSelect || !proyectoInfo || !propietariosCount) return;
+    
+    const selectedFinanciamiento = financiamientoSelect.value;
+    
+    if (selectedFinanciamiento) {
+        // En una implementación completa, aquí haríamos una llamada AJAX
+        // para obtener información del proyecto. Por ahora mostramos un mensaje genérico.
+        proyectoInfo.innerHTML = 'Proyecto: <strong>Actualizando...</strong>';
+        
+        // Contar opciones de propietarios (excluyendo vendedores y opción vacía)
+        const propietarioOptions = Array.from(personaSelect.options).filter(opt => 
+            opt.value && opt.value.includes('propietario_')
+        );
+        
+        if (propietarioOptions.length > 0) {
+            propietariosCount.textContent = `${propietarioOptions.length} propietarios/apoderados disponibles para este proyecto`;
+            propietariosCount.style.color = '#059669';
+        } else {
+            propietariosCount.textContent = 'No hay propietarios registrados para este proyecto';
+            propietariosCount.style.color = '#DC2626';
+        }
+    } else {
+        proyectoInfo.innerHTML = 'Seleccione un financiamiento para ver los propietarios disponibles';
+        propietariosCount.textContent = '';
+    }
+}
+
+// Inicializar cuando el DOM esté listo
+document.addEventListener('DOMContentLoaded', function() {
+    enhancePersonaAtendiendoField();
+});
+
+// Reinicializar cuando HTMX cargue contenido
+document.body.addEventListener('htmx:afterSwap', function(evt) {
+    if (evt.detail.target.id === 'content') {
+        setTimeout(enhancePersonaAtendiendoField, 50);
+    }
+});
 </script>
