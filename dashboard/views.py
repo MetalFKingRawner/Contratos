@@ -5,9 +5,9 @@ from workflow.models import Tramite  # Ajusta al path real de tu modelo
 from financiamiento.models import Financiamiento  # Ajusta import según tu estructura
 from core.models import Cliente  # o donde tengas definido Cliente
 from core.models import Vendedor, Propietario
-from core.models import Proyecto, Lote
+from core.models import Proyecto, Lote, Beneficiario
 from django.db.models import Prefetch
-from core.forms import ClienteForm, VendedorForm  # lo definimos a continuación
+from core.forms import ClienteForm, VendedorForm, BeneficiarioForm  # lo definimos a continuación
 from django.urls import reverse_lazy
 from django.views.generic import UpdateView
 from django.shortcuts import render
@@ -17,8 +17,9 @@ from django.http import HttpResponseBadRequest, HttpResponseRedirect, JsonRespon
 from django.urls import reverse
 from .forms import PropietarioForm, ProyectoForm,LoteForm, TramiteForm
 from django.db.models import Q
-from financiamiento.forms import FinanciamientoForm
+from financiamiento.forms import FinanciamientoForm, CartaIntencionForm
 from django.contrib.auth.models import User
+from financiamiento.models import CartaIntencion
 #class DashboardHomeView(TemplateView):
 #    template_name = 'dashboard/home.html'
 
@@ -30,7 +31,8 @@ from docxtpl import DocxTemplate
 from django.conf import settings
 from .utils import crear_usuario_para_vendedor
 from django.contrib import messages
-
+from financiamiento.views import build_carta_intencion_from_instance
+from pdfs.utils import convert_docx_to_pdf
 
 class DownloadDocumentView(View):
     """Vista para descargar documentos individuales en Word o PDF."""
@@ -133,11 +135,12 @@ class DownloadDocumentView(View):
         try:
             context = builder(
                 fin, cli, ven, 
+                cliente2=cli2,
                 request=request, 
                 tpl=tpl, 
                 firma_data=tramite.firma_cliente, 
                 clausulas_adicionales=clausulas_adicionales,
-                cliente2=cli2,
+                tramite=tramite,
                 fecha=fecha
             )
         except TypeError as e:
@@ -149,11 +152,12 @@ class DownloadDocumentView(View):
                     tpl=tpl, 
                     firma_data=tramite.firma_cliente, 
                     clausulas_adicionales=clausulas_adicionales,
+                    tramite=tramite,
                     fecha=fecha
                 )
             except TypeError:
                 # Versión mínima
-                context = builder(fin, cli, ven)
+                context = builder(fin, cli, ven,request=request, tpl=tpl,firma_data=tramite.firma_cliente)
         
         # 7. Generar el documento Word
         output = io.BytesIO()
@@ -236,14 +240,22 @@ class TramiteListView(ListView):
         # Ordenar alfabéticamente por nombre
         usuarios_filtro.sort(key=lambda x: x['nombre'].lower())
 
-        # Agregar contadores al contexto
-        context['total_tramites'] = Tramite.objects.count()
-        context['tramites_activos'] = Tramite.objects.count()  # Cambia esto si tienes un campo "activo"
-        context['usuarios_filtro'] = usuarios_filtro
+        # NUEVO: Estadísticas de firmas
+        total_tramites = Tramite.objects.count()
+        # Contar trámites con firmas pendientes usando la propiedad del modelo
+        tramites_con_firmas_pendientes = 0
+        for tramite in Tramite.objects.all():
+            if tramite.tiene_firmas_pendientes:
+                tramites_con_firmas_pendientes += 1
 
-        # Agregar parámetros de filtro actuales al contexto
-        context['filtro_usuario_actual'] = self.request.GET.get('usuario', '')
-        context['termino_busqueda_actual'] = self.request.GET.get('search', '')
+        context.update({
+            'total_tramites': total_tramites,
+            'tramites_activos': total_tramites,
+            'tramites_con_firmas_pendientes': tramites_con_firmas_pendientes,
+            'usuarios_filtro': usuarios_filtro,
+            'filtro_usuario_actual': self.request.GET.get('usuario', ''),
+            'termino_busqueda_actual': self.request.GET.get('search', ''),
+        })
 
         return context
 
@@ -252,11 +264,16 @@ class TramiteListView(ListView):
         # Optimizar consultas relacionadas
         queryset = queryset.select_related(
             'cliente', 
+            'cliente_2',  # Para segundo cliente
             'financiamiento', 
             'financiamiento__lote',
-            'usuario_creador'  # Para el usuario creador
+            'usuario_creador',
+            'vendedor',
+            'propietario',
+            'beneficiario_1',  # Para beneficiarios
+            'beneficiario_2'
         ).prefetch_related(
-            'usuario_creador__vendedor'  # Para el perfil de vendedor asociado al usuario
+            'usuario_creador__vendedor'
         )
 
         # Obtener parámetros de filtro
@@ -284,6 +301,38 @@ class TramiteListView(ListView):
 
         return queryset
 
+class TramiteGenerateLinksView(View):
+    """Genera los links de firma para un trámite"""
+    
+    def post(self, request, pk):
+        tramite = get_object_or_404(Tramite, pk=pk)
+        
+        try:
+            links_generados = tramite.generar_links_firma()
+            
+            # Recargar el trámite para obtener los datos actualizados
+            tramite.refresh_from_db()
+            
+            # En lugar de renderizar un fragmento, redirigir al detalle
+            if request.headers.get('HX-Request'):
+                # Para HTMX, hacer un redirect que recargue el contenido
+                response = HttpResponse()
+                response['HX-Redirect'] = reverse('dashboard:tramite_detail', kwargs={'pk': pk})
+                return response
+            else:
+                messages.success(request, f'Links generados: {", ".join(links_generados)}')
+                return redirect('dashboard:tramite_detail', pk=pk)
+            
+        except Exception as e:
+            if request.headers.get('HX-Request'):
+                return render(request, 'dashboard/partials/firmas_section.html', {
+                    'tramite': tramite,
+                    'messages': [{'message': f'Error generando links: {str(e)}', 'tags': 'error'}]
+                }, status=400)
+            else:
+                messages.error(request, f'Error generando links: {str(e)}')
+                return redirect('dashboard:tramite_detail', pk=pk)
+
 class TramiteDetailView(DetailView):
     """Detalle de un Trámite."""
     model = Tramite
@@ -295,6 +344,35 @@ class TramiteDetailView(DetailView):
         if self.request.headers.get('HX-Request'):
             return ['dashboard/partials/tramites_detail_partial.html']
         return [self.template_name]
+
+    def get_queryset(self):
+        # OPTIMIZAR: Incluir todas las relaciones necesarias para las firmas
+        return super().get_queryset().select_related(
+            'cliente',
+            'cliente_2',  # Para segundo cliente
+            'financiamiento',
+            'financiamiento__lote',
+            'usuario_creador',
+            'vendedor',
+            'propietario',
+            'beneficiario_1',  # Para beneficiarios
+            'beneficiario_2'
+        ).prefetch_related(
+            'usuario_creador__vendedor'
+        )
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        tramite = self.object
+        
+        # Asegurarnos de que el método obtener_urls_firma_completas esté disponible
+        if hasattr(tramite, 'obtener_urls_firma_completas'):
+            context['urls_firma_completas'] = tramite.obtener_urls_firma_completas(self.request)
+        else:
+            # Fallback por si el método no existe
+            context['urls_firma_completas'] = {}
+            
+        return context
 
 class TramiteCreateView(CreateView):
     model = Tramite
@@ -313,14 +391,57 @@ class TramiteUpdateView(UpdateView):
     template_name = 'dashboard/partials/tramite_form.html'
 
     def form_valid(self, form):
+        # Capturar el estado ANTES de guardar para detectar cambios
+        tramite_antes = self.get_object()
+        estado_antes = self._capturar_estado_firmantes(tramite_antes)
         # Guardar el formulario (que incluye las cláusulas)
         self.object = form.save()
+
+        # Detectar cambios en firmantes y regenerar links si es necesario
+        cambios = self._detectar_cambios_firmantes(estado_antes, self.object)
+        if cambios:
+            try:
+                links_generados = self.object.generar_links_firma()
+                print(f"✅ Links regenerados por cambios en: {', '.join(cambios)}")
+            except Exception as e:
+                print(f"❌ Error regenerando links: {e}")
         
         if self.request.headers.get('HX-Request'):
             # Devolver el detalle actualizado para HTMX
             return render(self.request, 'dashboard/partials/tramites_detail_partial.html', 
                          {'tramite': self.object})
         return redirect('dashboard:tramite_detail', pk=self.object.pk)
+    
+    def _capturar_estado_firmantes(self, tramite):
+        """Captura el estado actual de los firmantes para comparación"""
+        return {
+            'cliente_2_id': tramite.cliente_2_id,
+            'beneficiario_1_id': tramite.beneficiario_1_id,
+            'beneficiario_2_id': tramite.beneficiario_2_id,
+            'testigo_1_nombre': tramite.testigo_1_nombre,
+            'testigo_2_nombre': tramite.testigo_2_nombre,
+        }
+
+    def _detectar_cambios_firmantes(self, estado_antes, tramite_despues):
+        """Detecta cambios en los firmantes y retorna lista de campos modificados"""
+        cambios = []
+        
+        if estado_antes['cliente_2_id'] != tramite_despues.cliente_2_id:
+            cambios.append('segundo_cliente')
+        
+        if estado_antes['beneficiario_1_id'] != tramite_despues.beneficiario_1_id:
+            cambios.append('beneficiario_1')
+        
+        if estado_antes['beneficiario_2_id'] != tramite_despues.beneficiario_2_id:
+            cambios.append('beneficiario_2')
+        
+        if estado_antes['testigo_1_nombre'] != tramite_despues.testigo_1_nombre:
+            cambios.append('testigo_1')
+        
+        if estado_antes['testigo_2_nombre'] != tramite_despues.testigo_2_nombre:
+            cambios.append('testigo_2')
+        
+        return cambios
 
     def form_invalid(self, form):
         response = super().form_invalid(form)
@@ -346,10 +467,36 @@ class TramiteDeleteView(DeleteView):
     success_url = reverse_lazy('dashboard:tramite_list')
 
     def delete(self, request, *args, **kwargs):
-        response = super().delete(request, *args, **kwargs)
-        if request.headers.get('HX-Request'):
-            return TramiteListView.as_view()(request._request)
-        return response
+        try:
+            # Guardar información del trámite para el mensaje
+            self.object = self.get_object()
+            tramite_id = self.object.id
+            cliente_nombre = self.object.cliente.nombre_completo
+            
+            response = super().delete(request, *args, **kwargs)
+            
+            # Mensaje de éxito
+            messages.success(request, f'Trámite #{tramite_id} de {cliente_nombre} eliminado correctamente.')
+            
+            if request.headers.get('HX-Request'):
+                return TramiteListView.as_view()(request._request)
+            return response
+            
+        except Exception as e:
+            # Manejo de errores
+            messages.error(request, f'Error al eliminar el trámite: {str(e)}')
+            
+            if request.headers.get('HX-Request'):
+                # Si hay error, regresar al detalle del trámite
+                return redirect('dashboard:tramite_detail', pk=kwargs.get('pk'))
+            return redirect('dashboard:tramite_detail', pk=kwargs.get('pk'))
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Añadir información adicional para el template
+        context['tiene_firmas_pendientes'] = self.object.tiene_firmas_pendientes if self.object else False
+        context['firmas_pendientes_count'] = len(self.object.firmas_pendientes) if self.object else 0
+        return context
 
 class FinanciamientoListView(ListView):
     """Listado de planes de financiamiento."""
@@ -1224,6 +1371,432 @@ class LoteDeleteView(DeleteView):
     # Sobrescribimos post para que use nuestro método delete personalizado
     def post(self, request, *args, **kwargs):
         return self.delete(request, *args, **kwargs)
+        
+# === VISTAS PARA BENEFICIARIOS ===
+class BeneficiarioListView(ListView):
+    model = Beneficiario
+    paginate_by = 12
+    context_object_name = 'beneficiarios'
+    ordering = ['id']
+
+    def get_template_names(self):
+        if self.request.headers.get('HX-Request'):
+            return ['dashboard/partials/beneficiario_list_partial.html']
+        return ['dashboard/beneficiario_list.html']
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['total_beneficiarios'] = Beneficiario.objects.count()
+        return context
+
+class BeneficiarioDetailView(DetailView):
+    model = Beneficiario
+    context_object_name = 'beneficiario'
+
+    def get_template_names(self):
+        if self.request.headers.get('HX-Request'):
+            return ['dashboard/partials/beneficiario_detail_partial.html']
+        return ['dashboard/beneficiario_detail.html']
+
+class BeneficiarioCreateView(CreateView):
+    model = Beneficiario
+    form_class = BeneficiarioForm
+    template_name = 'dashboard/beneficiario_form.html'
+
+    def get_success_url(self):
+        return reverse('dashboard:beneficiario_detail', kwargs={'pk': self.object.pk})
+
+    def get_template_names(self):
+        if self.request.headers.get('HX-Request'):
+            return ['dashboard/partials/beneficiario_form_partial.html']
+        return [self.template_name]
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['creating'] = True
+        return context
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        if self.request.headers.get('HX-Request'):
+            return HttpResponse(
+                status=200,
+                headers={
+                    'HX-Redirect': self.get_success_url()
+                }
+            )
+        return response
+
+    def form_invalid(self, form):
+        response = super().form_invalid(form)
+        if self.request.headers.get('HX-Request'):
+            return self.render_to_response(
+                self.get_context_data(form=form),
+                status=400
+            )
+        return response
+
+class BeneficiarioUpdateView(UpdateView):
+    model = Beneficiario
+    form_class = BeneficiarioForm
+    template_name = 'dashboard/beneficiario_form.html'
+
+    def get_success_url(self):
+        return reverse('dashboard:beneficiario_detail', kwargs={'pk': self.object.pk})
+
+    def get_template_names(self):
+        if self.request.headers.get('HX-Request'):
+            return ['dashboard/partials/beneficiario_form_partial.html']
+        return [self.template_name]
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        if self.request.headers.get('HX-Request'):
+            return HttpResponse(
+                status=200,
+                headers={
+                    'HX-Redirect': self.get_success_url()
+                }
+            )
+        return response
+
+    def form_invalid(self, form):
+        response = super().form_invalid(form)
+        if self.request.headers.get('HX-Request'):
+            return self.render_to_response(
+                self.get_context_data(form=form),
+                status=400
+            )
+        return response
+
+class BeneficiarioDeleteView(DeleteView):
+    model = Beneficiario
+    success_url = reverse_lazy('dashboard:beneficiario_list')
+
+    def get_template_names(self):
+        if self.request.headers.get('HX-Request'):
+            return ['dashboard/partials/beneficiario_delete_confirm_partial.html']
+        return ['dashboard/beneficiario_confirm_delete.html']
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.object.delete()
+        
+        if request.headers.get('HX-Request'):
+            beneficiarios = Beneficiario.objects.all().order_by('id')
+            return render(request, 'dashboard/partials/beneficiario_list_partial.html', 
+                         {'beneficiarios': beneficiarios})
+        else:
+            return HttpResponseRedirect(self.get_success_url())
+
+    def post(self, request, *args, **kwargs):
+        return self.delete(request, *args, **kwargs)
+
+# === VISTAS PARA CARTA INTENCIÓN ===
+class CartaIntencionListView(ListView):
+    model = CartaIntencion
+    paginate_by = 12
+    context_object_name = 'cartas_intencion'
+    ordering = ['-creado_en']  # Más recientes primero
+
+    def get_template_names(self):
+        if self.request.headers.get('HX-Request'):
+            return ['dashboard/partials/cartaintencion_list_partial.html']
+        return ['dashboard/cartaintencion_list.html']
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['total_cartas_intencion'] = CartaIntencion.objects.count()
+        context['cartas_activas'] = CartaIntencion.objects.count()  # Puedes ajustar si tienes campo activo
+        
+        # Filtros y búsqueda (similar a Trámites)
+        usuario_id = self.request.GET.get('usuario')
+        search_term = self.request.GET.get('search')
+        
+        context['filtro_usuario_actual'] = usuario_id
+        context['termino_busqueda_actual'] = search_term
+        
+        return context
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        
+        # Optimizar consultas relacionadas
+        queryset = queryset.select_related(
+            'financiamiento',
+            'financiamiento__lote',
+            'financiamiento__lote__proyecto',
+            'vendedor'
+        )
+        
+        # Aplicar filtros
+        #search_term = self.request.GET.get('search')
+        #if search_term:
+        #    queryset = queryset.filter(
+        #        models.Q(nombre_cliente__icontains=search_term) |
+        #        models.Q(financiamiento__lote__identificador__icontains=search_term) |
+        #        models.Q(numero_id__icontains=search_term)
+        #    )
+        
+        return queryset
+
+class CartaIntencionDetailView(DetailView):
+    model = CartaIntencion
+    context_object_name = 'carta'
+
+    def get_template_names(self):
+        if self.request.headers.get('HX-Request'):
+            return ['dashboard/partials/cartaintencion_detail_partial.html']
+        return ['dashboard/cartaintencion_detail.html']
+
+    def get_queryset(self):
+        return super().get_queryset().select_related(
+            'financiamiento',
+            'financiamiento__lote',
+            'financiamiento__lote__proyecto',
+            'vendedor'
+        )
+
+class CartaIntencionCreateView(CreateView):
+    model = CartaIntencion
+    form_class = CartaIntencionForm
+    template_name = 'dashboard/cartaintencion_form.html'
+
+    def get_success_url(self):
+        return reverse('dashboard:cartaintencion_detail', kwargs={'pk': self.object.pk})
+
+    def get_template_names(self):
+        if self.request.headers.get('HX-Request'):
+            return ['dashboard/partials/cartaintencion_form_partial.html']
+        return [self.template_name]
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['creating'] = True
+        
+        # Pasar financiamiento_id si viene en GET
+        financiamiento_id = self.request.GET.get('financiamiento_id')
+        if financiamiento_id:
+            context['financiamiento_id'] = financiamiento_id
+            
+        return context
+
+    def get_initial(self):
+        initial = super().get_initial()
+        financiamiento_id = self.request.GET.get('financiamiento_id')
+        if financiamiento_id:
+            try:
+                financiamiento = Financiamiento.objects.get(pk=financiamiento_id)
+                initial['financiamiento'] = financiamiento
+                initial['nombre_cliente'] = financiamiento.nombre_cliente
+                initial['oferta'] = financiamiento.precio_lote
+            except Financiamiento.DoesNotExist:
+                pass
+        return initial
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        if self.request.headers.get('HX-Request'):
+            return HttpResponse(
+                status=200,
+                headers={
+                    'HX-Redirect': self.get_success_url()
+                }
+            )
+        return response
+
+    def form_invalid(self, form):
+        response = super().form_invalid(form)
+        if self.request.headers.get('HX-Request'):
+            return self.render_to_response(
+                self.get_context_data(form=form),
+                status=400
+            )
+        return response
+
+class CartaIntencionUpdateView(UpdateView):
+    model = CartaIntencion
+    form_class = CartaIntencionForm
+    template_name = 'dashboard/cartaintencion_form.html'
+
+    def get_success_url(self):
+        return reverse('dashboard:cartaintencion_detail', kwargs={'pk': self.object.pk})
+
+    def get_template_names(self):
+        if self.request.headers.get('HX-Request'):
+            return ['dashboard/partials/cartaintencion_form_partial.html']
+        return [self.template_name]
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        if self.request.headers.get('HX-Request'):
+            return HttpResponse(
+                status=200,
+                headers={
+                    'HX-Redirect': self.get_success_url()
+                }
+            )
+        return response
+
+    def form_invalid(self, form):
+        response = super().form_invalid(form)
+        if self.request.headers.get('HX-Request'):
+            return self.render_to_response(
+                self.get_context_data(form=form),
+                status=400
+            )
+        return response
+
+class CartaIntencionDeleteView(DeleteView):
+    model = CartaIntencion
+    success_url = reverse_lazy('dashboard:cartaintencion_list')
+
+    def get_template_names(self):
+        if self.request.headers.get('HX-Request'):
+            return ['dashboard/partials/cartaintencion_delete_confirm_partial.html']
+        return ['dashboard/cartaintencion_confirm_delete.html']
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.object.delete()
+        
+        if request.headers.get('HX-Request'):
+            cartas = CartaIntencion.objects.all().order_by('-creado_en')
+            return render(request, 'dashboard/partials/cartaintencion_list_partial.html', 
+                         {'cartas_intencion': cartas})
+        else:
+            return HttpResponseRedirect(self.get_success_url())
+
+    def post(self, request, *args, **kwargs):
+        return self.delete(request, *args, **kwargs)
+
+class CartaIntencionDownloadView(DetailView):
+    """
+    Vista para descargar cartas de intención en PDF o Word.
+    Reutiliza la función build_carta_intencion_from_instance de financiamiento.
+    """
+    model = CartaIntencion
+
+    def get(self, request, *args, **kwargs):
+        carta = self.get_object()
+        formato = self.kwargs.get('formato', 'pdf')
+
+        if formato == 'pdf':
+            return self.generar_pdf(carta)
+        elif formato == 'word':
+            return self.generar_word(carta)
+        else:
+            return HttpResponse("Formato no soportado", status=400)
+
+    def generar_pdf(self, carta):
+        """
+        Genera y devuelve un PDF de la carta de intención.
+        Reutiliza la lógica existente en financiamiento/views.py
+        """
+        # Ruta a la plantilla de carta de intención
+        tpl_path = os.path.join(settings.BASE_DIR, 'pdfs/templates/pdfs/carta_intencion_template.docx')
+        
+        # Verificar que la plantilla existe
+        if not os.path.exists(tpl_path):
+            return HttpResponse("Plantilla no encontrada", status=500)
+        
+        try:
+            # Cargar plantilla
+            tpl = DocxTemplate(tpl_path)
+            
+            # Generar contexto usando la función existente
+            context = build_carta_intencion_from_instance(carta, request=self.request, tpl=tpl)
+            
+            # Renderizar plantilla
+            tpl.render(context)
+            
+            # Crear directorio temporal si no existe
+            temp_dir = os.path.join(settings.MEDIA_ROOT, 'temp')
+            os.makedirs(temp_dir, exist_ok=True)
+            
+            # Guardar DOCX temporal
+            tmp_docx = os.path.join(temp_dir, f"carta_intencion_{carta.id}.docx")
+            tpl.save(tmp_docx)
+            
+            # Convertir a PDF
+            pdf_filename = f"carta_intencion_{carta.nombre_cliente.replace(' ', '_')}_{carta.id}.pdf"
+            tmp_pdf = os.path.join(temp_dir, pdf_filename)
+            
+            success = convert_docx_to_pdf(tmp_docx, tmp_pdf)
+            
+            if success and os.path.exists(tmp_pdf):
+                # Leer el PDF y enviarlo como respuesta
+                with open(tmp_pdf, 'rb') as pdf_file:
+                    response = HttpResponse(pdf_file.read(), content_type='application/pdf')
+                    response['Content-Disposition'] = f'attachment; filename="{pdf_filename}"'
+                    
+                    # Limpiar archivos temporales después de enviar
+                    try:
+                        os.remove(tmp_docx)
+                        os.remove(tmp_pdf)
+                    except:
+                        pass  # Ignorar errores de limpieza
+                    
+                    return response
+            else:
+                # Si falla la conversión a PDF, enviar el DOCX
+                with open(tmp_docx, 'rb') as docx_file:
+                    response = HttpResponse(
+                        docx_file.read(), 
+                        content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+                    )
+                    response['Content-Disposition'] = f'attachment; filename="carta_intencion_{carta.id}.docx"'
+                    
+                    # Limpiar archivo temporal
+                    try:
+                        os.remove(tmp_docx)
+                    except:
+                        pass
+                    
+                    return response
+        
+        except Exception as e:
+            # En caso de error, retornar mensaje
+            return HttpResponse(f"Error al generar el documento: {str(e)}", status=500)
+
+    def generar_word(self, carta):
+        """
+        Genera y devuelve un documento Word de la carta de intención.
+        """
+        # Ruta a la plantilla de carta de intención
+        tpl_path = os.path.join(settings.BASE_DIR, 'pdfs/templates/pdfs/carta_intencion_template.docx')
+        
+        # Verificar que la plantilla existe
+        if not os.path.exists(tpl_path):
+            return HttpResponse("Plantilla no encontrada", status=500)
+        
+        try:
+            # Cargar plantilla
+            tpl = DocxTemplate(tpl_path)
+            
+            # Generar contexto usando la función existente
+            context = build_carta_intencion_from_instance(carta, request=self.request, tpl=tpl)
+            
+            # Renderizar plantilla
+            tpl.render(context)
+            
+            # Crear un buffer en memoria para el documento
+            output = io.BytesIO()
+            tpl.save(output)
+            output.seek(0)
+            
+            # Configurar respuesta
+            filename = f"carta_intencion_{carta.nombre_cliente.replace(' ', '_')}_{carta.id}.docx"
+            response = HttpResponse(
+                output.getvalue(),
+                content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+            )
+            response['Content-Disposition'] = f'attachment; filename="{filename}"'
+            
+            return response
+        
+        except Exception as e:
+            return HttpResponse(f"Error al generar el documento: {str(e)}", status=500)
 
 def home(request):
     ctx = {
@@ -1234,6 +1807,8 @@ def home(request):
       'num_lotes': Lote.objects.count(),
       'num_financiamientos': Financiamiento.objects.count(),
       'num_tramites': Tramite.objects.count(),
+      'num_beneficiarios': Beneficiario.objects.count(),
+      'num_cartas_intencion': CartaIntencion.objects.count(),
     }
     # Si es petición HTMX, devolvemos _solo_ el partial
     if request.headers.get('HX-Request'):
@@ -1258,13 +1833,3 @@ def health_check(request):
         "message": "Application is alive",
         "app": "dashboard"
     })
-
-
-
-
-
-
-
-
-
-
