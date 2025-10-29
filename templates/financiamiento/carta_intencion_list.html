@@ -1,0 +1,574 @@
+{% extends "base.html" %}
+{% block title %}Cartas de Intención{% endblock %}
+
+{% block content %}
+<style>
+/* Estilos específicos para la página de cartas de intención */
+.cartas-container {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  border-radius: 25px;
+  padding: 2rem;
+  margin: 1rem 0;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 25px 45px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.cartas-container::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(74, 144, 226, 0.05) 0%, transparent 50%);
+  animation: rotateBackground 20s linear infinite;
+  z-index: -1;
+}
+
+@keyframes rotateBackground {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 2px solid rgba(74, 144, 226, 0.1);
+  position: relative;
+}
+
+.header-section::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100px;
+  height: 2px;
+  background: linear-gradient(135deg, #4a90e2, #357abd);
+  animation: expandLine 2s ease-out;
+}
+
+@keyframes expandLine {
+  0% { width: 0; }
+  100% { width: 100px; }
+}
+
+.page-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #4a90e2, #357abd);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0;
+  position: relative;
+  animation: titleSlideIn 1s ease-out;
+}
+
+@keyframes titleSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateX(-50px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.btn-nueva-carta {
+  background: linear-gradient(135deg, #4a90e2, #357abd) !important;
+  border: none !important;
+  color: white !important;
+  padding: 0.75rem 2rem !important;
+  border-radius: 25px !important;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 10px 25px rgba(74, 144, 226, 0.3);
+  animation: buttonSlideIn 1s ease-out 0.3s both;
+}
+
+@keyframes buttonSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateX(50px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.btn-nueva-carta::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  transition: left 0.6s;
+}
+
+.btn-nueva-carta:hover::before {
+  left: 100%;
+}
+
+.btn-nueva-carta:hover {
+  transform: translateY(-3px) scale(1.05) !important;
+  box-shadow: 0 15px 35px rgba(74, 144, 226, 0.4) !important;
+  color: white !important;
+}
+
+.table-container {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  animation: tableSlideUp 1s ease-out 0.6s both;
+}
+
+@keyframes tableSlideUp {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.table-modern {
+  margin: 0;
+  background: transparent;
+}
+
+.table-modern thead th {
+  background: linear-gradient(135deg, #4a90e2, #357abd);
+  color: white;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border: none;
+  padding: 1.2rem 1rem;
+  font-size: 0.9rem;
+  position: relative;
+}
+
+.table-modern thead th::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.table-modern tbody tr {
+  transition: all 0.3s ease;
+  border: none;
+  animation: rowFadeIn 0.6s ease-out both;
+}
+
+.table-modern tbody tr:nth-child(1) { animation-delay: 0.1s; }
+.table-modern tbody tr:nth-child(2) { animation-delay: 0.2s; }
+.table-modern tbody tr:nth-child(3) { animation-delay: 0.3s; }
+.table-modern tbody tr:nth-child(4) { animation-delay: 0.4s; }
+.table-modern tbody tr:nth-child(5) { animation-delay: 0.5s; }
+
+@keyframes rowFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.table-modern tbody tr:hover {
+  background: rgba(74, 144, 226, 0.08) !important;
+  transform: translateX(5px);
+  box-shadow: 0 5px 15px rgba(74, 144, 226, 0.15);
+}
+
+.table-modern tbody td {
+  padding: 1rem;
+  border: none;
+  border-bottom: 1px solid rgba(74, 144, 226, 0.1);
+  font-weight: 500;
+  color: var(--text-primary);
+  vertical-align: middle;
+}
+
+.table-modern tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+  background-color: rgba(74, 144, 226, 0.03) !important;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 3rem 2rem;
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+  font-weight: 300;
+  background: rgba(74, 144, 226, 0.05);
+  border-radius: 15px;
+  margin: 1rem 0;
+  position: relative;
+}
+
+.empty-state::before {
+  content: '📝';
+  font-size: 3rem;
+  display: block;
+  margin-bottom: 1rem;
+  opacity: 0.7;
+}
+
+.data-badge {
+  background: rgba(74, 144, 226, 0.1);
+  color: var(--text-primary);
+  padding: 0.25rem 0.75rem;
+  border-radius: 15px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: 1px solid rgba(74, 144, 226, 0.2);
+}
+
+.precio-highlight {
+  font-weight: 700;
+  color: #4a90e2;
+  font-size: 1.1rem;
+}
+
+.cliente-name {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.oferta-badge {
+  background: linear-gradient(135deg, #28a745, #20c997);
+  color: white;
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: center;
+  display: inline-block;
+}
+
+.credito-badge {
+  padding: 0.4rem 1rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: center;
+  display: inline-block;
+  min-width: 60px;
+}
+
+.credito-si {
+  background: linear-gradient(135deg, #28a745, #20c997);
+  color: white;
+  box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+}
+
+.credito-no {
+  background: linear-gradient(135deg, #953232, #be3232);
+  color: white;
+  box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
+}
+
+.acciones-container {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  align-items: center;
+}
+
+.btn-accion {
+  padding: 0.5rem 1rem;
+  border-radius: 15px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  cursor: pointer;
+}
+
+.btn-editar {
+  background: linear-gradient(135deg, #17a2b8, #138496);
+  color: white;
+  box-shadow: 0 4px 15px rgba(23, 162, 184, 0.3);
+}
+
+.btn-editar:hover {
+  background: linear-gradient(135deg, #138496, #117a8b);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(23, 162, 184, 0.4);
+}
+
+.btn-descargar {
+  background: linear-gradient(135deg, #4a90e2, #357abd);
+  color: white;
+  box-shadow: 0 4px 15px rgba(74, 144, 226, 0.3);
+}
+
+.btn-descargar:hover {
+  background: linear-gradient(135deg, #357abd, #2c6aa3);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(74, 144, 226, 0.4);
+}
+
+.btn-descargar:disabled {
+  background: linear-gradient(135deg, #6c757d, #868e96);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Efectos de partículas flotantes */
+.floating-particles {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: -1;
+}
+
+.particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: rgba(74, 144, 226, 0.3);
+  border-radius: 50%;
+  animation: floatUp 8s linear infinite;
+}
+
+.particle:nth-child(1) { left: 10%; animation-delay: 0s; }
+.particle:nth-child(2) { left: 20%; animation-delay: 1s; }
+.particle:nth-child(3) { left: 30%; animation-delay: 2s; }
+.particle:nth-child(4) { left: 40%; animation-delay: 3s; }
+.particle:nth-child(5) { left: 50%; animation-delay: 4s; }
+.particle:nth-child(6) { left: 60%; animation-delay: 5s; }
+.particle:nth-child(7) { left: 70%; animation-delay: 6s; }
+.particle:nth-child(8) { left: 80%; animation-delay: 7s; }
+
+@keyframes floatUp {
+  0% {
+    opacity: 0;
+    transform: translateY(100vh) scale(0);
+  }
+  10% {
+    opacity: 1;
+    transform: translateY(90vh) scale(1);
+  }
+  90% {
+    opacity: 1;
+    transform: translateY(10vh) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(0) scale(0);
+  }
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+  .header-section {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+  
+  .page-title {
+    font-size: 2rem;
+    text-align: center;
+  }
+  
+  .btn-nueva-carta {
+    width: 100%;
+    text-align: center;
+  }
+  
+  .cartas-container {
+    padding: 1rem;
+    margin: 0.5rem 0;
+  }
+  
+  .table-modern thead th,
+  .table-modern tbody td {
+    padding: 0.75rem 0.5rem;
+    font-size: 0.9rem;
+  }
+  
+  .acciones-container {
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+  
+  .btn-accion {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 576px) {
+  .table-modern {
+    font-size: 0.8rem;
+  }
+  
+  .table-modern thead th,
+  .table-modern tbody td {
+    padding: 0.5rem 0.3rem;
+  }
+  
+  .page-title {
+    font-size: 1.8rem;
+  }
+  
+  .credito-badge {
+    font-size: 0.75rem;
+    padding: 0.3rem 0.6rem;
+    min-width: 50px;
+  }
+}
+</style>
+
+<div class="cartas-container">
+  <!-- Partículas flotantes -->
+  <div class="floating-particles">
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+  </div>
+
+  <div class="header-section">
+    <h2 class="page-title">Cartas de Intención de Compra</h2>
+    <a href="{% url 'financiamiento:carta_intencion_create' %}" class="btn btn-nueva-carta">
+      <i class="fas fa-plus me-2"></i>Nueva Carta
+    </a>
+  </div>
+
+  <div class="table-container">
+    <table class="table table-modern table-striped">
+      <thead>
+        <tr>
+          <th><i class="fas fa-user me-2"></i>Cliente</th>
+          <th><i class="fas fa-map-marker-alt me-2"></i>Lote</th>
+          <th><i class="fas fa-dollar-sign me-2"></i>Precio Lote</th>
+          <th><i class="fas fa-handshake me-2"></i>Oferta</th>
+          <th><i class="fas fa-home me-2"></i>Crédito Hipotecario</th>
+          <th><i class="fas fa-calendar me-2"></i>Fecha</th>
+          <th><i class="fas fa-cogs me-2"></i>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for carta in cartas %}
+        <tr>
+          <td>
+            <span class="cliente-name">{{ carta.nombre_cliente }}</span>
+            <br>
+            <small class="text-muted">{{ carta.correo_cliente }}</small>
+          </td>
+          <td>
+            <span class="data-badge">{{ carta.financiamiento.lote.identificador }}</span>
+            <br>
+            <small class="text-muted">{{ carta.financiamiento.lote.proyecto.nombre }}</small>
+          </td>
+          <td>
+            <span class="precio-highlight">${{ carta.financiamiento.precio_lote|floatformat:2 }}</span>
+          </td>
+          <td>
+            <span class="oferta-badge">${{ carta.oferta|floatformat:2 }}</span>
+          </td>
+          <td>
+            {% if carta.credito_hipotecario == 'Sí' %}
+              <span class="credito-badge credito-si">
+                <i class="fas fa-check me-1"></i>Sí
+                {% if carta.institucion_financiera %}
+                  <br><small>{{ carta.institucion_financiera|truncatechars:15 }}</small>
+                {% endif %}
+              </span>
+            {% else %}
+              <span class="credito-badge credito-no">
+                <i class="fas fa-times me-1"></i>No
+              </span>
+            {% endif %}
+          </td>
+          <td>
+            <span class="data-badge">{{ carta.creado_en|date:"d/m/Y" }}</span>
+          </td>
+          <td>
+            <div class="acciones-container">
+              <!-- Botón Editar -->
+              <a href="{% url 'financiamiento:carta_intencion_edit' carta.pk %}" class="btn-accion btn-editar">
+                <i class="fas fa-edit"></i>Editar
+              </a>
+              
+              <!-- Botón Descargar PDF -->
+              <a href="{% url 'financiamiento:carta_intencion_descargar_pdf' carta.pk %}" class="btn-accion btn-descargar">
+                <i class="fas fa-download"></i>Descargar
+              </a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="7">
+            <div class="empty-state">
+              <strong>No hay cartas de intención registradas</strong>
+              <p class="mb-0 mt-2">¡Comienza creando tu primera carta de intención!</p>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+//<script>
+// Función placeholder para descargar carta de intención
+//function descargarCarta(pk) {
+  // Por ahora solo mostramos un mensaje
+  alert(`Función de descarga para carta de intención ID: ${pk} - Esta función se implementará próximamente`);
+  
+  // Aquí en el futuro implementaremos la descarga real:
+  // window.location.href = `/financiamiento/cartas-intencion/${pk}/descargar/`;
+//}
+//</script>
+
+{% endblock %}

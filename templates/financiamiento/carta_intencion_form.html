@@ -1,0 +1,474 @@
+{% extends "base.html" %}
+
+{% block title %}{% if object %}Editar{% else %}Nueva{% endif %} Carta de Intención{% endblock %}
+
+{% block extra_css %}
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+<style>
+:root {
+  --primary-gradient: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+  --accent-gradient: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+  --text-primary: #2c3e50;
+  --text-secondary: #6c757d;
+  --glass-bg: rgba(255,255,255,0.15);
+  --glass-border: rgba(255,255,255,0.2);
+}
+
+.form-container {
+  background: var(--glass-bg);
+  border-radius: 25px;
+  backdrop-filter: blur(15px);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+  padding: 2.5rem;
+  max-width: 900px;
+  margin: 2rem auto;
+  position: relative;
+  overflow: hidden;
+  animation: fadeInUp 0.8s ease both;
+}
+
+.section-title {
+  font-family: 'Poppins', sans-serif;
+  font-size: 1.75rem;
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 1rem;
+  position: relative;
+}
+.section-title::after {
+  content: '';
+  position: absolute;
+  bottom: -5px; left: 0;
+  width: 60px; height: 3px;
+  background: var(--accent-gradient);
+  border-radius: 2px;
+}
+
+.field-group {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  border-left: 4px solid #4a90e2;
+  background: rgba(240,245,255,0.4);
+  border-radius: 20px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+}
+.field-group-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px,1fr));
+  gap: 1.5rem;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-field label {
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.form-field .form-control,
+.form-field select,
+.form-field input,
+.form-field textarea {
+  border-radius: 12px;
+  border: 2px solid rgba(74,144,226,0.2);
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  transition: all 0.3s;
+}
+.form-field .form-control:focus,
+.form-field select:focus,
+.form-field input:focus,
+.form-field textarea:focus {
+  outline: none;
+  border-color: #357abd;
+  box-shadow: 0 0 0 0.2rem rgba(74,144,226,0.25);
+}
+
+.form-field textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.help-text {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin-top: 0.5rem;
+  font-style: italic;
+}
+
+.info-box {
+  background: rgba(74,144,226,0.1);
+  border: 1px solid rgba(74,144,226,0.2);
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.info-box h5 {
+  color: #4a90e2;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.info-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.info-label {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.info-value {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.static-data {
+  background: rgba(74,144,226,0.05);
+  border: 1px solid rgba(74,144,226,0.1);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+}
+
+.static-data-group {
+  margin-bottom: 1rem;
+}
+
+.static-data-label {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+
+.submit-section {
+  text-align: center;
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(74,144,226,0.1);
+}
+.btn-save {
+  background: var(--primary-gradient);
+  border: none;
+  color: white;
+  padding: 0.9rem 2.5rem;
+  font-size: 1.05rem;
+  border-radius: 50px;
+  font-weight: 600;
+  transition: transform 0.3s;
+}
+.btn-save:hover {
+  transform: translateY(-2px) scale(1.03);
+}
+.btn-cancel {
+  margin-left: 1rem;
+}
+
+@keyframes fadeInUp {
+  from { opacity:0; transform: translateY(20px);} to { opacity:1; transform: translateY(0);}  
+}
+@media (max-width:768px) { 
+  .form-row { grid-template-columns: 1fr; }
+  .info-row { grid-template-columns: 1fr; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+  <h2 class="section-title">{% if object %}Editar{% else %}Nueva{% endif %} Carta de Intención</h2>
+  <form method="post" novalidate id="carta-intencion-form">
+    {% csrf_token %}
+
+    <!-- Sección 1: Selección de Financiamiento (PRIMERO) -->
+    <div class="field-group">
+      <div class="field-group-title"><i class="fas fa-file-invoice-dollar"></i> Selección de Financiamiento</div>
+      <div class="form-row">
+        <div class="form-field">
+          {{ form.financiamiento.label_tag }}
+          {{ form.financiamiento }}
+          {% for err in form.financiamiento.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
+          <div class="help-text">Selecciona el financiamiento para precargar automáticamente los datos</div>
+        </div>
+      </div>
+
+      <!-- Datos estáticos del lote (se actualizarán con JavaScript) -->
+      <div id="lote-static-data" style="display: none; margin-top: 1.5rem;">
+        <h5 style="color: #4a90e2; margin-bottom: 1rem;">Datos del Inmueble (Solo lectura)</h5>
+        <div class="static-data-group">
+          <div class="static-data-label">Dirección del Lote:</div>
+          <div class="static-data" id="static-direccion">-</div>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <div class="static-data-label">Número de Lote:</div>
+            <div class="static-data" id="static-numero-lote">-</div>
+          </div>
+          <div class="form-field">
+            <div class="static-data-label">Régimen:</div>
+            <div class="static-data" id="static-regimen">-</div>
+          </div>
+          <div class="form-field">
+            <div class="static-data-label">Precio del Lote:</div>
+            <div class="static-data" id="static-precio-lote">-</div>
+          </div>
+          <div class="form-field">
+            <div class="static-data-label">Apartado:</div>
+            <div class="static-data" id="static-apartado">-</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sección 2: Datos del Cliente (SEGUNDO) -->
+    <div class="field-group">
+      <div class="field-group-title"><i class="fas fa-user"></i> Datos del Cliente</div>
+      <div class="form-row">
+        <div class="form-field">
+          {{ form.nombre_cliente.label_tag }}
+          {{ form.nombre_cliente }}
+          {% for err in form.nombre_cliente.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
+          <div class="help-text">Se precargará automáticamente desde el financiamiento seleccionado</div>
+        </div>
+        <div class="form-field">
+          {{ form.tipo_id.label_tag }}
+          {{ form.tipo_id }}
+          {% for err in form.tipo_id.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
+        </div>
+        <div class="form-field">
+          {{ form.numero_id.label_tag }}
+          {{ form.numero_id }}
+          {% for err in form.numero_id.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
+        </div>
+        <div class="form-field">
+          {{ form.telefono_cliente.label_tag }}
+          {{ form.telefono_cliente }}
+          {% for err in form.telefono_cliente.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
+        </div>
+        <div class="form-field">
+          {{ form.correo_cliente.label_tag }}
+          {{ form.correo_cliente }}
+          {% for err in form.correo_cliente.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
+        </div>
+        <div class="form-field" style="grid-column: 1 / -1;">
+          {{ form.domicilio.label_tag }}
+          {{ form.domicilio }}
+          {% for err in form.domicilio.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Sección 3: Términos de la Carta (TERCERO) -->
+    <div class="field-group">
+      <div class="field-group-title"><i class="fas fa-file-contract"></i> Términos de la Carta</div>
+      
+      <!-- Campos editables -->
+      <div class="form-row">
+        <div class="form-field">
+          {{ form.vendedor.label_tag }}
+          {{ form.vendedor }}
+          {% for err in form.vendedor.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
+        </div>
+        <div class="form-field">
+          {{ form.oferta.label_tag }}
+          {{ form.oferta }}
+          {% for err in form.oferta.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
+          <div class="help-text">Se precargará automáticamente con el precio del lote</div>
+        </div>
+        <div class="form-field">
+          {{ form.forma_pago.label_tag }}
+          {{ form.forma_pago }}
+          {% for err in form.forma_pago.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Sección 4: Información Adicional (CUARTO) -->
+    <div class="field-group">
+      <div class="field-group-title"><i class="fas fa-handshake"></i> Información Adicional</div>
+      <div class="form-row">
+        <div class="form-field">
+          {{ form.credito_hipotecario.label_tag }}
+          {{ form.credito_hipotecario }}
+          {% for err in form.credito_hipotecario.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
+        </div>
+        <div class="form-field" id="institucion-field">
+          {{ form.institucion_financiera.label_tag }}
+          {{ form.institucion_financiera }}
+          {% for err in form.institucion_financiera.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
+        </div>
+        <div class="form-field">
+          {{ form.destinatario_apartado.label_tag }}
+          {{ form.destinatario_apartado }}
+          {% for err in form.destinatario_apartado.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <div class="submit-section">
+      <button type="submit" class="btn btn-save">Guardar Carta de Intención</button>
+      <a href="{% url 'financiamiento:carta_intencion_list' %}" class="btn btn-secondary btn-cancel">Cancelar</a>
+    </div>
+  </form>
+</div>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Mostrar/ocultar campo de institución financiera según crédito hipotecario
+  const creditoField = document.getElementById('id_credito_hipotecario');
+  const institucionField = document.getElementById('institucion-field');
+  const institucionInput = document.getElementById('id_institucion_financiera');
+
+  function toggleInstitucionField() {
+    if (creditoField.value === 'Sí') {
+      institucionField.style.display = 'block';
+      institucionInput.required = true;
+    } else {
+      institucionField.style.display = 'none';
+      institucionInput.required = false;
+      institucionInput.value = '';
+    }
+  }
+
+  // Inicializar y agregar evento
+  toggleInstitucionField();
+  creditoField.addEventListener('change', toggleInstitucionField);
+
+  // Precargar destinatario si está vacío y se selecciona un vendedor
+  const vendedorField = document.getElementById('id_vendedor');
+  const destinatarioField = document.getElementById('id_destinatario_apartado');
+
+  vendedorField.addEventListener('change', function() {
+    // Solo si el destinatario está vacío, precargar con el nombre del vendedor
+    if (!destinatarioField.value.trim()) {
+      const selectedOption = vendedorField.options[vendedorField.selectedIndex];
+      if (selectedOption.text) {
+        destinatarioField.value = selectedOption.text;
+      }
+    }
+  });
+
+  // Cargar datos del financiamiento seleccionado
+  const financiamientoField = document.getElementById('id_financiamiento');
+  const loteStaticData = document.getElementById('lote-static-data');
+  const nombreClienteField = document.getElementById('id_nombre_cliente');
+
+  function loadFinanciamientoData() {
+    const financiamientoId = financiamientoField.value;
+    
+    if (financiamientoId) {
+      // Mostrar sección de datos estáticos
+      loteStaticData.style.display = 'block';
+      
+      // Hacer petición AJAX para obtener datos del financiamiento
+      fetch(`/financiamiento/ajax/financiamiento/${financiamientoId}/`)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Error al cargar datos del financiamiento');
+          }
+          return response.json();
+        })
+        .then(data => {
+          // Actualizar campos estáticos con los datos recibidos
+          document.getElementById('static-direccion').textContent = data.direccion || '-';
+          document.getElementById('static-numero-lote').textContent = data.numero_lote || '-';
+          document.getElementById('static-regimen').textContent = data.regimen || '-';
+          document.getElementById('static-precio-lote').textContent = data.precio_lote ? '$' + parseFloat(data.precio_lote).toLocaleString('es-MX', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : '-';
+          document.getElementById('static-apartado').textContent = data.apartado ? '$' + parseFloat(data.apartado).toLocaleString('es-MX', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : '-';
+          
+          // Precargar nombre del cliente si está vacío
+          if (!nombreClienteField.value && data.nombre_cliente) {
+            nombreClienteField.value = data.nombre_cliente;
+          }
+          
+          // Precargar oferta si está vacía - SOLO VALOR NUMÉRICO para NumberInput
+          const ofertaField = document.getElementById('id_oferta');
+          if (!ofertaField.value && data.precio_lote) {
+            // Para NumberInput, solo asignamos el valor numérico sin formato
+            ofertaField.value = parseFloat(data.precio_lote).toFixed(2);
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          // Ocultar sección si hay error
+          loteStaticData.style.display = 'none';
+        });
+    } else {
+      // Ocultar sección si no hay financiamiento seleccionado
+      loteStaticData.style.display = 'none';
+    }
+  }
+
+  // Agregar evento al cambio de financiamiento
+  financiamientoField.addEventListener('change', loadFinanciamientoData);
+
+  // Cargar datos iniciales si ya hay un financiamiento seleccionado
+  if (financiamientoField.value) {
+    loadFinanciamientoData();
+  }
+
+  // Formatear campo de oferta como moneda
+  //function formatCurrency(input) {
+    // Remover formato previo
+    //let value = input.value.replace(/[$,]/g, '');
+    
+    // Convertir a número
+    //let number = parseFloat(value);
+    
+    //if (!isNaN(number)) {
+      // Formatear como moneda
+      //input.value = '$' + number.toLocaleString('es-MX', {
+        //minimumFractionDigits: 2,
+        //maximumFractionDigits: 2
+      //});
+    //}
+  //}
+
+  // Aplicar formato al campo de oferta
+  //const ofertaField = document.getElementById('id_oferta');
+  //ofertaField.addEventListener('blur', function() {
+    //formatCurrency(this);
+  //});
+
+  // Quitar formato al enfocar para edición
+  //ofertaField.addEventListener('focus', function() {
+    //this.value = this.value.replace(/[$,]/g, '');
+  //});
+});
+</script>
+{% endblock %}
+
+{% endblock %}
