@@ -192,6 +192,213 @@
     </div>
   </div>
 
+  <!-- ========== NUEVA SECCIÓN: GESTIÓN DE FIRMAS DIGITALES ========== -->
+  <div class="info-card signatures-data full-width">
+    <div class="info-card-header">
+      <div class="info-card-icon signatures">
+        <i class="fas fa-signature"></i>
+      </div>
+      <h3 class="info-card-title">Gestión de Firmas Digitales</h3>
+      <div class="signatures-actions">
+        {% if not tramite.links_activos %}
+          <button class="action-btn primary small" 
+                  hx-post="{% url 'dashboard:tramite_generate_links' tramite.pk %}"
+                  hx-target="#signatures-section"
+                  hx-swap="innerHTML"
+                  hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+            <i class="fas fa-link"></i>
+            Generar Links de Firma
+          </button>
+        {% else %}
+          <button class="action-btn primary small"
+                  hx-post="{% url 'dashboard:tramite_generate_links' tramite.pk %}"
+                  hx-target="#signatures-section"
+                  hx-swap="innerHTML"
+                  hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+            <i class="fas fa-sync-alt"></i>
+            Regenerar Links
+          </button>
+        {% endif %}
+      </div>
+    </div>
+    
+    <div class="info-card-body" id="signatures-section">
+      <!-- Barra de progreso -->
+      <div class="signatures-progress">
+        <div class="progress-header">
+          <span class="progress-label">Progreso de Firmas</span>
+          <span class="progress-percentage">{{ tramite.porcentaje_firmas }}%</span>
+        </div>
+        <div class="progress-bar-container">
+          <div class="progress-bar" style="width: {{ tramite.porcentaje_firmas }}%"></div>
+        </div>
+        <div class="progress-status">
+          Estado: <span class="status-text">{{ tramite.estado_firmas|title }}</span>
+        </div>
+      </div>
+
+      <!-- Lista de firmantes -->
+      <div class="signatures-list">
+        <h4 class="signatures-list-title">Firmantes</h4>
+        <div class="signatures-grid">
+          <!-- Cliente Principal -->
+          <div class="signature-item {% if tramite.firma_cliente %}completed{% else %}pending{% endif %}">
+            <div class="signature-icon">
+              <i class="fas fa-user"></i>
+            </div>
+            <div class="signature-info">
+              <span class="signature-name">Cliente Principal</span>
+              <span class="signature-details">{{ tramite.cliente.nombre_completo }}</span>
+            </div>
+            <div class="signature-status">
+              {% if tramite.firma_cliente %}
+                <i class="fas fa-check-circle"></i>
+                <span>Completado</span>
+              {% else %}
+                <i class="fas fa-clock"></i>
+                <span>Pendiente</span>
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- Segundo Cliente -->
+          {% if tramite.cliente_2 %}
+          <div class="signature-item {% if tramite.firma_cliente2 %}completed{% else %}pending{% endif %}">
+            <div class="signature-icon">
+              <i class="fas fa-user-friends"></i>
+            </div>
+            <div class="signature-info">
+              <span class="signature-name">Segundo Cliente</span>
+              <span class="signature-details">{{ tramite.cliente_2.nombre_completo }}</span>
+            </div>
+            <div class="signature-status">
+              {% if tramite.firma_cliente2 %}
+                <i class="fas fa-check-circle"></i>
+                <span>Completado</span>
+              {% else %}
+                <i class="fas fa-clock"></i>
+                <span>Pendiente</span>
+              {% endif %}
+            </div>
+          </div>
+          {% endif %}
+
+          <!-- Beneficiario -->
+          {% if tramite.beneficiario_1 %}
+          <div class="signature-item {% if tramite.beneficiario_1_firma %}completed{% else %}pending{% endif %}">
+            <div class="signature-icon">
+              <i class="fas fa-user-tag"></i>
+            </div>
+            <div class="signature-info">
+              <span class="signature-name">Beneficiario</span>
+              <span class="signature-details">{{ tramite.beneficiario_1.nombre_completo }}</span>
+            </div>
+            <div class="signature-status">
+              {% if tramite.beneficiario_1_firma %}
+                <i class="fas fa-check-circle"></i>
+                <span>Completado</span>
+              {% else %}
+                <i class="fas fa-clock"></i>
+                <span>Pendiente</span>
+              {% endif %}
+            </div>
+          </div>
+          {% endif %}
+
+          <!-- Testigo 1 -->
+          {% if tramite.testigo_1_nombre %}
+          <div class="signature-item {% if tramite.testigo_1_firma %}completed{% else %}pending{% endif %}">
+            <div class="signature-icon">
+              <i class="fas fa-user-check"></i>
+            </div>
+            <div class="signature-info">
+              <span class="signature-name">Testigo 1</span>
+              <span class="signature-details">{{ tramite.testigo_1_nombre }}</span>
+            </div>
+            <div class="signature-status">
+              {% if tramite.testigo_1_firma %}
+                <i class="fas fa-check-circle"></i>
+                <span>Completado</span>
+              {% else %}
+                <i class="fas fa-clock"></i>
+                <span>Pendiente</span>
+              {% endif %}
+            </div>
+          </div>
+          {% endif %}
+
+          <!-- Testigo 2 -->
+          {% if tramite.testigo_2_nombre %}
+          <div class="signature-item {% if tramite.testigo_2_firma %}completed{% else %}pending{% endif %}">
+            <div class="signature-icon">
+              <i class="fas fa-user-check"></i>
+            </div>
+            <div class="signature-info">
+              <span class="signature-name">Testigo 2</span>
+              <span class="signature-details">{{ tramite.testigo_2_nombre }}</span>
+            </div>
+            <div class="signature-status">
+              {% if tramite.testigo_2_firma %}
+                <i class="fas fa-check-circle"></i>
+                <span>Completado</span>
+              {% else %}
+                <i class="fas fa-clock"></i>
+                <span>Pendiente</span>
+              {% endif %}
+            </div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Links de Firma -->
+      {% if urls_firma_completas %}
+      <div class="signatures-links">
+        <h4 class="signatures-links-title">Links de Firma Activos</h4>
+        <div class="links-list">
+          {% for tipo, url_completa in urls_firma_completas.items %}
+          <div class="link-item">
+            <div class="link-info">
+              <span class="link-type">{{ tipo|title }}</span>
+              <span class="link-token">{{ url_completa|truncatechars:50 }}</span>
+            </div>
+            <button class="action-btn secondary small copy-link" 
+                    data-link="{{ url_completa }}">
+              <i class="fas fa-copy"></i>
+              Copiar Link
+            </button>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Firmas Pendientes -->
+      {% if tramite.firmas_pendientes %}
+      <div class="signatures-pending">
+        <div class="pending-alert">
+          <i class="fas fa-exclamation-triangle"></i>
+          <div class="pending-content">
+            <strong>Firmas pendientes:</strong>
+            <ul>
+              {% for pendiente in tramite.firmas_pendientes %}
+              <li>{{ pendiente }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+      </div>
+      {% else %}
+      <div class="signatures-completed">
+        <div class="completed-alert">
+          <i class="fas fa-check-circle"></i>
+          <span>Todas las firmas han sido completadas</span>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
   <!-- Sección de Descarga de Documentos (Ancho completo) -->
   <div class="info-card documents-download-data full-width">
     <div class="info-card-header">
@@ -278,30 +485,32 @@
           </div>
         </div>
 
-        <!-- Plan de Financiamiento 
+        <!-- Tabla de Financiamiento (SOLO para contratos financiados) -->
+        {% if tramite.financiamiento.tipo_pago == 'financiado' %}
         <div class="document-download-item">
           <div class="document-icon">
             <i class="fas fa-chart-line"></i>
           </div>
           <div class="document-info">
-            <h4 class="document-name">Plan de Financiamiento</h4>
+            <h4 class="document-name">Tabla de Financiamiento</h4>
             <p class="document-description">Detalle del plan de pagos y condiciones financieras.</p>
           </div>
           <div class="document-actions">
             <a class="download-btn word" 
-                    href="{% url 'dashboard:download_document' tramite.pk 'plan_financiamiento' 'word' %}"
+                    href="{% url 'dashboard:download_document' tramite.pk 'financiamiento' 'word' %}"
                 download>
               <i class="fas fa-file-word"></i>
               <span>Word</span>
             </a>
             <a class="download-btn pdf" 
-                href="{% url 'dashboard:download_document' tramite.pk 'plan_financiamiento' 'pdf' %}"
+                href="{% url 'dashboard:download_document' tramite.pk 'financiamiento' 'pdf' %}"
                 download>
                 <i class="fas fa-file-pdf"></i>
                 <span>PDF</span>
             </a>
           </div>
-        </div>-->
+        </div>
+        {% endif %}
 
         <!-- Contrato (dinámico según régimen y tipo de pago) -->
         <div class="document-download-item">
@@ -1114,3 +1323,337 @@
   0%, 100% { opacity: 1; transform: scale(1); }
   50% { opacity: 0.7; transform: scale(1.1); }
 }
+
+/* ==== SECCIÓN DE FIRMAS ==== */
+.info-card.signatures-data {
+  grid-column: 1 / -1;
+}
+
+.signatures-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.action-btn.small {
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+}
+
+.signatures-progress {
+  margin-bottom: 2rem;
+}
+
+.progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.progress-label {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.progress-percentage {
+  font-weight: 600;
+  color: var(--logo-blue);
+}
+
+.progress-bar-container {
+  width: 100%;
+  height: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 5px;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.progress-bar {
+  height: 100%;
+  background: var(--secondary-gradient);
+  border-radius: 5px;
+  transition: width 0.5s ease;
+}
+
+.progress-status {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.status-text {
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.signatures-list {
+  margin-bottom: 2rem;
+}
+
+.signatures-list-title,
+.signatures-links-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+}
+
+.signatures-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+}
+
+.signature-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: var(--transition);
+}
+
+.signature-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+  transform: translateY(-2px);
+}
+
+.signature-item.completed {
+  border-left: 4px solid #10B981;
+}
+
+.signature-item.pending {
+  border-left: 4px solid #F59E0B;
+}
+
+.signature-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  flex-shrink: 0;
+}
+
+.signature-item.completed .signature-icon {
+  background: var(--secondary-gradient);
+}
+
+.signature-item.pending .signature-icon {
+  background: var(--accent-gradient);
+}
+
+.signature-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.signature-name {
+  display: block;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+}
+
+.signature-details {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.signature-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+.signature-item.completed .signature-status {
+  color: #10B981;
+}
+
+.signature-item.pending .signature-status {
+  color: #F59E0B;
+}
+
+.signatures-links {
+  margin-bottom: 1.5rem;
+}
+
+.links-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.link-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.link-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.link-type {
+  display: block;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+}
+
+.link-token {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  word-break: break-all;
+}
+
+.signatures-pending {
+  margin-top: 1rem;
+}
+
+.pending-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  border-radius: 12px;
+  color: #D97706;
+}
+
+.pending-alert i {
+  font-size: 1.2rem;
+  margin-top: 0.2rem;
+}
+
+.pending-content {
+  flex: 1;
+}
+
+.pending-content ul {
+  margin: 0.5rem 0 0 0;
+  padding-left: 1.5rem;
+}
+
+.pending-content li {
+  margin-bottom: 0.25rem;
+}
+
+.signatures-completed {
+  margin-top: 1rem;
+}
+
+.completed-alert {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 12px;
+  color: #059669;
+}
+
+.completed-alert i {
+  font-size: 1.5rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .signatures-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .signatures-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .action-btn.small {
+    justify-content: center;
+  }
+  
+  .link-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+  
+  .link-info {
+    width: 100%;
+  }
+}
+
+</style>
+<script>
+(function() {
+  console.log('Script de copiar links ejecutándose...');
+  
+  // Ejecutar después de un pequeño delay para asegurar que el DOM está listo
+  setTimeout(function() {
+    const copyButtons = document.querySelectorAll('.copy-link');
+    console.log('Botones encontrados:', copyButtons.length);
+    
+    copyButtons.forEach(function(button) {
+      button.addEventListener('click', function(e) {
+        e.preventDefault();
+        const link = this.getAttribute('data-link');
+        
+        console.log('Click en copiar, link:', link);
+        
+        if (!link) {
+          alert('Error: No se encontró el link');
+          return;
+        }
+        
+        // Método fallback que funciona en HTTP
+        const textarea = document.createElement('textarea');
+        textarea.value = link;
+        textarea.style.position = 'fixed';
+        textarea.style.left = '-9999px';
+        document.body.appendChild(textarea);
+        textarea.select();
+        
+        try {
+          document.execCommand('copy');
+          console.log('Link copiado!');
+          
+          // Feedback visual
+          const originalHTML = this.innerHTML;
+          this.innerHTML = '<i class="fas fa-check"></i> ¡Copiado!';
+          this.style.background = 'rgba(16, 185, 129, 0.2)';
+          this.style.color = '#059669';
+          this.disabled = true;
+          
+          setTimeout(() => {
+            this.innerHTML = originalHTML;
+            this.style.background = '';
+            this.style.color = '';
+            this.disabled = false;
+          }, 2000);
+        } catch (err) {
+          console.error('Error:', err);
+          alert('Error al copiar el link');
+        } finally {
+          document.body.removeChild(textarea);
+        }
+      });
+    });
+  }, 200);
+})();
+</script>
