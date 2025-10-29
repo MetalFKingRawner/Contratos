@@ -227,6 +227,81 @@
               </div>
             {% endif %}
           </div>
+
+          <!-- NUEVOS CAMPOS MEJORADOS: Estado del Plan -->
+          <div class="form-group" id="cotizacion-field">
+            <label class="form-label">
+              {{ form.es_cotizacion.label }}
+            </label>
+            <div class="toggle-wrapper">
+              <div class="toggle-container">
+                {{ form.es_cotizacion }}
+                <label for="id_es_cotizacion" class="toggle-switch">
+                  <span class="toggle-slider">
+                    <span class="toggle-icon-off">
+                      <i class="fas fa-times"></i>
+                    </span>
+                    <span class="toggle-icon-on">
+                      <i class="fas fa-check"></i>
+                    </span>
+                  </span>
+                </label>
+                <span class="toggle-label">
+                  <span class="toggle-status">
+                    <i class="fas fa-file-invoice"></i>
+                    {{ form.es_cotizacion.help_text }}
+                  </span>
+                </span>
+              </div>
+            </div>
+            {% if form.es_cotizacion.errors %}
+              <div class="field-errors">
+                {% for error in form.es_cotizacion.errors %}
+                  <span class="field-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    {{ error }}
+                  </span>
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">
+              {{ form.activo.label }}
+            </label>
+            <div class="toggle-wrapper">
+              <div class="toggle-container">
+                {{ form.activo }}
+                <label for="id_activo" class="toggle-switch">
+                  <span class="toggle-slider">
+                    <span class="toggle-icon-off">
+                      <i class="fas fa-times"></i>
+                    </span>
+                    <span class="toggle-icon-on">
+                      <i class="fas fa-check"></i>
+                    </span>
+                  </span>
+                </label>
+                <span class="toggle-label">
+                  <span class="toggle-status">
+                    <i class="fas fa-power-off"></i>
+                    {{ form.activo.help_text }}
+                  </span>
+                </span>
+              </div>
+            </div>
+            {% if form.activo.errors %}
+              <div class="field-errors">
+                {% for error in form.activo.errors %}
+                  <span class="field-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    {{ error }}
+                  </span>
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
         </div>
       </div>
 
@@ -818,6 +893,204 @@
   font-size: 0.75rem;
 }
 
+/* ==== TOGGLE SWITCH MEJORADO ==== */
+.toggle-wrapper {
+  margin-top: 0.5rem;
+}
+
+.toggle-container {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1.5px solid var(--glass-border);
+  border-radius: 12px;
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+
+.toggle-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at 10% 50%, rgba(16, 185, 129, 0.05) 0%, transparent 50%);
+  opacity: 0;
+  transition: var(--transition);
+  pointer-events: none;
+}
+
+.toggle-container:hover {
+  border-color: rgba(16, 185, 129, 0.3);
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateY(-1px);
+}
+
+.toggle-container:hover::before {
+  opacity: 1;
+}
+
+/* Ocultar el checkbox original */
+.toggle-container input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+/* Toggle Switch */
+.toggle-switch {
+  position: relative;
+  width: 60px;
+  height: 32px;
+  background: rgba(148, 163, 184, 0.3);
+  border-radius: 50px;
+  cursor: pointer;
+  transition: var(--transition);
+  border: 2px solid rgba(148, 163, 184, 0.2);
+  flex-shrink: 0;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.toggle-slider {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 22px;
+  height: 22px;
+  background: white;
+  border-radius: 50%;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.toggle-icon-off,
+.toggle-icon-on {
+  position: absolute;
+  font-size: 0.65rem;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.toggle-icon-off {
+  color: #94A3B8;
+  opacity: 1;
+}
+
+.toggle-icon-on {
+  color: #10B981;
+  opacity: 0;
+  transform: scale(0) rotate(-90deg);
+}
+
+/* Estado CHECKED */
+input[type="checkbox"]:checked + .toggle-switch {
+  background: var(--primary-gradient);
+  border-color: #10B981;
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+}
+
+input[type="checkbox"]:checked + .toggle-switch .toggle-slider {
+  left: calc(100% - 25px);
+  background: white;
+  box-shadow: 0 2px 12px rgba(16, 185, 129, 0.4);
+}
+
+input[type="checkbox"]:checked + .toggle-switch .toggle-icon-off {
+  opacity: 0;
+  transform: scale(0) rotate(90deg);
+}
+
+input[type="checkbox"]:checked + .toggle-switch .toggle-icon-on {
+  opacity: 1;
+  transform: scale(1) rotate(0deg);
+}
+
+/* Efecto hover en el switch */
+.toggle-switch:hover {
+  box-shadow: 0 0 15px rgba(16, 185, 129, 0.2);
+}
+
+input[type="checkbox"]:checked + .toggle-switch:hover {
+  box-shadow: 0 0 25px rgba(16, 185, 129, 0.4);
+}
+
+/* Label del toggle */
+.toggle-label {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.toggle-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  transition: var(--transition);
+}
+
+.toggle-status i {
+  color: var(--text-secondary);
+  transition: var(--transition);
+  font-size: 0.95rem;
+}
+
+input[type="checkbox"]:checked ~ .toggle-label .toggle-status {
+  color: var(--logo-green);
+  font-weight: 600;
+}
+
+input[type="checkbox"]:checked ~ .toggle-label .toggle-status i {
+  color: var(--logo-green);
+  animation: iconPop 0.5s ease;
+}
+
+/* Efecto de pulso cuando está activo */
+@keyframes togglePulse {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(16, 185, 129, 0.5);
+  }
+}
+
+input[type="checkbox"]:checked + .toggle-switch {
+  animation: togglePulse 2s infinite;
+}
+
+/* Animación del icono */
+@keyframes iconPop {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+}
+
+/* Estado disabled */
+.toggle-container input[type="checkbox"]:disabled + .toggle-switch {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.toggle-container input[type="checkbox"]:disabled ~ .toggle-label {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* ==== BOTONES DE ACCIÓN ==== */
 .form-actions {
   display: flex;
@@ -923,6 +1196,12 @@
   
   .form-btn {
     min-width: auto;
+  }
+  
+  .toggle-container {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
   }
 }
 
@@ -1175,6 +1454,36 @@ if (!window.financiamientoScriptLoaded) {
     function unformatValue(value) {
       if (!value) return '0';
       return String(value).replace(/[$,\s]/g, '') || '0';
+    }
+
+    // NUEVA FUNCIÓN: Controlar visibilidad del campo cotización
+    function toggleCotizacionField() {
+        const tipoPago = document.getElementById('id_tipo_pago')?.value;
+        const esCotizacionField = document.getElementById('cotizacion-field');
+        const esCotizacionCheckbox = document.getElementById('id_es_cotizacion');
+        
+        debugLog('🔀 Cambiando visibilidad de campo cotización para tipo:', tipoPago);
+        
+        if (tipoPago === 'contado') {
+            // Ocultar y deshabilitar para contado
+            if (esCotizacionField) {
+                esCotizacionField.style.display = 'none';
+            }
+            if (esCotizacionCheckbox) {
+                esCotizacionCheckbox.checked = false;
+                esCotizacionCheckbox.disabled = true;
+            }
+            debugLog('🚫 Campo cotización oculto y deshabilitado (pago contado)');
+        } else {
+            // Mostrar y habilitar para financiado
+            if (esCotizacionField) {
+                esCotizacionField.style.display = 'flex';
+            }
+            if (esCotizacionCheckbox) {
+                esCotizacionCheckbox.disabled = false;
+            }
+            debugLog('✅ Campo cotización visible y habilitado (pago financiado)');
+        }
     }
 
     // CONFIGURAR HANDLERS DE ENVÍO - SIMPLIFICADO Y ROBUSTO
@@ -1514,6 +1823,7 @@ if (!window.financiamientoScriptLoaded) {
       debugLog('📋 Tipo de pago actual:', tipo);
       
       toggleFieldsVisibility();
+      toggleCotizacionField(); // NUEVA LLAMADA - Control de campo cotización
       
       if (tipo === 'contado') {
         calculateContado();
@@ -1542,6 +1852,16 @@ if (!window.financiamientoScriptLoaded) {
           });
         }
       });
+
+      // NUEVO: Listener específico para tipo de pago que controle cotización
+      const tipoPagoSelect = document.getElementById('id_tipo_pago');
+      if (tipoPagoSelect) {
+        debugLog('🔗 Agregando listener especial para tipo_pago (control cotización)');
+        tipoPagoSelect.addEventListener('change', () => {
+          debugLog(`🔔 CHANGE event en tipo_pago, valor: ${tipoPagoSelect.value}`);
+          toggleCotizacionField();
+        });
+      }
     }
 
     // Carga dinámica de lotes
@@ -1657,7 +1977,7 @@ if (!window.financiamientoScriptLoaded) {
     // 5. Configurar UX
     setupUXEnhancements();
     
-    // 6. Ejecutar recálculo inicial
+    // 6. Ejecutar recálculo inicial (que ahora incluye control de cotización)
     debugLog('🚀 Ejecutando inicialización final');
     recalculate();
     
