@@ -182,5 +182,12 @@ class SegundoClienteForm(forms.ModelForm):
             'domicilio': forms.Textarea(attrs={'class':'form-control','rows':2}),
         }
 
-
-
+class FirmaForm(forms.Form):
+    firma_data = forms.CharField(
+        widget=forms.HiddenInput(attrs={'id': 'firmaData'}),
+        required=True
+    )
+    aceptar_terminos = forms.BooleanField(
+        required=True,
+        label="Acepto los términos y condiciones del documento"
+    )
