@@ -117,8 +117,20 @@ class Cliente(models.Model):
     def __str__(self):
         return self.nombre_completo
 
+class Beneficiario(models.Model):
+    SEXO_CHOICES = [
+        ('M', 'Masculino'),
+        ('F', 'Femenino'),
+    ]
 
+    nombre_completo = models.CharField("Nombre completo", max_length=150)
+    sexo            = models.CharField("Sexo", max_length=1, choices=SEXO_CHOICES, default='M', blank=True)
+    telefono        = models.CharField("Teléfono", max_length=20, blank=True)
+    email           = models.EmailField("Correo electrónico", blank=True)
+    numero_id       = models.CharField("Número de identificación", max_length=50, blank=True)
 
+    creado_en      = models.DateTimeField(auto_now_add=True)
+    actualizado_en = models.DateTimeField(auto_now=True)
 
-
-
+    def __str__(self):
+        return self.nombre_completo
