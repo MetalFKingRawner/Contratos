@@ -1,0 +1,969 @@
+{# dashboard/partials/cartaintencion_form.html #}
+<div class="container-fluid py-4">
+  <!-- Header de navegación -->
+  <div class="form-navigation mb-4">
+    <button class="btn-back carta-back" 
+            hx-get="{% if creating %}{% url 'dashboard:cartaintencion_list' %}{% else %}{% url 'dashboard:cartaintencion_detail' object.pk %}{% endif %}" 
+            hx-target="#content" 
+            hx-swap="innerHTML"
+            hx-push-url="true">
+      <i class="fas fa-arrow-left"></i>
+      <span>Volver a {% if creating %}Cartas de Intención{% else %}Detalle{% endif %}</span>
+    </button>
+  </div>
+
+  <!-- Tarjeta del formulario -->
+  <div class="form-card carta-form-card">
+    <div class="form-header carta-form-header">
+      <div class="form-icon carta-form-icon">
+        <i class="fas fa-file-signature"></i>
+      </div>
+      <div class="form-title">
+        <h1>{% if creating %}Crear Nueva Carta de Intención{% else %}Editar Carta de Intención{% endif %}</h1>
+        <p>{% if creating %}Complete la información para generar una nueva carta de intención de compra{% else %}Modifique la información de la carta de intención{% endif %}</p>
+      </div>
+    </div>
+
+    <form method="post" 
+          {% if creating %}
+          hx-post="{% url 'dashboard:cartaintencion_create' %}"
+          {% else %}
+          hx-post="{% url 'dashboard:cartaintencion_update' object.pk %}"
+          {% endif %}
+          hx-target="#content" 
+          hx-swap="innerHTML"
+          class="carta-intencion-form">
+      {% csrf_token %}
+      
+      <div class="form-sections">
+        <!-- Información del Cliente -->
+        <div class="form-section carta-form-section">
+          <h3 class="section-title carta-section-title">
+            <div class="section-icon cliente-icon">
+              <i class="fas fa-user"></i>
+            </div>
+            <span>Información del Cliente</span>
+          </h3>
+          
+          <div class="form-grid">
+            <div class="form-group full-width carta-form-group">
+              <label for="{{ form.nombre_cliente.id_for_label }}">
+                <i class="fas fa-user-circle label-icon"></i>
+                {{ form.nombre_cliente.label }} <span class="required-asterisk">*</span>
+              </label>
+              {{ form.nombre_cliente }}
+              {% if form.nombre_cliente.errors %}
+                <div class="form-errors">
+                  {% for error in form.nombre_cliente.errors %}
+                    <span class="error-message"><i class="fas fa-exclamation-circle"></i> {{ error }}</span>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+
+            <div class="form-group carta-form-group">
+              <label for="{{ form.tipo_id.id_for_label }}">
+                <i class="fas fa-id-badge label-icon"></i>
+                {{ form.tipo_id.label }}
+              </label>
+              {{ form.tipo_id }}
+              {% if form.tipo_id.errors %}
+                <div class="form-errors">
+                  {% for error in form.tipo_id.errors %}
+                    <span class="error-message"><i class="fas fa-exclamation-circle"></i> {{ error }}</span>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+
+            <div class="form-group carta-form-group">
+              <label for="{{ form.numero_id.id_for_label }}">
+                <i class="fas fa-id-card label-icon"></i>
+                {{ form.numero_id.label }}
+              </label>
+              {{ form.numero_id }}
+              {% if form.numero_id.errors %}
+                <div class="form-errors">
+                  {% for error in form.numero_id.errors %}
+                    <span class="error-message"><i class="fas fa-exclamation-circle"></i> {{ error }}</span>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+
+            <div class="form-group full-width carta-form-group">
+              <label for="{{ form.domicilio.id_for_label }}">
+                <i class="fas fa-map-marker-alt label-icon"></i>
+                {{ form.domicilio.label }} <span class="required-asterisk">*</span>
+              </label>
+              {{ form.domicilio }}
+              {% if form.domicilio.errors %}
+                <div class="form-errors">
+                  {% for error in form.domicilio.errors %}
+                    <span class="error-message"><i class="fas fa-exclamation-circle"></i> {{ error }}</span>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+
+            <div class="form-group carta-form-group">
+              <label for="{{ form.telefono_cliente.id_for_label }}">
+                <i class="fas fa-phone label-icon"></i>
+                {{ form.telefono_cliente.label }}
+              </label>
+              {{ form.telefono_cliente }}
+              {% if form.telefono_cliente.errors %}
+                <div class="form-errors">
+                  {% for error in form.telefono_cliente.errors %}
+                    <span class="error-message"><i class="fas fa-exclamation-circle"></i> {{ error }}</span>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+
+            <div class="form-group carta-form-group">
+              <label for="{{ form.correo_cliente.id_for_label }}">
+                <i class="fas fa-envelope label-icon"></i>
+                {{ form.correo_cliente.label }}
+              </label>
+              {{ form.correo_cliente }}
+              {% if form.correo_cliente.errors %}
+                <div class="form-errors">
+                  {% for error in form.correo_cliente.errors %}
+                    <span class="error-message"><i class="fas fa-exclamation-circle"></i> {{ error }}</span>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Información del Inmueble y Financiamiento -->
+        <div class="form-section carta-form-section">
+          <h3 class="section-title carta-section-title">
+            <div class="section-icon inmueble-icon">
+              <i class="fas fa-home"></i>
+            </div>
+            <span>Información del Inmueble y Financiamiento</span>
+          </h3>
+          
+          <div class="form-grid">
+            <div class="form-group carta-form-group">
+              <label for="{{ form.financiamiento.id_for_label }}">
+                <i class="fas fa-hand-holding-usd label-icon"></i>
+                {{ form.financiamiento.label }} <span class="required-asterisk">*</span>
+              </label>
+              {{ form.financiamiento }}
+              {% if form.financiamiento.errors %}
+                <div class="form-errors">
+                  {% for error in form.financiamiento.errors %}
+                    <span class="error-message"><i class="fas fa-exclamation-circle"></i> {{ error }}</span>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+
+            <div class="form-group carta-form-group">
+              <label for="{{ form.vendedor.id_for_label }}">
+                <i class="fas fa-user-tie label-icon"></i>
+                {{ form.vendedor.label }} <span class="required-asterisk">*</span>
+              </label>
+              {{ form.vendedor }}
+              {% if form.vendedor.errors %}
+                <div class="form-errors">
+                  {% for error in form.vendedor.errors %}
+                    <span class="error-message"><i class="fas fa-exclamation-circle"></i> {{ error }}</span>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+
+            <div class="form-group carta-form-group">
+              <label for="{{ form.oferta.id_for_label }}">
+                <i class="fas fa-dollar-sign label-icon"></i>
+                {{ form.oferta.label }} <span class="required-asterisk">*</span>
+              </label>
+              {{ form.oferta }}
+              {% if form.oferta.errors %}
+                <div class="form-errors">
+                  {% for error in form.oferta.errors %}
+                    <span class="error-message"><i class="fas fa-exclamation-circle"></i> {{ error }}</span>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+
+            <div class="form-group carta-form-group">
+              <label for="{{ form.forma_pago.id_for_label }}">
+                <i class="fas fa-credit-card label-icon"></i>
+                {{ form.forma_pago.label }} <span class="required-asterisk">*</span>
+              </label>
+              {{ form.forma_pago }}
+              {% if form.forma_pago.errors %}
+                <div class="form-errors">
+                  {% for error in form.forma_pago.errors %}
+                    <span class="error-message"><i class="fas fa-exclamation-circle"></i> {{ error }}</span>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Información Adicional -->
+        <div class="form-section carta-form-section">
+          <h3 class="section-title carta-section-title">
+            <div class="section-icon adicional-icon">
+              <i class="fas fa-info-circle"></i>
+            </div>
+            <span>Información Adicional</span>
+          </h3>
+          
+          <div class="form-grid">
+            <div class="form-group carta-form-group">
+              <label for="{{ form.credito_hipotecario.id_for_label }}">
+                <i class="fas fa-university label-icon"></i>
+                {{ form.credito_hipotecario.label }}
+              </label>
+              {{ form.credito_hipotecario }}
+              {% if form.credito_hipotecario.errors %}
+                <div class="form-errors">
+                  {% for error in form.credito_hipotecario.errors %}
+                    <span class="error-message"><i class="fas fa-exclamation-circle"></i> {{ error }}</span>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+
+            <div class="form-group carta-form-group" id="institucion-financiera-group" style="display: none;">
+              <label for="{{ form.institucion_financiera.id_for_label }}">
+                <i class="fas fa-building label-icon"></i>
+                {{ form.institucion_financiera.label }}
+              </label>
+              {{ form.institucion_financiera }}
+              {% if form.institucion_financiera.errors %}
+                <div class="form-errors">
+                  {% for error in form.institucion_financiera.errors %}
+                    <span class="error-message"><i class="fas fa-exclamation-circle"></i> {{ error }}</span>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+
+            <div class="form-group carta-form-group">
+              <label for="{{ form.destinatario_apartado.id_for_label }}">
+                <i class="fas fa-user-check label-icon"></i>
+                {{ form.destinatario_apartado.label }}
+              </label>
+              {{ form.destinatario_apartado }}
+              {% if form.destinatario_apartado.errors %}
+                <div class="form-errors">
+                  {% for error in form.destinatario_apartado.errors %}
+                    <span class="error-message"><i class="fas fa-exclamation-circle"></i> {{ error }}</span>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Acciones del formulario -->
+      <div class="form-actions carta-form-actions">
+        <button type="button" 
+                class="btn-cancel carta-btn-cancel"
+                hx-get="{% if creating %}{% url 'dashboard:cartaintencion_list' %}{% else %}{% url 'dashboard:cartaintencion_detail' object.pk %}{% endif %}"
+                hx-target="#content" 
+                hx-swap="innerHTML"
+                hx-push-url="true">
+          <i class="fas fa-times"></i>
+          <span>Cancelar</span>
+        </button>
+        <button type="submit" class="btn-submit carta-btn-submit">
+          <i class="fas fa-check"></i>
+          <span>{% if creating %}Crear Carta de Intención{% else %}Guardar Cambios{% endif %}</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<style>
+/* ==== TEMA CARTA DE INTENCIÓN - FORMULARIO ==== */
+.carta-form-card {
+  position: relative;
+  overflow: hidden;
+  animation: fadeInUp 0.6s ease;
+}
+
+.carta-form-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(90deg, #7C3AED 0%, #8B5CF6 25%, #A78BFA 50%, #C4B5FD 75%, #DDD6FE 100%);
+  background-size: 200% 100%;
+  animation: slideGradient 3s linear infinite;
+}
+
+@keyframes slideGradient {
+  0% { background-position: 0% 0%; }
+  100% { background-position: 200% 0%; }
+}
+
+/* ==== NAVEGACIÓN ==== */
+.btn-back.carta-back {
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+  border: 2px solid rgba(139, 92, 246, 0.3);
+  box-shadow: 0 4px 15px rgba(124, 58, 237, 0.15);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-back.carta-back::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.btn-back.carta-back:hover {
+  background: linear-gradient(135deg, #7C3AED 0%, #8B5CF6 100%);
+  border-color: #8B5CF6;
+  color: white;
+  transform: translateX(-8px);
+  box-shadow: 0 6px 20px rgba(124, 58, 237, 0.3);
+}
+
+.btn-back.carta-back:hover::before {
+  left: 100%;
+}
+
+/* ==== HEADER DEL FORMULARIO ==== */
+.form-header.carta-form-header {
+  background: linear-gradient(135deg, #6D28D9 0%, #7C3AED 50%, #8B5CF6 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.form-header.carta-form-header::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+  animation: rotateGradient 10s linear infinite;
+}
+
+@keyframes rotateGradient {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.form-icon.carta-form-icon {
+  background: rgba(255, 255, 255, 0.2);
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2), inset 0 0 20px rgba(255, 255, 255, 0.1);
+  animation: iconPulse 3s ease-in-out infinite;
+}
+
+@keyframes iconPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+/* ==== SECCIONES DEL FORMULARIO ==== */
+.form-section.carta-form-section {
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.03) 0%, rgba(139, 92, 246, 0.03) 100%);
+  border: 1px solid rgba(139, 92, 246, 0.15);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.form-section.carta-form-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 3px;
+  height: 100%;
+  background: linear-gradient(180deg, #7C3AED 0%, #8B5CF6 50%, #A78BFA 100%);
+}
+
+.form-section.carta-form-section:hover {
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.06) 0%, rgba(139, 92, 246, 0.06) 100%);
+  border-color: rgba(139, 92, 246, 0.25);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(124, 58, 237, 0.12);
+}
+
+/* ==== TÍTULOS DE SECCIÓN ==== */
+.section-title.carta-section-title {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.section-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1rem;
+  animation: iconFloat 3s ease-in-out infinite;
+}
+
+@keyframes iconFloat {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-5px); }
+}
+
+.section-icon.cliente-icon {
+  background: linear-gradient(135deg, #7C3AED 0%, #8B5CF6 100%);
+  box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+}
+
+.section-icon.inmueble-icon {
+  background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%);
+  box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+}
+
+.section-icon.adicional-icon {
+  background: linear-gradient(135deg, #A78BFA 0%, #C4B5FD 100%);
+  box-shadow: 0 4px 15px rgba(167, 139, 250, 0.3);
+}
+
+/* ==== GRUPOS DE FORMULARIO ==== */
+.form-group.carta-form-group label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #6D28D9;
+  font-weight: 600;
+}
+
+.label-icon {
+  color: #8B5CF6;
+  font-size: 0.9rem;
+}
+
+.required-asterisk {
+  color: #EF4444;
+  font-weight: 700;
+}
+
+.form-group.carta-form-group input,
+.form-group.carta-form-group select,
+.form-group.carta-form-group textarea {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(139, 92, 246, 0.02) 100%);
+  border: 2px solid rgba(139, 92, 246, 0.2);
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.form-group.carta-form-group input:focus,
+.form-group.carta-form-group select:focus,
+.form-group.carta-form-group textarea:focus {
+  border-color: #8B5CF6;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(139, 92, 246, 0.05) 100%);
+  box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.15), 0 8px 25px rgba(124, 58, 237, 0.15);
+  transform: translateY(-3px);
+}
+
+.form-group.carta-form-group input:hover,
+.form-group.carta-form-group select:hover,
+.form-group.carta-form-group textarea:hover {
+  border-color: #A78BFA;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, rgba(139, 92, 246, 0.03) 100%);
+}
+
+/* ==== VALIDACIÓN ==== */
+.form-group.carta-form-group input.is-valid,
+.form-group.carta-form-group select.is-valid,
+.form-group.carta-form-group textarea.is-valid {
+  border-color: #10B981;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(5, 150, 105, 0.02) 100%);
+}
+
+.form-group.carta-form-group input.is-invalid,
+.form-group.carta-form-group select.is-invalid,
+.form-group.carta-form-group textarea.is-invalid {
+  border-color: #EF4444;
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.05) 0%, rgba(220, 38, 38, 0.02) 100%);
+}
+
+/* ==== ERRORES ==== */
+.error-message {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(220, 38, 38, 0.1) 100%);
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  border-left: 3px solid #EF4444;
+  animation: shakeError 0.4s ease;
+}
+
+@keyframes shakeError {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+/* ==== BOTONES DE ACCIÓN ==== */
+.form-actions.carta-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 2px solid rgba(139, 92, 246, 0.15);
+}
+
+.btn-cancel.carta-btn-cancel,
+.btn-submit.carta-btn-submit {
+  position: relative;
+  overflow: hidden;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.btn-cancel.carta-btn-cancel::before,
+.btn-submit.carta-btn-submit::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.btn-cancel.carta-btn-cancel:hover::before,
+.btn-submit.carta-btn-submit:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+.btn-cancel.carta-btn-cancel {
+  background: linear-gradient(135deg, rgba(108, 117, 125, 0.15) 0%, rgba(73, 80, 87, 0.15) 100%);
+  border: 2px solid rgba(108, 117, 125, 0.3);
+}
+
+.btn-cancel.carta-btn-cancel:hover {
+  background: linear-gradient(135deg, rgba(108, 117, 125, 0.25) 0%, rgba(73, 80, 87, 0.25) 100%);
+  border-color: #6C757D;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(108, 117, 125, 0.25);
+}
+
+.btn-submit.carta-btn-submit {
+  background: linear-gradient(135deg, #6D28D9 0%, #7C3AED 25%, #8B5CF6 50%, #A78BFA 75%, #C4B5FD 100%);
+  background-size: 200% 200%;
+  animation: gradientMove 4s ease infinite;
+  border: none;
+  color: white;
+  box-shadow: 0 8px 25px rgba(124, 58, 237, 0.35);
+}
+
+@keyframes gradientMove {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.btn-submit.carta-btn-submit:hover {
+  transform: translateY(-4px) scale(1.05);
+  box-shadow: 0 12px 35px rgba(124, 58, 237, 0.45);
+}
+
+.btn-submit.carta-btn-submit:active {
+  transform: translateY(-2px) scale(1.02);
+}
+
+/* ==== ESTADO DE CARGA ==== */
+.btn-submit.carta-btn-submit:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-submit.carta-btn-submit .fa-spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ==== ESTILOS BASE ==== */
+.form-navigation {
+  display: flex;
+  align-items: center;
+  animation: fadeInLeft 0.6s ease;
+}
+
+@keyframes fadeInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+.btn-back {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  color: var(--text-primary);
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+}
+
+.form-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.form-header {
+  display: flex;
+  align-items: center;
+  padding: 2rem;
+  color: white;
+  gap: 1.5rem;
+}
+
+.form-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+}
+
+.form-title h1 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.form-title p {
+  margin: 0;
+  opacity: 0.9;
+}
+
+.carta-intencion-form {
+  padding: 2rem;
+}
+
+.form-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.form-section {
+  padding: 1.5rem;
+  border-radius: 15px;
+}
+
+.section-title {
+  margin: 0 0 1.5rem 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group.full-width {
+  grid-column: 1 / -1;
+}
+
+.form-group label {
+  font-weight: 500;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  color: var(--text-primary);
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.form-errors {
+  margin-top: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-top: 2rem;
+}
+
+.btn-cancel, .btn-submit {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 10px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 1rem;
+}
+
+/* ==== RESPONSIVE ==== */
+@media (max-width: 768px) {
+  .form-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 1rem;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .btn-cancel, .btn-submit {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .carta-intencion-form {
+    padding: 1.5rem;
+  }
+  
+  .form-section.carta-form-section {
+    padding: 1rem;
+  }
+}
+
+/* ==== ANIMACIONES ==== */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+</style>
+
+<script>
+// Script para mejorar la experiencia del formulario
+document.addEventListener('DOMContentLoaded', function() {
+  initCartaIntencionForm();
+});
+
+// Reinicializar cuando HTMX carga contenido
+document.body.addEventListener('htmx:afterSwap', function(evt) {
+  if (evt.detail.target.id === 'content') {
+    setTimeout(initCartaIntencionForm, 50);
+  }
+});
+
+function initCartaIntencionForm() {
+  // Mostrar/ocultar institución financiera basado en crédito hipotecario
+  const creditoHipotecarioSelect = document.getElementById('{{ form.credito_hipotecario.id_for_label }}');
+  const institucionFinancieraGroup = document.getElementById('institucion-financiera-group');
+
+  function toggleInstitucionFinanciera() {
+    if (creditoHipotecarioSelect && creditoHipotecarioSelect.value === 'Sí') {
+      institucionFinancieraGroup.style.display = 'block';
+      institucionFinancieraGroup.style.animation = 'fadeInUp 0.4s ease';
+    } else if (institucionFinancieraGroup) {
+      institucionFinancieraGroup.style.display = 'none';
+    }
+  }
+
+  if (creditoHipotecarioSelect && institucionFinancieraGroup) {
+    creditoHipotecarioSelect.addEventListener('change', toggleInstitucionFinanciera);
+    // Ejecutar al cargar la página
+    toggleInstitucionFinanciera();
+  }
+
+  const formFields = document.querySelectorAll('.carta-intencion-form input, .carta-intencion-form select, .carta-intencion-form textarea');
+  
+  formFields.forEach(field => {
+    // Agregar clase form-control si no la tiene
+    if (!field.classList.contains('form-control')) {
+      field.classList.add('form-control');
+    }
+    
+    // Efecto de focus mejorado
+    field.addEventListener('focus', function() {
+      this.parentElement.style.transform = 'translateX(5px)';
+    });
+    
+    field.addEventListener('blur', function() {
+      this.parentElement.style.transform = 'translateX(0)';
+      
+      // Validación visual
+      if (this.value.trim() !== '' && this.checkValidity()) {
+        this.classList.add('is-valid');
+        this.classList.remove('is-invalid');
+      } else if (this.hasAttribute('required') && this.value.trim() === '') {
+        this.classList.add('is-invalid');
+        this.classList.remove('is-valid');
+      }
+    });
+    
+    // Animación en input
+    field.addEventListener('input', function() {
+      if (this.classList.contains('is-invalid')) {
+        this.classList.remove('is-invalid');
+      }
+    });
+  });
+
+  // Manejar envío del formulario con HTMX
+  const form = document.querySelector('.carta-intencion-form');
+  if (form) {
+    form.addEventListener('htmx:beforeRequest', function() {
+      const submitBtn = form.querySelector('.btn-submit');
+      if (submitBtn) {
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Procesando...</span>';
+        submitBtn.disabled = true;
+        submitBtn.style.opacity = '0.7';
+      }
+    });
+
+    form.addEventListener('htmx:afterRequest', function(evt) {
+      const submitBtn = form.querySelector('.btn-submit');
+      if (submitBtn && !evt.detail.successful) {
+        const isCreating = submitBtn.textContent.includes('Crear');
+        submitBtn.innerHTML = `<i class="fas fa-check"></i> <span>${isCreating ? 'Crear Carta de Intención' : 'Guardar Cambios'}</span>`;
+        submitBtn.disabled = false;
+        submitBtn.style.opacity = '1';
+      }
+    });
+    
+    // Efecto de éxito visual
+    form.addEventListener('htmx:afterOnLoad', function() {
+      const submitBtn = form.querySelector('.btn-submit');
+      if (submitBtn) {
+        submitBtn.innerHTML = '<i class="fas fa-check-circle"></i> <span>¡Éxito!</span>';
+        submitBtn.style.background = 'linear-gradient(135deg, #10B981 0%, #059669 100%)';
+      }
+    });
+  }
+
+  // Precargar datos del financiamiento si se proporciona un ID
+  const financiamientoSelect = document.getElementById('{{ form.financiamiento.id_for_label }}');
+  const ofertaInput = document.getElementById('{{ form.oferta.id_for_label }}');
+  const nombreClienteInput = document.getElementById('{{ form.nombre_cliente.id_for_label }}');
+
+  if (financiamientoSelect && ofertaInput && nombreClienteInput) {
+    financiamientoSelect.addEventListener('change', function() {
+      const selectedOption = this.options[this.selectedIndex];
+      if (selectedOption.value) {
+        // Los datos están en el atributo data-*
+        const precioLote = selectedOption.getAttribute('data-precio');
+        const nombreCliente = selectedOption.getAttribute('data-cliente');
+
+        if (precioLote && !ofertaInput.value) {
+          ofertaInput.value = precioLote;
+          ofertaInput.classList.add('is-valid');
+        }
+
+        if (nombreCliente && !nombreClienteInput.value) {
+          nombreClienteInput.value = nombreCliente;
+          nombreClienteInput.classList.add('is-valid');
+        }
+      }
+    });
+  }
+}
+
+// Animación de entrada para las secciones
+const observerOptions = {
+  threshold: 0.1,
+  rootMargin: '0px 0px -50px 0px'
+};
+
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach((entry, index) => {
+    if (entry.isIntersecting) {
+      setTimeout(() => {
+        entry.target.style.opacity = '1';
+        entry.target.style.transform = 'translateY(0)';
+      }, index * 100);
+      observer.unobserve(entry.target);
+    }
+  });
+}, observerOptions);
+
+document.querySelectorAll('.form-section').forEach(section => {
+  section.style.opacity = '0';
+  section.style.transform = 'translateY(20px)';
+  section.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+  observer.observe(section);
+});
+</script>

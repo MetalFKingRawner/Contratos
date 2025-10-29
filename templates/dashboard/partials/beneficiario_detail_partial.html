@@ -1,0 +1,702 @@
+{# dashboard/partials/beneficiario_detail.html #}
+<div class="container-fluid py-4">
+  <!-- Header con información principal del beneficiario -->
+  <div class="client-detail-header beneficiario-theme">
+    <div class="client-header-content">
+      <div class="client-avatar-section">
+        <div class="client-main-avatar beneficiario-avatar">
+          <span class="avatar-initials-large">{{ beneficiario.nombre_completo|slice:":2"|upper }}</span>
+        </div>
+        <div class="client-status active beneficiario-status">
+          <div class="status-dot"></div>
+          <span class="status-label">{{ beneficiario.get_sexo_display }}</span>
+        </div>
+      </div>
+      
+      <div class="client-title-section">
+        <h1 class="client-detail-title beneficiario-title">{{ beneficiario.nombre_completo }}</h1>
+        <p class="client-detail-subtitle">Información completa del beneficiario</p>
+        
+        <div class="client-quick-actions">
+          {% if beneficiario.telefono %}
+          <a href="tel:{{ beneficiario.telefono }}" class="quick-action-btn phone">
+            <i class="fas fa-phone"></i>
+            <span>Llamar</span>
+          </a>
+          {% endif %}
+          {% if beneficiario.email %}
+          <a href="mailto:{{ beneficiario.email }}" class="quick-action-btn email">
+            <i class="fas fa-envelope"></i>
+            <span>Email</span>
+          </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Información detallada del beneficiario -->
+  <div class="client-info-grid">
+    <!-- Información de contacto -->
+    <div class="info-card personal-data beneficiario-card">
+      <div class="info-card-header beneficiario-card-header">
+        <div class="info-card-icon personal beneficiario-icon">
+          <i class="fas fa-address-card"></i>
+        </div>
+        <h3 class="info-card-title">Información de Contacto</h3>
+      </div>
+      
+      <div class="info-card-body">
+        <div class="info-grid">
+          <div class="info-item beneficiario-info-item">
+            <span class="info-label">Sexo</span>
+            <span class="info-value">{{ beneficiario.get_sexo_display }}</span>
+          </div>
+          {% if beneficiario.telefono %}
+          <div class="info-item beneficiario-info-item">
+            <span class="info-label">Teléfono</span>
+            <span class="info-value">{{ beneficiario.telefono }}</span>
+          </div>
+          {% endif %}
+          {% if beneficiario.email %}
+          <div class="info-item beneficiario-info-item">
+            <span class="info-label">Email</span>
+            <span class="info-value">{{ beneficiario.email }}</span>
+          </div>
+          {% endif %}
+          {% if beneficiario.numero_id %}
+          <div class="info-item beneficiario-info-item">
+            <span class="info-label">Número de Identificación</span>
+            <span class="info-value">{{ beneficiario.numero_id }}</span>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Información adicional -->
+    <div class="info-card tramites-data beneficiario-card">
+      <div class="info-card-header beneficiario-card-header-alt">
+        <div class="info-card-icon tramites beneficiario-icon-alt">
+          <i class="fas fa-info-circle"></i>
+        </div>
+        <h3 class="info-card-title">Información Adicional</h3>
+      </div>
+      
+      <div class="info-card-body">
+        <div class="info-grid single-column">
+          <div class="info-item beneficiario-info-item">
+            <span class="info-label">ID del Beneficiario</span>
+            <span class="info-value">#{{ beneficiario.id }}</span>
+          </div>
+          <div class="info-item beneficiario-info-item">
+            <span class="info-label">Fecha de Creación</span>
+            <span class="info-value">{{ beneficiario.creado_en|date:"d/m/Y H:i" }}</span>
+          </div>
+          <div class="info-item beneficiario-info-item">
+            <span class="info-label">Última Actualización</span>
+            <span class="info-value">{{ beneficiario.actualizado_en|date:"d/m/Y H:i" }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Botones de acción -->
+  <div class="client-actions-section">
+    <div class="actions-container">
+      <button class="action-btn primary beneficiario-btn-primary" 
+              hx-get="{% url 'dashboard:beneficiario_update' beneficiario.pk %}"
+              hx-target="#content"
+              hx-swap="innerHTML"
+              hx-push-url="true">
+        <i class="fas fa-edit"></i>
+        <span>Editar Beneficiario</span>
+      </button>
+      
+      <button class="action-btn secondary"
+              hx-get="{% url 'dashboard:beneficiario_list' %}"
+              hx-target="#content"
+              hx-swap="innerHTML"
+              hx-push-url="true">
+        <i class="fas fa-arrow-left"></i>
+        <span>Volver a Lista</span>
+      </button>
+      
+      <button class="action-btn danger"
+              hx-get="{% url 'dashboard:beneficiario_delete' beneficiario.pk %}"
+              hx-target="#content"
+              hx-swap="innerHTML">
+        <i class="fas fa-trash"></i>
+        <span>Eliminar Beneficiario</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<style>
+/* ==== TEMA BENEFICIARIO - COLORES AZULADOS ELEGANTES ==== */
+.client-detail-header.beneficiario-theme::before {
+  background: radial-gradient(circle at 30% 20%, rgba(59, 130, 246, 0.12) 0%, rgba(96, 165, 250, 0.08) 50%, transparent 80%);
+}
+
+.client-main-avatar.beneficiario-avatar {
+  background: linear-gradient(135deg, #2563EB 0%, #3B82F6 50%, #60A5FA 100%);
+  box-shadow: 0 10px 30px rgba(37, 99, 235, 0.35), 0 0 0 3px rgba(59, 130, 246, 0.15);
+  position: relative;
+  overflow: hidden;
+}
+
+.client-main-avatar.beneficiario-avatar::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+  animation: shimmer 3s infinite;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+  100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+}
+
+.client-status.beneficiario-status {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(37, 99, 235, 0.15) 100%);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.2);
+}
+
+.client-status.beneficiario-status .status-dot {
+  background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+}
+
+.client-status.beneficiario-status .status-label {
+  color: #2563EB;
+  font-weight: 600;
+}
+
+.client-detail-title.beneficiario-title {
+  background: linear-gradient(135deg, #1E40AF 0%, #2563EB 25%, #3B82F6 50%, #60A5FA 75%, #93C5FD 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradientShift 4s ease infinite;
+  background-size: 200% 200%;
+}
+
+@keyframes gradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* ==== CARDS CON TEMA BENEFICIARIO ==== */
+.info-card.beneficiario-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.info-card.beneficiario-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(90deg, #1E40AF 0%, #2563EB 25%, #3B82F6 50%, #60A5FA 75%, #93C5FD 100%);
+  background-size: 200% 100%;
+  animation: slideGradient 3s linear infinite;
+}
+
+@keyframes slideGradient {
+  0% { background-position: 0% 0%; }
+  100% { background-position: 200% 0%; }
+}
+
+.info-card-header.beneficiario-card-header {
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.05) 0%, rgba(59, 130, 246, 0.05) 100%);
+  border-bottom: 1px solid rgba(59, 130, 246, 0.15);
+}
+
+.info-card-header.beneficiario-card-header-alt {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(96, 165, 250, 0.05) 100%);
+  border-bottom: 1px solid rgba(96, 165, 250, 0.15);
+}
+
+.info-card-icon.beneficiario-icon {
+  background: linear-gradient(135deg, #2563EB 0%, #3B82F6 100%);
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
+  animation: iconFloat 3s ease-in-out infinite;
+}
+
+.info-card-icon.beneficiario-icon-alt {
+  background: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%);
+  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+  animation: iconFloat 3s ease-in-out infinite;
+}
+
+@keyframes iconFloat {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-5px); }
+}
+
+/* ==== INFO ITEMS CON HOVER MEJORADO ==== */
+.info-item.beneficiario-info-item {
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.04) 0%, rgba(59, 130, 246, 0.04) 100%);
+  border: 1px solid rgba(59, 130, 246, 0.1);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.info-item.beneficiario-info-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.12), transparent);
+  transition: left 0.5s ease;
+}
+
+.info-item.beneficiario-info-item:hover {
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.08) 0%, rgba(59, 130, 246, 0.08) 100%);
+  border-color: rgba(59, 130, 246, 0.25);
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 8px 25px rgba(37, 99, 235, 0.15);
+}
+
+.info-item.beneficiario-info-item:hover::before {
+  left: 100%;
+}
+
+.info-item.beneficiario-info-item .info-label {
+  color: #2563EB;
+  font-weight: 600;
+}
+
+/* ==== BOTÓN PRIMARY CON TEMA BENEFICIARIO ==== */
+.action-btn.beneficiario-btn-primary {
+  background: linear-gradient(135deg, #1E40AF 0%, #2563EB 25%, #3B82F6 50%, #60A5FA 75%, #93C5FD 100%);
+  background-size: 200% 200%;
+  animation: gradientMove 4s ease infinite;
+  box-shadow: 0 8px 25px rgba(37, 99, 235, 0.35), 0 0 0 3px rgba(59, 130, 246, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+@keyframes gradientMove {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.action-btn.beneficiario-btn-primary::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.action-btn.beneficiario-btn-primary:hover::after {
+  opacity: 1;
+  animation: pulse-circle 1s ease-in-out;
+}
+
+@keyframes pulse-circle {
+  0% { transform: scale(0); }
+  100% { transform: scale(1); }
+}
+
+.action-btn.beneficiario-btn-primary:hover {
+  transform: translateY(-4px) scale(1.05);
+  box-shadow: 0 15px 35px rgba(37, 99, 235, 0.45), 0 0 0 5px rgba(59, 130, 246, 0.15);
+}
+
+/* ==== QUICK ACTION BUTTONS MEJORADOS ==== */
+.quick-action-btn.phone {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(5, 150, 105, 0.15) 100%);
+  border: 2px solid rgba(16, 185, 129, 0.3);
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);
+}
+
+.quick-action-btn.phone:hover {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.25) 0%, rgba(5, 150, 105, 0.25) 100%);
+  border-color: rgba(16, 185, 129, 0.5);
+  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
+}
+
+.quick-action-btn.email {
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.15) 0%, rgba(59, 130, 246, 0.15) 100%);
+  border: 2px solid rgba(59, 130, 246, 0.3);
+  box-shadow: 0 4px 15px rgba(37, 99, 235, 0.2);
+}
+
+.quick-action-btn.email:hover {
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.25) 0%, rgba(59, 130, 246, 0.25) 100%);
+  border-color: rgba(59, 130, 246, 0.5);
+  box-shadow: 0 8px 25px rgba(37, 99, 235, 0.3);
+}
+
+/* ==== EFECTOS ADICIONALES ==== */
+.info-card.beneficiario-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 40px rgba(37, 99, 235, 0.18);
+}
+
+/* ==== ESTILOS BASE ==== */
+.client-detail-header {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  border-radius: var(--border-radius);
+  padding: 2.5rem;
+  margin-bottom: 2rem;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--glass-border);
+  position: relative;
+  overflow: hidden;
+  animation: fadeInUp 0.6s ease;
+}
+
+.client-header-content {
+  display: flex;
+  gap: 2rem;
+  align-items: flex-start;
+  position: relative;
+}
+
+.client-avatar-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.client-main-avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: pulse 3s infinite;
+}
+
+.avatar-initials-large {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: white;
+  text-transform: uppercase;
+  position: relative;
+  z-index: 1;
+}
+
+.client-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+}
+
+.client-status .status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  animation: statusPulse 2s infinite;
+}
+
+.status-label {
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.client-title-section {
+  flex: 1;
+}
+
+.client-detail-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem 0;
+  line-height: 1.2;
+}
+
+.client-detail-subtitle {
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+  margin: 0 0 2rem 0;
+}
+
+.client-quick-actions {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.quick-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: var(--transition);
+  backdrop-filter: blur(10px);
+}
+
+.client-info-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.info-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(15px);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  animation: fadeInUp 0.6s ease;
+  animation-fill-mode: both;
+  transition: all 0.3s ease;
+}
+
+.info-card.personal-data {
+  animation-delay: 0.1s;
+}
+
+.info-card.tramites-data {
+  animation-delay: 0.2s;
+}
+
+.info-card-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  position: relative;
+}
+
+.info-card-icon {
+  width: 45px;
+  height: 45px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.2rem;
+}
+
+.info-card-title {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+  flex: 1;
+}
+
+.info-card-body {
+  padding: 1.5rem;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.25rem;
+}
+
+.info-grid.single-column {
+  grid-template-columns: 1fr;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem;
+  border-radius: 10px;
+  transition: var(--transition);
+}
+
+.info-label {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.info-value {
+  font-size: 1rem;
+  color: var(--text-primary);
+  font-weight: 500;
+  word-break: break-word;
+}
+
+.client-actions-section {
+  animation: fadeInUp 0.6s ease 0.3s both;
+}
+
+.actions-container {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 2rem;
+  border: none;
+  border-radius: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+  text-decoration: none;
+  font-size: 0.95rem;
+  backdrop-filter: blur(10px);
+  border: 1px solid transparent;
+  position: relative;
+  overflow: hidden;
+}
+
+.action-btn.secondary {
+  background: rgba(108, 117, 125, 0.1);
+  color: #6C757D;
+  border-color: rgba(108, 117, 125, 0.2);
+}
+
+.action-btn.secondary:hover {
+  background: rgba(108, 117, 125, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(108, 117, 125, 0.15);
+}
+
+.action-btn.danger {
+  background: rgba(239, 68, 68, 0.1);
+  color: #EF4444;
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+.action-btn.danger:hover {
+  background: rgba(239, 68, 68, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(239, 68, 68, 0.15);
+}
+
+/* ==== RESPONSIVE ==== */
+@media (max-width: 1024px) {
+  .client-info-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .client-header-content {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  
+  .client-avatar-section {
+    align-items: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .client-detail-header {
+    padding: 2rem;
+  }
+  
+  .client-detail-title {
+    font-size: 2rem;
+  }
+  
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .actions-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .quick-action-btn {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .client-detail-header {
+    padding: 1.5rem;
+  }
+  
+  .client-main-avatar {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .avatar-initials-large {
+    font-size: 2rem;
+  }
+  
+  .client-detail-title {
+    font-size: 1.8rem;
+  }
+  
+  .client-quick-actions {
+    flex-direction: column;
+    gap: 0.75rem;
+    width: 100%;
+  }
+  
+  .quick-action-btn {
+    width: 100%;
+  }
+  
+  .info-card-header,
+  .info-card-body {
+    padding: 1rem;
+  }
+  
+  .action-btn {
+    justify-content: center;
+  }
+}
+
+/* ==== ANIMACIONES ==== */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+@keyframes statusPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.1); }
+}
+</style>

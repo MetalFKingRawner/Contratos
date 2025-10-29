@@ -1,0 +1,1113 @@
+{# dashboard/partials/cartaintencion_delete_confirm.html #}
+<!-- Modal de confirmación de eliminación -->
+<div class="modal-overlay carta-overlay">
+  <div class="delete-modal-container">
+    <div class="delete-modal carta-modal">
+      
+      <!-- Header del modal -->
+      <div class="modal-header carta-header">
+        <div class="warning-icon-wrapper">
+          <div class="warning-icon-bg carta-warning-bg">
+            <i class="fas fa-exclamation-triangle warning-icon"></i>
+          </div>
+          <div class="warning-pulses">
+            <div class="pulse pulse-1"></div>
+            <div class="pulse pulse-2"></div>
+            <div class="pulse pulse-3"></div>
+          </div>
+        </div>
+        
+        <div class="modal-title-section">
+          <h3 class="modal-title carta-modal-title">Confirmar Eliminación</h3>
+          <p class="modal-subtitle">Esta acción no se puede deshacer</p>
+        </div>
+        
+        <button type="button" 
+                class="modal-close-btn carta-close-btn"
+                hx-get="{% url 'dashboard:cartaintencion_detail' object.pk %}"
+                hx-target="#content"
+                hx-swap="innerHTML"
+                title="Cerrar">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      
+      <!-- Cuerpo del modal -->
+      <div class="modal-body">
+        <div class="client-preview carta-preview">
+          <div class="client-avatar-preview carta-avatar-preview">
+            <i class="fas fa-file-signature"></i>
+          </div>
+          <div class="client-info-preview">
+            <h4 class="client-name-preview carta-name">{{ object.nombre_cliente }}</h4>
+            <div class="client-details-preview">
+              <span class="detail-item">
+                <i class="fas fa-home"></i>
+                Lote: {{ object.financiamiento.lote.identificador }}
+              </span>
+              <span class="detail-item">
+                <i class="fas fa-dollar-sign"></i>
+                Oferta: ${{ object.oferta|floatformat:2 }}
+              </span>
+              <span class="detail-item">
+                <i class="fas fa-calendar"></i>
+                Creada: {{ object.creado_en|date:"d/m/Y" }}
+              </span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="warning-message carta-warning">
+          <div class="warning-content">
+            <h5 class="warning-title">¿Estás completamente seguro?</h5>
+            <p class="warning-text">
+              Al eliminar esta carta de intención se perderá toda la información asociada de forma 
+              <strong>permanente e irreversible</strong>. Esta acción no se puede deshacer.
+            </p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Footer con acciones -->
+      <div class="modal-footer carta-footer">
+        <div class="modal-actions">
+          
+          <!-- Botón cancelar -->
+          <button type="button" 
+                  class="modal-btn cancel"
+                  hx-get="{% url 'dashboard:cartaintencion_detail' object.pk %}"
+                  hx-target="#content"
+                  hx-swap="innerHTML">
+            <i class="fas fa-arrow-left"></i>
+            <span>Cancelar</span>
+          </button>
+          
+          <!-- Botón volver a lista -->
+          <button type="button" 
+                  class="modal-btn secondary carta-secondary"
+                  hx-get="{% url 'dashboard:cartaintencion_list' %}"
+                  hx-target="#content"
+                  hx-swap="innerHTML">
+            <i class="fas fa-list"></i>
+            <span>Ir a Lista</span>
+          </button>
+          
+          <!-- Botón eliminar -->
+          <form method="post" 
+                action="{% url 'dashboard:cartaintencion_delete' object.pk %}"
+                hx-post="{% url 'dashboard:cartaintencion_delete' object.pk %}"
+                hx-target="#content"
+                hx-swap="innerHTML"
+                class="delete-form">
+            {% csrf_token %}
+            <button type="submit" class="modal-btn danger delete-confirm-btn">
+              <i class="fas fa-trash-alt"></i>
+              <span>Sí, Eliminar Definitivamente</span>
+              <div class="btn-shine"></div>
+            </button>
+          </form>
+          
+        </div>
+        
+        <div class="security-note carta-note">
+          <i class="fas fa-shield-alt"></i>
+          <span>Para confirmar, haz clic en "Sí, Eliminar Definitivamente"</span>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+</div>
+
+<style>
+/* ==== VARIABLES Y COLORES TEMA CARTA DE INTENCIÓN ==== */
+:root {
+  --carta-primary: #7C3AED;
+  --carta-primary-light: #8B5CF6;
+  --carta-primary-lighter: #A78BFA;
+  --carta-primary-dark: #6D28D9;
+  --carta-glow: rgba(124, 58, 237, 0.3);
+  --carta-glow-soft: rgba(139, 92, 246, 0.15);
+}
+
+/* ==== OVERLAY DEL MODAL CON TEMA PÚRPURA ==== */
+.modal-overlay.carta-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(124, 58, 237, 0.12);
+  backdrop-filter: blur(15px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1050;
+  padding: 1rem;
+  animation: fadeIn 0.3s ease;
+}
+
+.delete-modal-container {
+  width: 100%;
+  max-width: 420px;
+  animation: modalSlideIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.delete-modal.carta-modal {
+  background: var(--glass-bg);
+  backdrop-filter: blur(25px);
+  border-radius: 18px;
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  box-shadow: 
+    0 25px 50px rgba(124, 58, 237, 0.2), 
+    0 10px 30px rgba(139, 92, 246, 0.15),
+    0 0 0 1px rgba(167, 139, 250, 0.1);
+  overflow: hidden;
+  position: relative;
+}
+
+.delete-modal.carta-modal::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at 30% 30%, rgba(124, 58, 237, 0.08) 0%, transparent 70%);
+  pointer-events: none;
+  animation: pulseGlow 4s ease-in-out infinite;
+}
+
+.delete-modal.carta-modal::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(90deg, 
+    #6D28D9 0%, 
+    #7C3AED 25%, 
+    #8B5CF6 50%, 
+    #A78BFA 75%, 
+    #C4B5FD 100%);
+  background-size: 200% 100%;
+  animation: slideGradient 3s linear infinite;
+}
+
+/* ==== HEADER DEL MODAL ==== */
+.modal-header.carta-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.25rem;
+  padding: 1.75rem;
+  border-bottom: 1px solid rgba(139, 92, 246, 0.15);
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.03) 0%, rgba(139, 92, 246, 0.03) 100%);
+  position: relative;
+}
+
+.warning-icon-wrapper {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.warning-icon-bg.carta-warning-bg {
+  width: 50px;
+  height: 50px;
+  background: linear-gradient(135deg, #FEF3C7 0%, #FCD34D 100%);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 2;
+  box-shadow: 0 8px 25px rgba(245, 158, 11, 0.3);
+  animation: iconFloat 3s ease-in-out infinite;
+}
+
+.warning-icon {
+  font-size: 1.5rem;
+  color: #D97706;
+  animation: warningPulse 2s infinite;
+}
+
+.warning-pulses {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.pulse {
+  position: absolute;
+  width: 50px;
+  height: 50px;
+  border: 2px solid rgba(245, 158, 11, 0.3);
+  border-radius: 12px;
+  animation: pulseExpand 2s infinite;
+}
+
+.pulse-1 { animation-delay: 0s; }
+.pulse-2 { animation-delay: 0.7s; }
+.pulse-3 { animation-delay: 1.4s; }
+
+.modal-title-section {
+  flex: 1;
+}
+
+.modal-title.carta-modal-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin: 0 0 0.4rem 0;
+  line-height: 1.3;
+  background: linear-gradient(135deg, #6D28D9 0%, #7C3AED 25%, #8B5CF6 50%, #A78BFA 75%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  background-size: 200% 200%;
+  animation: gradientShift 4s ease infinite;
+}
+
+.modal-subtitle {
+  color: var(--text-secondary);
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.modal-close-btn.carta-close-btn {
+  width: 32px;
+  height: 32px;
+  background: rgba(124, 58, 237, 0.08);
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  border-radius: 8px;
+  color: var(--carta-primary);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 0.9rem;
+}
+
+.modal-close-btn.carta-close-btn:hover {
+  background: rgba(124, 58, 237, 0.15);
+  border-color: rgba(139, 92, 246, 0.4);
+  color: var(--carta-primary-dark);
+  transform: scale(1.1) rotate(90deg);
+  box-shadow: 0 4px 15px var(--carta-glow-soft);
+}
+
+/* ==== CUERPO DEL MODAL ==== */
+.modal-body {
+  padding: 1.5rem;
+}
+
+.client-preview.carta-preview {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.04) 0%, rgba(139, 92, 246, 0.04) 100%);
+  border-radius: 14px;
+  padding: 1.25rem;
+  border: 1px solid rgba(139, 92, 246, 0.15);
+  margin-bottom: 1.5rem;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.client-preview.carta-preview::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.08), transparent);
+  transition: left 0.6s ease;
+}
+
+.client-preview.carta-preview:hover {
+  border-color: rgba(139, 92, 246, 0.3);
+  box-shadow: 0 8px 25px var(--carta-glow-soft);
+  transform: translateY(-2px);
+}
+
+.client-preview.carta-preview:hover::before {
+  left: 100%;
+}
+
+.client-avatar-preview.carta-avatar-preview {
+  width: 50px;
+  height: 50px;
+  background: linear-gradient(135deg, #7C3AED 0%, #8B5CF6 50%, #A78BFA 100%);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 6px 20px var(--carta-glow);
+  position: relative;
+  overflow: hidden;
+  animation: pulse 3s infinite;
+  color: white;
+  font-size: 1.3rem;
+}
+
+.client-avatar-preview.carta-avatar-preview::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  animation: shimmer 3s infinite;
+}
+
+.client-avatar-preview.carta-avatar-preview i {
+  position: relative;
+  z-index: 1;
+}
+
+.client-info-preview {
+  flex: 1;
+}
+
+.client-name-preview.carta-name {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 0.4rem 0;
+  background: linear-gradient(135deg, var(--carta-primary-dark) 0%, var(--carta-primary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.client-details-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.detail-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+}
+
+.detail-item:hover {
+  color: var(--carta-primary);
+  transform: translateX(3px);
+}
+
+.detail-item i {
+  width: 14px;
+  font-size: 0.8rem;
+  color: var(--carta-primary-light);
+}
+
+/* ==== MENSAJE DE ADVERTENCIA ==== */
+.warning-message.carta-warning {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.06) 0%, rgba(220, 38, 38, 0.06) 100%);
+  border: 1px solid rgba(239, 68, 68, 0.15);
+  border-radius: 12px;
+  padding: 1.25rem;
+  margin-bottom: 1.25rem;
+  position: relative;
+  overflow: hidden;
+  animation: warningGlow 4s infinite;
+}
+
+.warning-message.carta-warning::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(180deg, #EF4444 0%, #DC2626 100%);
+}
+
+.warning-content {
+  text-align: center;
+}
+
+.warning-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #DC2626;
+  margin: 0 0 0.6rem 0;
+}
+
+.warning-text {
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.6;
+  font-size: 0.85rem;
+}
+
+.warning-text strong {
+  color: #EF4444;
+  font-weight: 600;
+}
+
+/* ==== FOOTER DEL MODAL ==== */
+.modal-footer.carta-footer {
+  padding: 1.5rem;
+  border-top: 1px solid rgba(139, 92, 246, 0.12);
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.02) 0%, rgba(139, 92, 246, 0.02) 100%);
+}
+
+.modal-actions {
+  display: flex;
+  gap: 0.85rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 0.85rem;
+}
+
+.modal-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.75rem 1.25rem;
+  border: none;
+  border-radius: 10px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  text-decoration: none;
+  font-size: 0.85rem;
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+  border: 1.5px solid transparent;
+}
+
+.btn-shine {
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.6s;
+}
+
+.modal-btn:hover .btn-shine {
+  left: 100%;
+}
+
+.modal-btn.cancel {
+  background: rgba(108, 117, 125, 0.1);
+  color: #6C757D;
+  border-color: rgba(108, 117, 125, 0.2);
+}
+
+.modal-btn.cancel:hover {
+  background: rgba(108, 117, 125, 0.2);
+  color: #495057;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(108, 117, 125, 0.15);
+}
+
+.modal-btn.secondary.carta-secondary {
+  background: linear-gradient(135deg, #7C3AED 0%, #8B5CF6 100%);
+  color: white;
+  box-shadow: 0 4px 15px var(--carta-glow-soft);
+  border: none;
+}
+
+.modal-btn.secondary.carta-secondary:hover {
+  background: linear-gradient(135deg, #6D28D9 0%, #7C3AED 100%);
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 10px 30px var(--carta-glow);
+}
+
+.modal-btn.danger {
+  background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+  color: white;
+  box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+  position: relative;
+  font-weight: 600;
+  animation: dangerPulse 3s infinite;
+}
+
+.modal-btn.danger:hover {
+  background: linear-gradient(135deg, #DC2626 0%, #B91C1C 100%);
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 12px 35px rgba(239, 68, 68, 0.4);
+  animation: none;
+}
+
+.modal-btn.danger:active {
+  transform: scale(0.98);
+}
+
+.delete-form {
+  display: contents;
+}
+
+/* ==== NOTA DE SEGURIDAD ==== */
+.security-note.carta-note {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  text-align: center;
+  padding: 0.7rem;
+  background: rgba(124, 58, 237, 0.05);
+  border-radius: 8px;
+  border: 1px solid rgba(139, 92, 246, 0.1);
+}
+
+.security-note.carta-note i {
+  color: var(--carta-primary);
+  font-size: 0.9rem;
+  animation: shieldPulse 2s infinite;
+}
+
+/* ==== RESPONSIVE ==== */
+@media (max-width: 768px) {
+  .modal-overlay.carta-overlay {
+    padding: 0.5rem;
+  }
+  
+  .modal-header.carta-header {
+    padding: 1.5rem;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 1rem;
+  }
+  
+  .modal-close-btn.carta-close-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+  }
+  
+  .modal-body {
+    padding: 1.5rem;
+  }
+  
+  .modal-footer.carta-footer {
+    padding: 1.5rem;
+  }
+  
+  .modal-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .modal-btn {
+    justify-content: center;
+  }
+  
+  .client-preview.carta-preview {
+    flex-direction: column;
+    text-align: center;
+    gap: 1rem;
+  }
+  
+  .client-details-preview {
+    align-items: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .delete-modal-container {
+    max-width: none;
+    margin: 0.5rem;
+  }
+  
+  .modal-header.carta-header {
+    padding: 1rem;
+  }
+  
+  .warning-icon-bg.carta-warning-bg {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .modal-title.carta-modal-title {
+    font-size: 1.3rem;
+  }
+  
+  .modal-body {
+    padding: 1rem;
+  }
+  
+  .modal-footer.carta-footer {
+    padding: 1rem;
+  }
+  
+  .modal-btn {
+    padding: 0.75rem 1.25rem;
+    font-size: 0.85rem;
+  }
+  
+  .warning-message.carta-warning {
+    padding: 1rem;
+  }
+  
+  .client-preview.carta-preview {
+    padding: 1rem;
+  }
+}
+
+/* ==== ANIMACIONES ==== */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-50px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes gradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes slideGradient {
+  0% { background-position: 0% 0%; }
+  100% { background-position: 200% 0%; }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+@keyframes iconFloat {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-5px); }
+}
+
+@keyframes warningPulse {
+  from, to { 
+    transform: scale(1); 
+    filter: drop-shadow(0 0 5px rgba(245, 158, 11, 0.3));
+  }
+  50% { 
+    transform: scale(1.05); 
+    filter: drop-shadow(0 0 15px rgba(245, 158, 11, 0.5));
+  }
+}
+
+@keyframes pulseExpand {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1.8);
+    opacity: 0;
+  }
+}
+
+@keyframes dangerPulse {
+  0%, 100% { 
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+  }
+  50% { 
+    box-shadow: 0 4px 25px rgba(239, 68, 68, 0.5);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+  100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+}
+
+@keyframes warningGlow {
+  0%, 100% { 
+    border-color: rgba(239, 68, 68, 0.15);
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.06) 0%, rgba(220, 38, 38, 0.06) 100%);
+  }
+  50% { 
+    border-color: rgba(239, 68, 68, 0.25);
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.09) 0%, rgba(220, 38, 38, 0.09) 100%);
+  }
+}
+
+@keyframes shieldPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+/* ==== ESTADOS ESPECIALES ==== */
+.delete-confirm-btn:hover {
+  animation: none;
+}
+
+.delete-confirm-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.3);
+}
+
+/* ==== LOADING STATE ==== */
+.modal-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.modal-btn.loading {
+  pointer-events: none;
+}
+
+.modal-btn.loading::after {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ==== MEJORAS DE ACCESIBILIDAD ==== */
+.modal-btn:focus-visible {
+  outline: 2px solid var(--carta-primary);
+  outline-offset: 2px;
+}
+
+.delete-confirm-btn:focus-visible {
+  outline-color: #EF4444;
+}
+
+/* ==== TRANSICIONES SUAVES ==== */
+* {
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+</style>
+
+<script>
+// Mejorar UX del modal de eliminación de carta de intención
+document.addEventListener('DOMContentLoaded', function() {
+  initDeleteModal();
+});
+
+// Reinicializar cuando HTMX carga contenido
+document.body.addEventListener('htmx:afterSwap', function(evt) {
+  if (evt.detail.target.id === 'content') {
+    setTimeout(initDeleteModal, 50);
+  }
+});
+
+function initDeleteModal() {
+  const modal = document.querySelector('.delete-modal.carta-modal');
+  const overlay = document.querySelector('.modal-overlay.carta-overlay');
+  const deleteForm = document.querySelector('.delete-form');
+  const deleteBtn = document.querySelector('.delete-confirm-btn');
+  
+  if (!modal || !overlay) return;
+
+  // Cerrar modal al hacer clic en el overlay
+  overlay.addEventListener('click', function(e) {
+    if (e.target === overlay) {
+      closeModal();
+    }
+  });
+
+  // Cerrar modal con ESC
+  const escapeHandler = function(e) {
+    if (e.key === 'Escape') {
+      closeModal();
+    }
+  };
+  document.addEventListener('keydown', escapeHandler);
+
+  // Loading state en submit
+  if (deleteForm) {
+    deleteForm.addEventListener('submit', function() {
+      deleteBtn.classList.add('loading');
+      deleteBtn.disabled = true;
+      deleteBtn.querySelector('span').textContent = 'Eliminando...';
+    });
+  }
+
+  function closeModal() {
+    // Remover event listener
+    document.removeEventListener('keydown', escapeHandler);
+    // Redirigir a la lista de cartas de intención
+    htmx.ajax('GET', '{% url "dashboard:cartaintencion_list" %}', '#content');
+  }
+
+  // Efectos de hover mejorados con tema carta
+  const modalBtns = document.querySelectorAll('.modal-btn');
+  modalBtns.forEach(btn => {
+    btn.addEventListener('mouseenter', function() {
+      if (!this.classList.contains('loading')) {
+        this.style.transform = 'translateY(-2px) scale(1.02)';
+      }
+    });
+    
+    btn.addEventListener('mouseleave', function() {
+      if (!this.classList.contains('danger') && !this.classList.contains('loading')) {
+        this.style.transform = 'translateY(0) scale(1)';
+      }
+    });
+  });
+
+  // Efecto de aparición del modal
+  setTimeout(() => {
+    modal.style.transform = 'scale(1)';
+    modal.style.opacity = '1';
+  }, 50);
+
+  // Efecto especial para el preview de la carta
+  const preview = document.querySelector('.client-preview.carta-preview');
+  if (preview) {
+    let hoverTimeout;
+    preview.addEventListener('mouseenter', function() {
+      clearTimeout(hoverTimeout);
+      this.style.borderColor = 'rgba(139, 92, 246, 0.4)';
+    });
+    
+    preview.addEventListener('mouseleave', function() {
+      hoverTimeout = setTimeout(() => {
+        this.style.borderColor = 'rgba(139, 92, 246, 0.15)';
+      }, 300);
+    });
+  }
+
+  // Animación de entrada para los botones
+  const actionBtns = document.querySelectorAll('.modal-btn');
+  actionBtns.forEach((btn, index) => {
+    btn.style.opacity = '0';
+    btn.style.transform = 'translateY(10px)';
+    setTimeout(() => {
+      btn.style.transition = 'all 0.4s ease';
+      btn.style.opacity = '1';
+      btn.style.transform = 'translateY(0)';
+    }, 100 + (index * 100));
+  });
+
+  // Efecto de shake en el icono de advertencia
+  const warningIcon = document.querySelector('.warning-icon');
+  if (warningIcon) {
+    setInterval(() => {
+      warningIcon.style.animation = 'none';
+      setTimeout(() => {
+        warningIcon.style.animation = 'warningPulse 2s infinite';
+      }, 10);
+    }, 5000);
+  }
+
+  // Efecto de resplandor en el botón de eliminar
+  const dangerBtn = document.querySelector('.modal-btn.danger');
+  if (dangerBtn) {
+    let glowInterval = setInterval(() => {
+      if (!dangerBtn.matches(':hover')) {
+        dangerBtn.style.boxShadow = '0 4px 25px rgba(239, 68, 68, 0.5)';
+        setTimeout(() => {
+          dangerBtn.style.boxShadow = '0 4px 15px rgba(239, 68, 68, 0.3)';
+        }, 1500);
+      }
+    }, 3000);
+    
+    // Limpiar intervalo cuando se cierra el modal
+    overlay.addEventListener('click', () => clearInterval(glowInterval));
+  }
+}
+
+// Prevenir cierre accidental (solo si el modal está abierto)
+window.addEventListener('beforeunload', function(e) {
+  const deleteModal = document.querySelector('.delete-modal.carta-modal');
+  if (deleteModal) {
+    e.preventDefault();
+    e.returnValue = '';
+    return '';
+  }
+});
+
+// Efecto de partículas en el fondo (opcional - activar si se desea)
+function createCartaParticles() {
+  const overlay = document.querySelector('.modal-overlay.carta-overlay');
+  if (!overlay) return;
+  
+  for (let i = 0; i < 12; i++) {
+    const particle = document.createElement('div');
+    particle.style.position = 'absolute';
+    particle.style.width = Math.random() * 5 + 2 + 'px';
+    particle.style.height = particle.style.width;
+    particle.style.background = `rgba(${124 + Math.random() * 30}, ${58 + Math.random() * 30}, ${237}, ${Math.random() * 0.3 + 0.1})`;
+    particle.style.borderRadius = '50%';
+    particle.style.left = Math.random() * 100 + '%';
+    particle.style.top = Math.random() * 100 + '%';
+    particle.style.animation = `particleFloat ${Math.random() * 4 + 3}s ease-in-out infinite`;
+    particle.style.animationDelay = Math.random() * 2 + 's';
+    particle.style.pointerEvents = 'none';
+    overlay.appendChild(particle);
+  }
+}
+
+// Animación para las partículas (agregar al CSS si se activa)
+const particleStyle = document.createElement('style');
+particleStyle.textContent = `
+  @keyframes particleFloat {
+    0%, 100% { 
+      transform: translate(0, 0) scale(1);
+      opacity: 0.3;
+    }
+    25% {
+      transform: translate(20px, -20px) scale(1.1);
+      opacity: 0.5;
+    }
+    50% { 
+      transform: translate(-20px, 20px) scale(0.9);
+      opacity: 0.4;
+    }
+    75% {
+      transform: translate(15px, 15px) scale(1.05);
+      opacity: 0.6;
+    }
+  }
+`;
+
+// Descomentar la siguiente línea para activar las partículas
+// document.head.appendChild(particleStyle);
+// createCartaParticles();
+
+// Efecto de confetti al confirmar eliminación (opcional)
+function triggerConfetti() {
+  // Implementación básica de confetti
+  const colors = ['#7C3AED', '#8B5CF6', '#A78BFA', '#C4B5FD', '#DDD6FE'];
+  const confettiCount = 30;
+  
+  for (let i = 0; i < confettiCount; i++) {
+    const confetti = document.createElement('div');
+    confetti.style.position = 'fixed';
+    confetti.style.width = Math.random() * 10 + 5 + 'px';
+    confetti.style.height = confetti.style.width;
+    confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+    confetti.style.left = Math.random() * 100 + '%';
+    confetti.style.top = '-20px';
+    confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+    confetti.style.opacity = '0.8';
+    confetti.style.zIndex = '9999';
+    confetti.style.pointerEvents = 'none';
+    
+    document.body.appendChild(confetti);
+    
+    const duration = Math.random() * 3 + 2;
+    const rotation = Math.random() * 360;
+    const xMovement = (Math.random() - 0.5) * 200;
+    
+    confetti.animate([
+      { 
+        transform: `translateY(0) translateX(0) rotate(0deg)`,
+        opacity: 0.8
+      },
+      { 
+        transform: `translateY(${window.innerHeight + 20}px) translateX(${xMovement}px) rotate(${rotation}deg)`,
+        opacity: 0
+      }
+    ], {
+      duration: duration * 1000,
+      easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+    }).onfinish = () => confetti.remove();
+  }
+}
+
+// Feedback visual mejorado
+document.addEventListener('htmx:afterRequest', function(evt) {
+  if (evt.detail.successful && evt.detail.target.id === 'content') {
+    const deleteModal = document.querySelector('.delete-modal.carta-modal');
+    if (deleteModal) {
+      // Mostrar mensaje de éxito antes de redirigir
+      const successMessage = document.createElement('div');
+      successMessage.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(0.8);
+        background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+        color: white;
+        padding: 2rem 3rem;
+        border-radius: 15px;
+        box-shadow: 0 20px 60px rgba(16, 185, 129, 0.4);
+        z-index: 9999;
+        text-align: center;
+        opacity: 0;
+        transition: all 0.4s ease;
+      `;
+      successMessage.innerHTML = `
+        <i class="fas fa-check-circle" style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
+        <h3 style="margin: 0 0 0.5rem 0; font-size: 1.3rem;">¡Eliminado Exitosamente!</h3>
+        <p style="margin: 0; opacity: 0.9;">La carta de intención ha sido eliminada</p>
+      `;
+      
+      document.body.appendChild(successMessage);
+      
+      setTimeout(() => {
+        successMessage.style.opacity = '1';
+        successMessage.style.transform = 'translate(-50%, -50%) scale(1)';
+      }, 50);
+      
+      setTimeout(() => {
+        successMessage.style.opacity = '0';
+        successMessage.style.transform = 'translate(-50%, -50%) scale(0.8)';
+        setTimeout(() => successMessage.remove(), 400);
+      }, 2000);
+    }
+  }
+});
+
+// Validación adicional antes de eliminar
+const deleteFormElement = document.querySelector('.delete-form');
+if (deleteFormElement) {
+  deleteFormElement.addEventListener('submit', function(e) {
+    const confirmBtn = this.querySelector('.delete-confirm-btn');
+    
+    // Doble confirmación para mayor seguridad
+    if (!confirmBtn.dataset.confirmed) {
+      e.preventDefault();
+      confirmBtn.style.background = 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)';
+      confirmBtn.querySelector('span').textContent = '¡Haz clic de nuevo para confirmar!';
+      confirmBtn.dataset.confirmed = 'pending';
+      
+      setTimeout(() => {
+        if (confirmBtn.dataset.confirmed === 'pending') {
+          confirmBtn.style.background = 'linear-gradient(135deg, #EF4444 0%, #DC2626 100%)';
+          confirmBtn.querySelector('span').textContent = 'Sí, Eliminar Definitivamente';
+          delete confirmBtn.dataset.confirmed;
+        }
+      }, 3000);
+    } else {
+      confirmBtn.dataset.confirmed = 'true';
+    }
+  });
+}
+</script>

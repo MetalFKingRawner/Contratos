@@ -1,0 +1,979 @@
+<div class="container-fluid py-4">
+  <!-- Header de la sección con estadísticas -->
+  <div class="beneficiarios-header-section">
+    <div class="beneficiarios-header-content">
+      <div class="beneficiarios-title-area">
+        <div class="beneficiarios-icon-wrapper">
+          <i class="fas fa-user-friends beneficiarios-main-icon"></i>
+        </div>
+        <div class="beneficiarios-title-text">
+          <h2 class="beneficiarios-title">Mis Beneficiarios</h2>
+          <p class="beneficiarios-subtitle">Gestiona los beneficiarios del sistema de manera eficiente</p>
+        </div>
+      </div>
+      <div class="beneficiarios-stats">
+        <div class="stat-item">
+          <span class="stat-number">{{ total_beneficiarios }}</span>
+          <span class="stat-label">Total</span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Barra de acciones -->
+    <div class="beneficiarios-actions">
+      <div class="search-container">
+        <i class="fas fa-search search-icon"></i>
+        <input type="text" placeholder="Buscar beneficiario..." class="search-input" id="beneficiarioSearch">
+      </div>
+      <button class="btn-add-beneficiario" 
+              hx-get="{% url 'dashboard:beneficiario_create' %}" 
+              hx-target="#content" 
+              hx-swap="innerHTML">
+        <i class="fas fa-plus"></i>
+        <span>Nuevo Beneficiario</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Grid de beneficiarios -->
+  <div class="beneficiarios-grid-container">
+    {% if beneficiarios %}
+      <div class="beneficiarios-grid" id="beneficiariosGrid">
+        {% for b in beneficiarios %}
+          <div class="beneficiario-card" 
+               data-beneficiario-name="{{ b.nombre_completo|lower }}"
+               data-beneficiario-phone="{{ b.telefono }}"
+               data-beneficiario-email="{{ b.email|lower }}">
+            
+            <div class="beneficiario-card-header">
+              <div class="beneficiario-avatar">
+                <span class="avatar-initials">{{ b.nombre_completo|slice:":2"|upper }}</span>
+              </div>
+              <div class="beneficiario-status-badge {{ b.sexo|lower }}">
+                <div class="status-dot"></div>
+                <span class="status-text">{{ b.get_sexo_display }}</span>
+              </div>
+            </div>
+            
+            <div class="beneficiario-card-body">
+              <h4 class="beneficiario-name">{{ b.nombre_completo }}</h4>
+              
+              <div class="beneficiario-info">
+                {% if b.telefono %}
+                <div class="info-item">
+                  <div class="info-icon phone">
+                    <i class="fas fa-phone"></i>
+                  </div>
+                  <div class="info-content">
+                    <span class="info-label">Teléfono</span>
+                    <span class="info-value">{{ b.telefono }}</span>
+                  </div>
+                </div>
+                {% endif %}
+                
+                {% if b.email %}
+                <div class="info-item">
+                  <div class="info-icon email">
+                    <i class="fas fa-envelope"></i>
+                  </div>
+                  <div class="info-content">
+                    <span class="info-label">Email</span>
+                    <span class="info-value">{{ b.email }}</span>
+                  </div>
+                </div>
+                {% endif %}
+                
+                {% if b.numero_id %}
+                <div class="info-item">
+                  <div class="info-icon id">
+                    <i class="fas fa-id-card"></i>
+                  </div>
+                  <div class="info-content">
+                    <span class="info-label">Identificación</span>
+                    <span class="info-value">{{ b.numero_id }}</span>
+                  </div>
+                </div>
+                {% endif %}
+                
+                <div class="info-item">
+                  <div class="info-icon date">
+                    <i class="fas fa-calendar-alt"></i>
+                  </div>
+                  <div class="info-content">
+                    <span class="info-label">Creado</span>
+                    <span class="info-value">{{ b.creado_en|date:"d/m/Y" }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="beneficiario-card-footer">
+              <div class="beneficiario-actions">
+                <button class="action-btn view" 
+                        hx-get="{% url 'dashboard:beneficiario_detail' b.pk %}"
+                        hx-target="#content" 
+                        hx-swap="innerHTML"
+                        title="Ver detalles">
+                  <i class="fas fa-eye"></i>
+                </button>
+                <button class="action-btn edit"
+                        hx-get="{% url 'dashboard:beneficiario_update' b.pk %}"
+                        hx-target="#content" 
+                        hx-swap="innerHTML"
+                        title="Editar">
+                  <i class="fas fa-edit"></i>
+                </button>
+                {% if b.telefono %}
+                <button class="action-btn contact"
+                        onclick="window.location.href='tel:{{ b.telefono }}'"
+                        title="Llamar">
+                  <i class="fas fa-phone-alt"></i>
+                </button>
+                {% endif %}
+                {% if b.email %}
+                <a href="mailto:{{ b.email }}" class="action-btn email" title="Enviar Email">
+                  <i class="fas fa-envelope"></i>
+                </a>
+                {% endif %}
+                <button class="action-btn delete"
+                        hx-get="{% url 'dashboard:beneficiario_delete' b.pk %}"
+                        hx-target="#content" 
+                        hx-swap="innerHTML"
+                        title="Eliminar">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+      <!-- Paginación -->
+      {% if is_paginated %}
+      <div class="pagination-container">
+        <nav class="pagination-nav">
+          <div class="pagination-info">
+            <span>Mostrando {{ page_obj.start_index }}-{{ page_obj.end_index }} de {{ paginator.count }} beneficiarios</span>
+          </div>
+          <ul class="pagination-list">
+            {% if page_obj.has_previous %}
+              <li class="pagination-item">
+                <button class="pagination-btn prev"
+                        hx-get="{% url 'dashboard:beneficiario_list' %}?page={{ page_obj.previous_page_number }}"
+                        hx-target="#content" 
+                        hx-swap="innerHTML">
+                  <i class="fas fa-chevron-left"></i>
+                </button>
+              </li>
+            {% endif %}
+            
+            {% for num in paginator.page_range %}
+              <li class="pagination-item">
+                <button class="pagination-btn {% if page_obj.number == num %}active{% endif %}"
+                        hx-get="{% url 'dashboard:beneficiario_list' %}?page={{ num }}"
+                        hx-target="#content" 
+                        hx-swap="innerHTML">
+                  {{ num }}
+                </button>
+              </li>
+            {% endfor %}
+            
+            {% if page_obj.has_next %}
+              <li class="pagination-item">
+                <button class="pagination-btn next"
+                        hx-get="{% url 'dashboard:beneficiario_list' %}?page={{ page_obj.next_page_number }}"
+                        hx-target="#content" 
+                        hx-swap="innerHTML">
+                  <i class="fas fa-chevron-right"></i>
+                </button>
+              </li>
+            {% endif %}
+          </ul>
+        </nav>
+      </div>
+      {% endif %}
+
+    {% else %}
+      <div class="empty-state">
+        <div class="empty-icon">
+          <i class="fas fa-user-friends"></i>
+        </div>
+        <h3 class="empty-title">No hay beneficiarios registrados</h3>
+        <p class="empty-subtitle">Comienza agregando tu primer beneficiario para gestionar tu base de datos</p>
+        <button class="btn-empty-action" 
+                hx-get="{% url 'dashboard:beneficiario_create' %}" 
+                hx-target="#content" 
+                hx-swap="innerHTML">
+          <i class="fas fa-plus"></i>
+          Agregar Primer Beneficiario
+        </button>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<style>
+/* ==== HEADER DE BENEFICIARIOS ==== */
+.beneficiarios-header-section {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  border-radius: var(--border-radius);
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--glass-border);
+  position: relative;
+  overflow: hidden;
+  animation: fadeInUp 0.6s ease;
+}
+
+.beneficiarios-header-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at 20% 20%, rgba(99, 102, 241, 0.08) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.beneficiarios-header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+}
+
+.beneficiarios-title-area {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.beneficiarios-icon-wrapper {
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+  border-radius: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 16px rgba(99, 102, 241, 0.3);
+  animation: pulse 2s infinite;
+}
+
+.beneficiarios-main-icon {
+  font-size: 1.8rem;
+  color: white;
+}
+
+.beneficiarios-title {
+  font-size: 2.2rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0;
+}
+
+.beneficiarios-subtitle {
+  color: var(--text-secondary);
+  margin: 0.5rem 0 0 0;
+  font-size: 1rem;
+}
+
+.beneficiarios-stats {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.stat-number {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #6366F1;
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  margin-top: 0.25rem;
+}
+
+/* ==== BARRA DE ACCIONES ==== */
+.beneficiarios-actions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.search-container {
+  position: relative;
+  flex: 1;
+  max-width: 300px;
+}
+
+.search-icon {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.75rem 1rem 0.75rem 2.5rem;
+  border: 1px solid var(--glass-border);
+  border-radius: 25px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  transition: var(--transition);
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #6366F1;
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.search-input::placeholder {
+  color: var(--text-secondary);
+}
+
+.btn-add-beneficiario {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+  color: white;
+  border: none;
+  border-radius: 25px;
+  font-weight: 500;
+  transition: var(--transition);
+  cursor: pointer;
+  box-shadow: 0 8px 16px rgba(99, 102, 241, 0.3);
+  text-decoration: none;
+}
+
+.btn-add-beneficiario:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(99, 102, 241, 0.4);
+}
+
+/* ==== GRID DE BENEFICIARIOS ==== */
+.beneficiarios-grid-container {
+  position: relative;
+}
+
+.beneficiarios-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
+}
+
+.beneficiario-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(15px);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-sm);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  animation: fadeInUp 0.6s ease;
+  animation-fill-mode: both;
+}
+
+.beneficiario-card:nth-child(odd) {
+  animation-delay: 0.1s;
+}
+
+.beneficiario-card:nth-child(even) {
+  animation-delay: 0.2s;
+}
+
+.beneficiario-card:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--shadow-hover);
+  background: var(--glass-hover);
+}
+
+.beneficiario-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+}
+
+/* ==== HEADER DE CARD ==== */
+.beneficiario-card-header {
+  padding: 1.5rem 1.5rem 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.beneficiario-avatar {
+  width: 50px;
+  height: 50px;
+  background: linear-gradient(135deg, #EC4899 0%, #F97316 100%);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-sm);
+}
+
+.avatar-initials {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: white;
+  text-transform: uppercase;
+}
+
+.beneficiario-status-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  backdrop-filter: blur(10px);
+}
+
+.beneficiario-status-badge.masculino,
+.beneficiario-status-badge.m {
+  background: rgba(59, 130, 246, 0.15);
+  color: #3B82F6;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.beneficiario-status-badge.femenino,
+.beneficiario-status-badge.f {
+  background: rgba(236, 72, 153, 0.15);
+  color: #EC4899;
+  border: 1px solid rgba(236, 72, 153, 0.3);
+}
+
+.beneficiario-status-badge .status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  animation: statusPulse 2s infinite;
+}
+
+.beneficiario-status-badge.masculino .status-dot,
+.beneficiario-status-badge.m .status-dot {
+  background: #3B82F6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.beneficiario-status-badge.femenino .status-dot,
+.beneficiario-status-badge.f .status-dot {
+  background: #EC4899;
+  box-shadow: 0 0 0 2px rgba(236, 72, 153, 0.2);
+}
+
+@keyframes statusPulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.2); opacity: 0.8; }
+}
+
+/* ==== BODY DE CARD ==== */
+.beneficiario-card-body {
+  padding: 0 1.5rem 1.5rem;
+}
+
+.beneficiario-name {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 1rem 0;
+  line-height: 1.3;
+}
+
+.beneficiario-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.info-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  color: white;
+  flex-shrink: 0;
+}
+
+.info-icon.phone {
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+}
+
+.info-icon.email {
+  background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
+}
+
+.info-icon.id {
+  background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+}
+
+.info-icon.date {
+  background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+}
+
+.info-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  flex: 1;
+}
+
+.info-label {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.info-value {
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+/* ==== FOOTER DE CARD ==== */
+.beneficiario-card-footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.beneficiario-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.action-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition);
+  position: relative;
+  font-size: 0.85rem;
+  text-decoration: none;
+}
+
+.action-btn.view {
+  background: rgba(59, 130, 246, 0.1);
+  color: #3B82F6;
+}
+
+.action-btn.view:hover {
+  background: rgba(59, 130, 246, 0.2);
+  transform: scale(1.05);
+}
+
+.action-btn.edit {
+  background: rgba(245, 158, 11, 0.1);
+  color: #F59E0B;
+}
+
+.action-btn.edit:hover {
+  background: rgba(245, 158, 11, 0.2);
+  transform: scale(1.05);
+}
+
+.action-btn.contact {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10B981;
+}
+
+.action-btn.contact:hover {
+  background: rgba(16, 185, 129, 0.2);
+  transform: scale(1.05);
+}
+
+.action-btn.email {
+  background: rgba(99, 102, 241, 0.1);
+  color: #6366F1;
+}
+
+.action-btn.email:hover {
+  background: rgba(99, 102, 241, 0.2);
+  transform: scale(1.05);
+}
+
+.action-btn.delete {
+  background: rgba(239, 68, 68, 0.1);
+  color: #EF4444;
+}
+
+.action-btn.delete:hover {
+  background: rgba(239, 68, 68, 0.2);
+  transform: scale(1.05);
+}
+
+/* ==== ESTADO VACÍO ==== */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+  animation: fadeInUp 0.6s ease;
+}
+
+.empty-icon {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 8px 16px rgba(99, 102, 241, 0.3);
+}
+
+.empty-icon i {
+  font-size: 2rem;
+  color: white;
+}
+
+.empty-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.empty-subtitle {
+  color: var(--text-secondary);
+  margin-bottom: 2rem;
+  max-width: 400px;
+  line-height: 1.5;
+}
+
+.btn-empty-action {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 2rem;
+  background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+  color: white;
+  border: none;
+  border-radius: 25px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+  box-shadow: 0 8px 16px rgba(99, 102, 241, 0.3);
+}
+
+.btn-empty-action:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(99, 102, 241, 0.4);
+}
+
+/* ==== PAGINACIÓN ==== */
+.pagination-container {
+  margin-top: 3rem;
+  animation: fadeInUp 0.6s ease 0.3s both;
+}
+
+.pagination-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--glass-bg);
+  backdrop-filter: blur(15px);
+  border-radius: 15px;
+  padding: 1.5rem 2rem;
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-sm);
+}
+
+.pagination-info {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.pagination-list {
+  display: flex;
+  gap: 0.5rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.pagination-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition);
+  font-weight: 500;
+}
+
+.pagination-btn:hover {
+  background: rgba(99, 102, 241, 0.1);
+  color: #6366F1;
+}
+
+.pagination-btn.active {
+  background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+  color: white;
+  box-shadow: 0 4px 8px rgba(99, 102, 241, 0.3);
+}
+
+.pagination-btn.prev,
+.pagination-btn.next {
+  width: 45px;
+}
+
+/* ==== MENSAJE DE NO RESULTADOS ==== */
+.no-results-message {
+  margin-top: 2rem;
+}
+
+/* ==== ANIMACIONES ==== */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+/* ==== RESPONSIVE ==== */
+@media (max-width: 768px) {
+  .beneficiarios-header-content {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .beneficiarios-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .search-container {
+    max-width: none;
+  }
+  
+  .beneficiarios-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .pagination-nav {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .pagination-info {
+    text-align: center;
+  }
+  
+  .beneficiario-actions {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .beneficiarios-header-section {
+    padding: 1.5rem;
+  }
+  
+  .beneficiario-card {
+    margin: 0 -0.5rem;
+  }
+  
+  .beneficiarios-title {
+    font-size: 1.8rem;
+  }
+  
+  .beneficiario-actions {
+    gap: 0.25rem;
+  }
+  
+  .action-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 0.8rem;
+  }
+  
+  .beneficiario-status-badge {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.7rem;
+  }
+}
+</style>
+
+<script>
+// Funcionalidad de búsqueda para beneficiarios
+function initBeneficiarioSearch() {
+  const searchInput = document.getElementById('beneficiarioSearch');
+  const beneficiarioCards = document.querySelectorAll('.beneficiario-card');
+  
+  if (searchInput) {
+    // Limpiar event listeners previos para evitar duplicados
+    searchInput.removeEventListener('input', searchHandler);
+    searchInput.addEventListener('input', searchHandler);
+  }
+  
+  function searchHandler(e) {
+    const searchTerm = e.target.value.toLowerCase().trim();
+    
+    beneficiarioCards.forEach(card => {
+      const beneficiarioName = card.getAttribute('data-beneficiario-name');
+      const beneficiarioPhone = card.getAttribute('data-beneficiario-phone');
+      const beneficiarioEmail = card.getAttribute('data-beneficiario-email');
+      
+      const isMatch = beneficiarioName.includes(searchTerm) || 
+                     beneficiarioPhone.includes(searchTerm) || 
+                     beneficiarioEmail.includes(searchTerm);
+      
+      if (isMatch || searchTerm === '') {
+        card.style.display = 'block';
+        card.style.animation = 'fadeInUp 0.3s ease';
+      } else {
+        card.style.display = 'none';
+      }
+    });
+    
+    // Mostrar mensaje si no hay resultados
+    const visibleCards = Array.from(beneficiarioCards).filter(card => 
+      card.style.display !== 'none'
+    );
+    
+    let noResultsMsg = document.querySelector('.no-results-message');
+    if (visibleCards.length === 0 && searchTerm !== '') {
+      if (!noResultsMsg) {
+        noResultsMsg = document.createElement('div');
+        noResultsMsg.className = 'no-results-message empty-state';
+        noResultsMsg.innerHTML = `
+          <div class="empty-icon">
+            <i class="fas fa-search"></i>
+          </div>
+          <h3 class="empty-title">No se encontraron beneficiarios</h3>
+          <p class="empty-subtitle">Intenta con otro término de búsqueda</p>
+        `;
+        document.querySelector('.beneficiarios-grid-container').appendChild(noResultsMsg);
+      }
+      noResultsMsg.style.display = 'flex';
+    } else if (noResultsMsg) {
+      noResultsMsg.style.display = 'none';
+    }
+  }
+}
+
+// Inicializar la búsqueda cuando el contenido se carga
+initBeneficiarioSearch();
+
+// También inicializar cuando HTMX carga nuevo contenido
+document.body.addEventListener('htmx:afterSwap', function(evt) {
+  if (evt.detail.target.id === 'content') {
+    // Pequeña pausa para permitir que el DOM se actualice completamente
+    setTimeout(initBeneficiarioSearch, 50);
+  }
+});
+
+// Animaciones escalonadas para las tarjetas
+function initCardAnimations() {
+  const cards = document.querySelectorAll('.beneficiario-card');
+  cards.forEach((card, index) => {
+    card.style.animationDelay = `${index * 0.1}s`;
+  });
+}
+
+// Efecto de hover mejorado
+function initCardHover() {
+  document.querySelectorAll('.beneficiario-card').forEach(card => {
+    card.addEventListener('mouseenter', function() {
+      this.style.transform = 'translateY(-8px) scale(1.02)';
+    });
+    
+    card.addEventListener('mouseleave', function() {
+      this.style.transform = 'translateY(0) scale(1)';
+    });
+  });
+}
+
+// Inicializar animaciones y efectos
+document.addEventListener('DOMContentLoaded', function() {
+  initBeneficiarioSearch();
+  initCardAnimations();
+  initCardHover();
+});
+
+// Reinicializar cuando HTMX carga contenido
+document.body.addEventListener('htmx:afterSwap', function(evt) {
+  if (evt.detail.target.id === 'content') {
+    setTimeout(function() {
+      initBeneficiarioSearch();
+      initCardAnimations();
+      initCardHover();
+    }, 50);
+  }
+});
+</script>

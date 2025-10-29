@@ -1,0 +1,954 @@
+<div class="container-fluid py-4">
+  <!-- Header de navegación -->
+  <div class="detail-navigation mb-4">
+    <button class="btn-back" 
+            hx-get="{% url 'dashboard:cartaintencion_list' %}" 
+            hx-target="#content" 
+            hx-swap="innerHTML"
+            hx-push-url="true">
+      <i class="fas fa-arrow-left"></i>
+      <span>Volver a Cartas de Intención</span>
+    </button>
+  </div>
+
+  <!-- Tarjeta principal de la carta de intención -->
+  <div class="carta-intencion-detail-card">
+    <div class="carta-intencion-detail-header">
+      <div class="carta-intencion-avatar large">
+        <span class="avatar-initials">{{ carta.nombre_cliente|slice:":2"|upper }}</span>
+      </div>
+      <div class="carta-intencion-detail-info">
+        <h1 class="carta-intencion-detail-name">{{ carta.nombre_cliente }}</h1>
+        <div class="carta-intencion-meta">
+          <span class="meta-item">
+            <i class="fas fa-file-signature"></i>
+            Carta de Intención #{{ carta.id }}
+          </span>
+          <span class="meta-item">
+            <i class="fas fa-calendar"></i>
+            Creada: {{ carta.creado_en|date:"d/m/Y" }}
+          </span>
+          <span class="meta-item">
+            <i class="fas fa-sync"></i>
+            Actualizada: {{ carta.actualizado_en|date:"d/m/Y" }}
+          </span>
+        </div>
+      </div>
+      <div class="carta-intencion-detail-actions">
+        <button class="btn-download"
+                onclick="window.open('{% url 'dashboard:cartaintencion_download' carta.pk 'pdf' %}', '_blank')">
+          <i class="fas fa-file-pdf"></i>
+          PDF
+        </button>
+        <button class="btn-download"
+                onclick="window.open('{% url 'dashboard:cartaintencion_download' carta.pk 'word' %}', '_blank')">
+          <i class="fas fa-file-word"></i>
+          Word
+        </button>
+        <button class="btn-edit"
+                hx-get="{% url 'dashboard:cartaintencion_update' carta.pk %}"
+                hx-target="#content" 
+                hx-swap="innerHTML"
+                hx-push-url="true">
+          <i class="fas fa-edit"></i>
+          Editar
+        </button>
+        <button class="btn-delete"
+                hx-get="{% url 'dashboard:cartaintencion_delete' carta.pk %}"
+                hx-target="#content" 
+                hx-swap="innerHTML">
+          <i class="fas fa-trash"></i>
+          Eliminar
+        </button>
+      </div>
+    </div>
+
+    <!-- Información del Cliente -->
+    <div class="carta-intencion-detail-section">
+      <h3 class="section-title">
+        <i class="fas fa-user"></i>
+        Información del Cliente
+      </h3>
+      <div class="detail-grid">
+        <div class="detail-item">
+          <div class="detail-icon user">
+            <i class="fas fa-user"></i>
+          </div>
+          <div class="detail-content">
+            <span class="detail-label">Nombre Completo</span>
+            <span class="detail-value">{{ carta.nombre_cliente }}</span>
+          </div>
+        </div>
+
+        <div class="detail-item">
+          <div class="detail-icon id">
+            <i class="fas fa-id-card"></i>
+          </div>
+          <div class="detail-content">
+            <span class="detail-label">Identificación</span>
+            <span class="detail-value">{{ carta.tipo_id }}: {{ carta.numero_id }}</span>
+          </div>
+        </div>
+
+        <div class="detail-item">
+          <div class="detail-icon address">
+            <i class="fas fa-home"></i>
+          </div>
+          <div class="detail-content">
+            <span class="detail-label">Domicilio</span>
+            <span class="detail-value">{{ carta.domicilio }}</span>
+          </div>
+        </div>
+
+        {% if carta.telefono_cliente %}
+        <div class="detail-item">
+          <div class="detail-icon phone">
+            <i class="fas fa-phone"></i>
+          </div>
+          <div class="detail-content">
+            <span class="detail-label">Teléfono</span>
+            <span class="detail-value">
+              <a href="tel:{{ carta.telefono_cliente }}" class="contact-link">
+                {{ carta.telefono_cliente }}
+              </a>
+            </span>
+          </div>
+        </div>
+        {% endif %}
+
+        {% if carta.correo_cliente %}
+        <div class="detail-item">
+          <div class="detail-icon email">
+            <i class="fas fa-envelope"></i>
+          </div>
+          <div class="detail-content">
+            <span class="detail-label">Email</span>
+            <span class="detail-value">
+              <a href="mailto:{{ carta.correo_cliente }}" class="contact-link">
+                {{ carta.correo_cliente }}
+              </a>
+            </span>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Información del Inmueble y Oferta -->
+    <div class="carta-intencion-detail-section">
+      <h3 class="section-title">
+        <i class="fas fa-home"></i>
+        Información del Inmueble y Oferta
+      </h3>
+      <div class="detail-grid">
+        <div class="detail-item">
+          <div class="detail-icon lot">
+            <i class="fas fa-map-marker-alt"></i>
+          </div>
+          <div class="detail-content">
+            <span class="detail-label">Lote</span>
+            <span class="detail-value">{{ carta.financiamiento.lote.identificador }}</span>
+          </div>
+        </div>
+
+        <div class="detail-item">
+          <div class="detail-icon project">
+            <i class="fas fa-building"></i>
+          </div>
+          <div class="detail-content">
+            <span class="detail-label">Proyecto</span>
+            <span class="detail-value">{{ carta.financiamiento.lote.proyecto.nombre }}</span>
+          </div>
+        </div>
+
+        <div class="detail-item">
+          <div class="detail-icon location">
+            <i class="fas fa-map-pin"></i>
+          </div>
+          <div class="detail-content">
+            <span class="detail-label">Ubicación</span>
+            <span class="detail-value">{{ carta.financiamiento.lote.proyecto.ubicacion }}</span>
+          </div>
+        </div>
+
+        <div class="detail-item">
+          <div class="detail-icon offer">
+            <i class="fas fa-dollar-sign"></i>
+          </div>
+          <div class="detail-content">
+            <span class="detail-label">Oferta de Compra</span>
+            <span class="detail-value">${{ carta.oferta|floatformat:2 }}</span>
+          </div>
+        </div>
+
+        <div class="detail-item">
+          <div class="detail-icon payment">
+            <i class="fas fa-credit-card"></i>
+          </div>
+          <div class="detail-content">
+            <span class="detail-label">Forma de Pago</span>
+            <span class="detail-value">{{ carta.get_forma_pago_display }}</span>
+          </div>
+        </div>
+
+        <div class="detail-item">
+          <div class="detail-icon price">
+            <i class="fas fa-tag"></i>
+          </div>
+          <div class="detail-content">
+            <span class="detail-label">Precio del Lote</span>
+            <span class="detail-value">${{ carta.financiamiento.precio_lote|floatformat:2 }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Información del Financiamiento -->
+    <div class="carta-intencion-detail-section">
+      <h3 class="section-title">
+        <i class="fas fa-handshake"></i>
+        Información del Financiamiento
+      </h3>
+      <div class="detail-grid">
+        <div class="detail-item">
+          <div class="detail-icon financing">
+            <i class="fas fa-chart-line"></i>
+          </div>
+          <div class="detail-content">
+            <span class="detail-label">Tipo de Pago</span>
+            <span class="detail-value">{{ carta.financiamiento.get_tipo_pago_display }}</span>
+          </div>
+        </div>
+
+        <div class="detail-item">
+          <div class="detail-icon deposit">
+            <i class="fas fa-money-bill-wave"></i>
+          </div>
+          <div class="detail-content">
+            <span class="detail-label">Apartado</span>
+            <span class="detail-value">${{ carta.financiamiento.apartado|floatformat:2 }}</span>
+          </div>
+        </div>
+
+        {% if carta.financiamiento.enganche %}
+        <div class="detail-item">
+          <div class="detail-icon down-payment">
+            <i class="fas fa-hand-holding-usd"></i>
+          </div>
+          <div class="detail-content">
+            <span class="detail-label">Enganche</span>
+            <span class="detail-value">${{ carta.financiamiento.enganche|floatformat:2 }}</span>
+          </div>
+        </div>
+        {% endif %}
+
+        {% if carta.financiamiento.num_mensualidades %}
+        <div class="detail-item">
+          <div class="detail-icon months">
+            <i class="fas fa-calendar-alt"></i>
+          </div>
+          <div class="detail-content">
+            <span class="detail-label">Mensualidades</span>
+            <span class="detail-value">{{ carta.financiamiento.num_mensualidades }} pagos</span>
+          </div>
+        </div>
+        {% endif %}
+
+        {% if carta.financiamiento.monto_mensualidad %}
+        <div class="detail-item">
+          <div class="detail-icon monthly">
+            <i class="fas fa-wallet"></i>
+          </div>
+          <div class="detail-content">
+            <span class="detail-label">Monto Mensual</span>
+            <span class="detail-value">${{ carta.financiamiento.monto_mensualidad|floatformat:2 }}</span>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Información Adicional -->
+    <div class="carta-intencion-detail-section">
+      <h3 class="section-title">
+        <i class="fas fa-info-circle"></i>
+        Información Adicional
+      </h3>
+      <div class="detail-grid">
+        <div class="detail-item">
+          <div class="detail-icon seller">
+            <i class="fas fa-user-tie"></i>
+          </div>
+          <div class="detail-content">
+            <span class="detail-label">Vendedor/Asesor</span>
+            <span class="detail-value">{{ carta.vendedor.nombre_completo }}</span>
+          </div>
+        </div>
+
+        <div class="detail-item">
+          <div class="detail-icon credit">
+            <i class="fas fa-university"></i>
+          </div>
+          <div class="detail-content">
+            <span class="detail-label">Crédito Hipotecario</span>
+            <span class="detail-value">{{ carta.get_credito_hipotecario_display }}</span>
+          </div>
+        </div>
+
+        {% if carta.institucion_financiera %}
+        <div class="detail-item">
+          <div class="detail-icon bank">
+            <i class="fas fa-landmark"></i>
+          </div>
+          <div class="detail-content">
+            <span class="detail-label">Institución Financiera</span>
+            <span class="detail-value">{{ carta.institucion_financiera }}</span>
+          </div>
+        </div>
+        {% endif %}
+
+        <div class="detail-item">
+          <div class="detail-icon recipient">
+            <i class="fas fa-user-check"></i>
+          </div>
+          <div class="detail-content">
+            <span class="detail-label">Destinatario del Apartado</span>
+            <span class="detail-value">{{ carta.destinatario_apartado }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Acciones Rápidas -->
+    <div class="carta-intencion-detail-section">
+      <h3 class="section-title">
+        <i class="fas fa-bolt"></i>
+        Acciones Rápidas
+      </h3>
+      <div class="quick-actions">
+        <button class="quick-action-btn download-pdf"
+                onclick="window.open('{% url 'dashboard:cartaintencion_download' carta.pk 'pdf' %}', '_blank')">
+          <i class="fas fa-file-pdf"></i>
+          Descargar PDF
+        </button>
+        <button class="quick-action-btn download-word"
+                onclick="window.open('{% url 'dashboard:cartaintencion_download' carta.pk 'word' %}', '_blank')">
+          <i class="fas fa-file-word"></i>
+          Descargar Word
+        </button>
+        <button class="quick-action-btn edit"
+                hx-get="{% url 'dashboard:cartaintencion_update' carta.pk %}"
+                hx-target="#content" 
+                hx-swap="innerHTML"
+                hx-push-url="true">
+          <i class="fas fa-edit"></i>
+          Editar Carta
+        </button>
+        {% if carta.telefono_cliente %}
+        <a href="tel:{{ carta.telefono_cliente }}" class="quick-action-btn call">
+          <i class="fas fa-phone"></i>
+          Llamar Cliente
+        </a>
+        {% endif %}
+        {% if carta.correo_cliente %}
+        <a href="mailto:{{ carta.correo_cliente }}" class="quick-action-btn email">
+          <i class="fas fa-envelope"></i>
+          Enviar Email
+        </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+/* ==== NAVEGACIÓN DE DETALLE ==== */
+.detail-navigation {
+  animation: fadeInUp 0.4s ease;
+}
+
+.btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1.5rem;
+  background: var(--glass-bg);
+  backdrop-filter: blur(15px);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  color: var(--text-primary);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--shadow-sm);
+  text-decoration: none;
+}
+
+.btn-back:hover {
+  background: var(--glass-hover);
+  transform: translateX(-5px);
+  box-shadow: var(--shadow-md);
+  border-color: rgba(99, 102, 241, 0.3);
+}
+
+.btn-back i {
+  font-size: 1rem;
+  transition: transform 0.3s ease;
+}
+
+.btn-back:hover i {
+  transform: translateX(-3px);
+}
+
+/* ==== TARJETA PRINCIPAL DE DETALLE ==== */
+.carta-intencion-detail-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  animation: fadeInUp 0.6s ease;
+}
+
+/* ==== HEADER DE DETALLE ==== */
+.carta-intencion-detail-header {
+  display: flex;
+  align-items: center;
+  padding: 2.5rem;
+  background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+  position: relative;
+  overflow: hidden;
+  gap: 2rem;
+}
+
+.carta-intencion-detail-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.carta-intencion-avatar.large {
+  width: 90px;
+  height: 90px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #EC4899 0%, #F97316 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: 700;
+  color: white;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.carta-intencion-detail-info {
+  flex: 1;
+  position: relative;
+  z-index: 1;
+}
+
+.carta-intencion-detail-name {
+  margin: 0 0 0.75rem 0;
+  font-size: 2rem;
+  font-weight: 700;
+  color: white;
+  line-height: 1.2;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.carta-intencion-meta {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.95);
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.meta-item i {
+  font-size: 0.85rem;
+}
+
+.carta-intencion-detail-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  position: relative;
+  z-index: 1;
+}
+
+.btn-download, .btn-edit, .btn-delete {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.25rem;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+}
+
+.btn-download {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(10px);
+}
+
+.btn-download:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.btn-edit {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(10px);
+}
+
+.btn-edit:hover {
+  background: rgba(245, 158, 11, 0.9);
+  border-color: rgba(245, 158, 11, 1);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(245, 158, 11, 0.4);
+}
+
+.btn-delete {
+  background: rgba(239, 68, 68, 0.2);
+  color: white;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  backdrop-filter: blur(10px);
+}
+
+.btn-delete:hover {
+  background: rgba(239, 68, 68, 0.9);
+  border-color: rgba(239, 68, 68, 1);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(239, 68, 68, 0.4);
+}
+
+/* ==== SECCIONES DE DETALLE ==== */
+.carta-intencion-detail-section {
+  padding: 2.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  animation: fadeInUp 0.6s ease;
+  animation-fill-mode: both;
+}
+
+.carta-intencion-detail-section:nth-child(2) { animation-delay: 0.1s; }
+.carta-intencion-detail-section:nth-child(3) { animation-delay: 0.2s; }
+.carta-intencion-detail-section:nth-child(4) { animation-delay: 0.3s; }
+.carta-intencion-detail-section:nth-child(5) { animation-delay: 0.4s; }
+.carta-intencion-detail-section:nth-child(6) { animation-delay: 0.5s; }
+
+.carta-intencion-detail-section:last-child {
+  border-bottom: none;
+}
+
+.section-title {
+  margin: 0 0 2rem 0;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.section-title i {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+  border-radius: 10px;
+  color: white;
+  font-size: 1.1rem;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+/* ==== GRID DE DETALLES ==== */
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.detail-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(10px);
+  border-radius: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.detail-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(99, 102, 241, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.detail-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  color: white;
+}
+
+/* Iconos con gradientes modernos */
+.detail-icon.user { 
+  background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
+}
+.detail-icon.id { 
+  background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+}
+.detail-icon.address { 
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+}
+.detail-icon.phone { 
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+}
+.detail-icon.email { 
+  background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
+}
+.detail-icon.lot { 
+  background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+}
+.detail-icon.project { 
+  background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+}
+.detail-icon.location { 
+  background: linear-gradient(135deg, #EC4899 0%, #DB2777 100%);
+}
+.detail-icon.offer { 
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+}
+.detail-icon.payment { 
+  background: linear-gradient(135deg, #6366F1 0%, #4F46E5 100%);
+}
+.detail-icon.price { 
+  background: linear-gradient(135deg, #6B7280 0%, #4B5563 100%);
+}
+.detail-icon.financing { 
+  background: linear-gradient(135deg, #14B8A6 0%, #0D9488 100%);
+}
+.detail-icon.deposit { 
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+}
+.detail-icon.down-payment { 
+  background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+}
+.detail-icon.months { 
+  background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+}
+.detail-icon.monthly { 
+  background: linear-gradient(135deg, #F97316 0%, #EA580C 100%);
+}
+.detail-icon.seller { 
+  background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
+}
+.detail-icon.credit { 
+  background: linear-gradient(135deg, #14B8A6 0%, #0D9488 100%);
+}
+.detail-icon.bank { 
+  background: linear-gradient(135deg, #6B7280 0%, #4B5563 100%);
+}
+.detail-icon.recipient { 
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+}
+
+.detail-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.detail-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.5rem;
+}
+
+.detail-value {
+  display: block;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.contact-link {
+  color: #6366F1;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.contact-link:hover {
+  color: #8B5CF6;
+  text-decoration: underline;
+}
+
+/* ==== ACCIONES RÁPIDAS ==== */
+.quick-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.quick-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 1.25rem 1.5rem;
+  background: var(--glass-bg);
+  backdrop-filter: blur(15px);
+  border: 1px solid var(--glass-border);
+  border-radius: 15px;
+  color: var(--text-primary);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
+}
+
+.quick-action-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.5s ease;
+}
+
+.quick-action-btn:hover::before {
+  left: 100%;
+}
+
+.quick-action-btn:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+}
+
+.quick-action-btn i {
+  font-size: 1.1rem;
+}
+
+.quick-action-btn.download-pdf:hover { 
+  background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+  color: white;
+  border-color: transparent;
+}
+
+.quick-action-btn.download-word:hover { 
+  background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
+  color: white;
+  border-color: transparent;
+}
+
+.quick-action-btn.edit:hover { 
+  background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+  color: white;
+  border-color: transparent;
+}
+
+.quick-action-btn.call:hover { 
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  color: white;
+  border-color: transparent;
+}
+
+.quick-action-btn.email:hover { 
+  background: linear-gradient(135deg, #6366F1 0%, #4F46E5 100%);
+  color: white;
+  border-color: transparent;
+}
+
+/* ==== ANIMACIONES ==== */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ==== RESPONSIVE ==== */
+@media (max-width: 1024px) {
+  .detail-grid {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .carta-intencion-detail-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 1.5rem;
+    padding: 2rem 1.5rem;
+  }
+
+  .carta-intencion-detail-info {
+    width: 100%;
+  }
+
+  .carta-intencion-detail-name {
+    font-size: 1.6rem;
+  }
+
+  .carta-intencion-meta {
+    justify-content: center;
+    gap: 0.75rem;
+  }
+
+  .meta-item {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.75rem;
+  }
+
+  .carta-intencion-detail-actions {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .btn-download, .btn-edit, .btn-delete {
+    flex: 1;
+    justify-content: center;
+    min-width: 100px;
+    padding: 0.75rem 1rem;
+    font-size: 0.85rem;
+  }
+
+  .carta-intencion-detail-section {
+    padding: 2rem 1.5rem;
+  }
+
+  .section-title {
+    font-size: 1.2rem;
+  }
+
+  .section-title i {
+    width: 36px;
+    height: 36px;
+    font-size: 1rem;
+  }
+
+  .detail-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .detail-item {
+    padding: 1.25rem;
+  }
+
+  .quick-actions {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .btn-back {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .carta-intencion-avatar.large {
+    width: 70px;
+    height: 70px;
+    font-size: 1.5rem;
+  }
+
+  .carta-intencion-detail-name {
+    font-size: 1.4rem;
+  }
+
+  .carta-intencion-meta {
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+  }
+
+  .meta-item {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .carta-intencion-detail-actions {
+    flex-direction: column;
+  }
+
+  .btn-download, .btn-edit, .btn-delete {
+    width: 100%;
+  }
+
+  .detail-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 1rem;
+  }
+
+  .detail-value {
+    font-size: 0.9rem;
+  }
+
+  .quick-action-btn {
+    padding: 1rem;
+    font-size: 0.9rem;
+  }
+}
+</style>

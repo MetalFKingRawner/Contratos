@@ -1,0 +1,886 @@
+<div class="container-fluid py-4">
+  <!-- Header de la sección con estadísticas -->
+  <div class="cartas-intencion-header-section">
+    <div class="cartas-intencion-header-content">
+      <div class="cartas-intencion-title-area">
+        <div class="cartas-intencion-icon-wrapper">
+          <i class="fas fa-file-signature cartas-intencion-main-icon"></i>
+        </div>
+        <div class="cartas-intencion-title-text">
+          <h2 class="cartas-intencion-title">Cartas de Intención</h2>
+          <p class="cartas-intencion-subtitle">Gestiona las cartas de intención de compra</p>
+        </div>
+      </div>
+      <div class="cartas-intencion-stats">
+        <div class="stat-item">
+          <span class="stat-number">{{ total_cartas_intencion }}</span>
+          <span class="stat-label">Total</span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Barra de acciones -->
+    <div class="cartas-intencion-actions">
+      <form method="get" action="{% url 'dashboard:cartaintencion_list' %}" class="search-container" id="searchForm">
+        <i class="fas fa-search search-icon"></i>
+        <input type="text" name="search" placeholder="Buscar por cliente, lote o ID..." 
+              class="search-input" id="cartaSearch" value="{{ termino_busqueda_actual }}">
+      </form>
+      <button class="btn-add-carta" 
+              hx-get="{% url 'dashboard:cartaintencion_create' %}" 
+              hx-target="#content" 
+              hx-swap="innerHTML">
+        <i class="fas fa-plus"></i>
+        <span>Nueva Carta</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Grid de cartas de intención -->
+  <div class="cartas-intencion-grid-container">
+    {% if cartas_intencion %}
+      <div class="cartas-intencion-grid" id="cartasIntencionGrid">
+        {% for carta in cartas_intencion %}
+          <div class="carta-intencion-card" 
+               data-carta-cliente="{{ carta.nombre_cliente|lower }}"
+               data-carta-lote="{{ carta.financiamiento.lote.identificador|lower }}"
+               data-carta-id="{{ carta.numero_id|lower }}">
+            
+            <div class="carta-intencion-card-header">
+              <div class="carta-intencion-avatar">
+                <span class="avatar-initials">{{ carta.nombre_cliente|slice:":2"|upper }}</span>
+              </div>
+              <div class="carta-intencion-status-badge">
+                <div class="status-dot"></div>
+                <span class="status-text">{{ carta.get_forma_pago_display }}</span>
+              </div>
+            </div>
+            
+            <div class="carta-intencion-card-body">
+              <h4 class="carta-intencion-name">{{ carta.nombre_cliente }}</h4>
+              
+              <div class="carta-intencion-info">
+                <div class="info-item">
+                  <div class="info-icon lot">
+                    <i class="fas fa-map-marker-alt"></i>
+                  </div>
+                  <div class="info-content">
+                    <span class="info-label">Lote</span>
+                    <span class="info-value">{{ carta.financiamiento.lote.identificador }}</span>
+                  </div>
+                </div>
+                
+                <div class="info-item">
+                  <div class="info-icon project">
+                    <i class="fas fa-building"></i>
+                  </div>
+                  <div class="info-content">
+                    <span class="info-label">Proyecto</span>
+                    <span class="info-value">{{ carta.financiamiento.lote.proyecto.nombre }}</span>
+                  </div>
+                </div>
+                
+                <div class="info-item">
+                  <div class="info-icon offer">
+                    <i class="fas fa-dollar-sign"></i>
+                  </div>
+                  <div class="info-content">
+                    <span class="info-label">Oferta</span>
+                    <span class="info-value">${{ carta.oferta|floatformat:2 }}</span>
+                  </div>
+                </div>
+                
+                <div class="info-item">
+                  <div class="info-icon seller">
+                    <i class="fas fa-user-tie"></i>
+                  </div>
+                  <div class="info-content">
+                    <span class="info-label">Vendedor</span>
+                    <span class="info-value">{{ carta.vendedor.nombre_completo }}</span>
+                  </div>
+                </div>
+                
+                <div class="info-item">
+                  <div class="info-icon date">
+                    <i class="fas fa-calendar-alt"></i>
+                  </div>
+                  <div class="info-content">
+                    <span class="info-label">Creada</span>
+                    <span class="info-value">{{ carta.creado_en|date:"d/m/Y" }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="carta-intencion-card-footer">
+              <div class="carta-intencion-actions">
+                <button class="action-btn view" 
+                        hx-get="{% url 'dashboard:cartaintencion_detail' carta.pk %}"
+                        hx-target="#content" 
+                        hx-swap="innerHTML"
+                        title="Ver detalles">
+                  <i class="fas fa-eye"></i>
+                </button>
+                <button class="action-btn edit"
+                        hx-get="{% url 'dashboard:cartaintencion_update' carta.pk %}"
+                        hx-target="#content" 
+                        hx-swap="innerHTML"
+                        title="Editar">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button class="action-btn download"
+                        hx-get="{% url 'dashboard:cartaintencion_download' carta.pk 'pdf' %}"
+                        title="Descargar PDF">
+                <i class="fas fa-file-pdf"></i>
+                </button>
+                <button class="action-btn download"
+                        hx-get="{% url 'dashboard:cartaintencion_download' carta.pk 'word' %}"
+                        title="Descargar Word">
+                <i class="fas fa-file-word"></i>
+                </button>
+                <button class="action-btn delete"
+                        hx-get="{% url 'dashboard:cartaintencion_delete' carta.pk %}"
+                        hx-target="#content" 
+                        hx-swap="innerHTML"
+                        title="Eliminar">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+      <!-- Paginación -->
+      {% if is_paginated %}
+      <div class="pagination-container">
+        <nav class="pagination-nav">
+          <div class="pagination-info">
+            <span>Mostrando {{ page_obj.start_index }}-{{ page_obj.end_index }} de {{ paginator.count }} cartas</span>
+          </div>
+          <ul class="pagination-list">
+            {% if page_obj.has_previous %}
+              <li class="pagination-item">
+                <button class="pagination-btn prev"
+                        hx-get="{% url 'dashboard:cartaintencion_list' %}?page={{ page_obj.previous_page_number }}{% if termino_busqueda_actual %}&search={{ termino_busqueda_actual }}{% endif %}"
+                        hx-target="#content" 
+                        hx-swap="innerHTML">
+                  <i class="fas fa-chevron-left"></i>
+                </button>
+              </li>
+            {% endif %}
+            
+            {% for num in paginator.page_range %}
+              <li class="pagination-item">
+                <button class="pagination-btn {% if page_obj.number == num %}active{% endif %}"
+                        hx-get="{% url 'dashboard:cartaintencion_list' %}?page={{ num }}{% if termino_busqueda_actual %}&search={{ termino_busqueda_actual }}{% endif %}"
+                        hx-target="#content" 
+                        hx-swap="innerHTML">
+                  {{ num }}
+                </button>
+              </li>
+            {% endfor %}
+            
+            {% if page_obj.has_next %}
+              <li class="pagination-item">
+                <button class="pagination-btn next"
+                        hx-get="{% url 'dashboard:cartaintencion_list' %}?page={{ page_obj.next_page_number }}{% if termino_busqueda_actual %}&search={{ termino_busqueda_actual }}{% endif %}"
+                        hx-target="#content" 
+                        hx-swap="innerHTML">
+                  <i class="fas fa-chevron-right"></i>
+                </button>
+              </li>
+            {% endif %}
+          </ul>
+        </nav>
+      </div>
+      {% endif %}
+
+    {% else %}
+      <div class="empty-state">
+        <div class="empty-icon">
+          <i class="fas fa-file-signature"></i>
+        </div>
+        <h3 class="empty-title">No hay cartas de intención registradas</h3>
+        <p class="empty-subtitle">Comienza creando tu primera carta de intención de compra</p>
+        <button class="btn-empty-action" 
+                hx-get="{% url 'dashboard:cartaintencion_create' %}" 
+                hx-target="#content" 
+                hx-swap="innerHTML">
+          <i class="fas fa-plus"></i>
+          Crear Primera Carta
+        </button>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<style>
+/* ==== HEADER DE CARTAS DE INTENCIÓN ==== */
+.cartas-intencion-header-section {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  border-radius: var(--border-radius);
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--glass-border);
+  position: relative;
+  overflow: hidden;
+  animation: fadeInUp 0.6s ease;
+}
+
+.cartas-intencion-header-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at 20% 20%, rgba(99, 102, 241, 0.08) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.cartas-intencion-header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+}
+
+.cartas-intencion-title-area {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.cartas-intencion-icon-wrapper {
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+  border-radius: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 16px rgba(99, 102, 241, 0.3);
+  animation: pulse 2s infinite;
+}
+
+.cartas-intencion-main-icon {
+  font-size: 1.8rem;
+  color: white;
+}
+
+.cartas-intencion-title {
+  font-size: 2.2rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0;
+}
+
+.cartas-intencion-subtitle {
+  color: var(--text-secondary);
+  margin: 0.5rem 0 0 0;
+  font-size: 1rem;
+}
+
+.cartas-intencion-stats {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.stat-number {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #6366F1;
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  margin-top: 0.25rem;
+}
+
+/* ==== BARRA DE ACCIONES ==== */
+.cartas-intencion-actions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.search-container {
+  position: relative;
+  flex: 1;
+  max-width: 400px;
+}
+
+.search-icon {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  z-index: 1;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.75rem 1rem 0.75rem 2.5rem;
+  border: 1px solid var(--glass-border);
+  border-radius: 25px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  transition: var(--transition);
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #6366F1;
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.search-input::placeholder {
+  color: var(--text-secondary);
+}
+
+.btn-add-carta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+  color: white;
+  border: none;
+  border-radius: 25px;
+  font-weight: 500;
+  transition: var(--transition);
+  cursor: pointer;
+  box-shadow: 0 8px 16px rgba(99, 102, 241, 0.3);
+  text-decoration: none;
+}
+
+.btn-add-carta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(99, 102, 241, 0.4);
+}
+
+/* ==== GRID DE CARTAS DE INTENCIÓN ==== */
+.cartas-intencion-grid-container {
+  position: relative;
+}
+
+.cartas-intencion-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
+}
+
+.carta-intencion-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(15px);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-sm);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  animation: fadeInUp 0.6s ease;
+  animation-fill-mode: both;
+}
+
+.carta-intencion-card:nth-child(odd) {
+  animation-delay: 0.1s;
+}
+
+.carta-intencion-card:nth-child(even) {
+  animation-delay: 0.2s;
+}
+
+.carta-intencion-card:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--shadow-hover);
+  background: var(--glass-hover);
+}
+
+.carta-intencion-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+}
+
+/* ==== HEADER DE CARD ==== */
+.carta-intencion-card-header {
+  padding: 1.5rem 1.5rem 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.carta-intencion-avatar {
+  width: 50px;
+  height: 50px;
+  background: linear-gradient(135deg, #EC4899 0%, #F97316 100%);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-sm);
+}
+
+.avatar-initials {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: white;
+  text-transform: uppercase;
+}
+
+.carta-intencion-status-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  backdrop-filter: blur(10px);
+  background: rgba(16, 185, 129, 0.15);
+  color: #10B981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.carta-intencion-status-badge .status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #10B981;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+  animation: statusPulse 2s infinite;
+}
+
+@keyframes statusPulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.2); opacity: 0.8; }
+}
+
+/* ==== BODY DE CARD ==== */
+.carta-intencion-card-body {
+  padding: 0 1.5rem 1.5rem;
+}
+
+.carta-intencion-name {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 1rem 0;
+  line-height: 1.3;
+}
+
+.carta-intencion-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.info-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  color: white;
+  flex-shrink: 0;
+}
+
+.info-icon.lot {
+  background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+}
+
+.info-icon.project {
+  background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+}
+
+.info-icon.offer {
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+}
+
+.info-icon.seller {
+  background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+}
+
+.info-icon.date {
+  background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
+}
+
+.info-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  flex: 1;
+}
+
+.info-label {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.info-value {
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+/* ==== FOOTER DE CARD ==== */
+.carta-intencion-card-footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.carta-intencion-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.action-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition);
+  position: relative;
+  font-size: 0.85rem;
+  text-decoration: none;
+}
+
+.action-btn.view {
+  background: rgba(59, 130, 246, 0.1);
+  color: #3B82F6;
+}
+
+.action-btn.view:hover {
+  background: rgba(59, 130, 246, 0.2);
+  transform: scale(1.05);
+}
+
+.action-btn.edit {
+  background: rgba(245, 158, 11, 0.1);
+  color: #F59E0B;
+}
+
+.action-btn.edit:hover {
+  background: rgba(245, 158, 11, 0.2);
+  transform: scale(1.05);
+}
+
+.action-btn.download {
+  background: rgba(139, 92, 246, 0.1);
+  color: #8B5CF6;
+}
+
+.action-btn.download:hover {
+  background: rgba(139, 92, 246, 0.2);
+  transform: scale(1.05);
+}
+
+.action-btn.delete {
+  background: rgba(239, 68, 68, 0.1);
+  color: #EF4444;
+}
+
+.action-btn.delete:hover {
+  background: rgba(239, 68, 68, 0.2);
+  transform: scale(1.05);
+}
+
+/* ==== ESTADO VACÍO ==== */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+  animation: fadeInUp 0.6s ease;
+}
+
+.empty-icon {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 8px 16px rgba(99, 102, 241, 0.3);
+}
+
+.empty-icon i {
+  font-size: 2rem;
+  color: white;
+}
+
+.empty-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.empty-subtitle {
+  color: var(--text-secondary);
+  margin-bottom: 2rem;
+  max-width: 400px;
+  line-height: 1.5;
+}
+
+.btn-empty-action {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 2rem;
+  background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+  color: white;
+  border: none;
+  border-radius: 25px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+  box-shadow: 0 8px 16px rgba(99, 102, 241, 0.3);
+}
+
+.btn-empty-action:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(99, 102, 241, 0.4);
+}
+
+/* ==== PAGINACIÓN ==== */
+.pagination-container {
+  margin-top: 3rem;
+  animation: fadeInUp 0.6s ease 0.3s both;
+}
+
+.pagination-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--glass-bg);
+  backdrop-filter: blur(15px);
+  border-radius: 15px;
+  padding: 1.5rem 2rem;
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-sm);
+}
+
+.pagination-info {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.pagination-list {
+  display: flex;
+  gap: 0.5rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.pagination-item {
+  display: inline-block;
+}
+
+.pagination-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition);
+  font-weight: 500;
+}
+
+.pagination-btn:hover {
+  background: rgba(99, 102, 241, 0.1);
+  color: #6366F1;
+}
+
+.pagination-btn.active {
+  background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+  color: white;
+  box-shadow: 0 4px 8px rgba(99, 102, 241, 0.3);
+}
+
+.pagination-btn.prev,
+.pagination-btn.next {
+  width: 45px;
+}
+
+/* ==== ANIMACIONES ==== */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+/* ==== RESPONSIVE ==== */
+@media (max-width: 768px) {
+  .cartas-intencion-header-content {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .cartas-intencion-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .search-container {
+    max-width: none;
+  }
+  
+  .cartas-intencion-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .pagination-nav {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .pagination-info {
+    text-align: center;
+  }
+  
+  .carta-intencion-actions {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .cartas-intencion-header-section {
+    padding: 1.5rem;
+  }
+  
+  .carta-intencion-card {
+    margin: 0 -0.5rem;
+  }
+  
+  .cartas-intencion-title {
+    font-size: 1.8rem;
+  }
+  
+  .carta-intencion-actions {
+    gap: 0.25rem;
+  }
+  
+  .action-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 0.8rem;
+  }
+  
+  .carta-intencion-status-badge {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.7rem;
+  }
+}
+</style>
+
+<script>
+// Funcionalidad de búsqueda para cartas de intención
+function initCartaIntencionSearch() {
+  const searchForm = document.getElementById('searchForm');
+  const searchInput = document.getElementById('cartaSearch');
+  
+  if (searchInput) {
+    let searchTimeout;
+    
+    searchInput.addEventListener('input', function() {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(() => {
+        searchForm.submit();
+      }, 800);
+    });
+    
+    searchInput.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        searchForm.submit();
+      }
+    });
+  }
+}
+
+// Inicializar cuando el contenido se carga
+document.addEventListener('DOMContentLoaded', function() {
+  if (document.getElementById('cartasIntencionGrid')) {
+    initCartaIntencionSearch();
+  }
+});
+
+// Reinicializar cuando HTMX carga nuevo contenido
+document.body.addEventListener('htmx:afterSwap', function(evt) {
+  if (evt.detail.target.id === 'content' && document.getElementById('cartasIntencionGrid')) {
+    setTimeout(initCartaIntencionSearch, 50);
+  }
+});
+</script>

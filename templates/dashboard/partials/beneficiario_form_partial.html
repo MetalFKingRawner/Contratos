@@ -1,0 +1,784 @@
+{# dashboard/partials/beneficiario_form.html #}
+<div class="container-fluid py-4">
+  <!-- Header de navegación -->
+  <div class="form-navigation mb-4">
+    <button class="btn-back beneficiario-back" 
+            hx-get="{% if creating %}{% url 'dashboard:beneficiario_list' %}{% else %}{% url 'dashboard:beneficiario_detail' object.pk %}{% endif %}" 
+            hx-target="#content" 
+            hx-swap="innerHTML"
+            hx-push-url="true">
+      <i class="fas fa-arrow-left"></i>
+      <span>Volver a {% if creating %}Beneficiarios{% else %}Detalle{% endif %}</span>
+    </button>
+  </div>
+
+  <!-- Tarjeta del formulario -->
+  <div class="form-card beneficiario-form-card">
+    <div class="form-header beneficiario-form-header">
+      <div class="form-icon beneficiario-form-icon">
+        <i class="fas fa-user-friends"></i>
+      </div>
+      <div class="form-title">
+        <h1>{% if creating %}Crear Nuevo Beneficiario{% else %}Editar Beneficiario{% endif %}</h1>
+        <p>{% if creating %}Complete la información del nuevo beneficiario{% else %}Modifique la información del beneficiario{% endif %}</p>
+      </div>
+    </div>
+
+    <form method="post" 
+          {% if creating %}
+          hx-post="{% url 'dashboard:beneficiario_create' %}"
+          {% else %}
+          hx-post="{% url 'dashboard:beneficiario_update' object.pk %}"
+          {% endif %}
+          hx-target="#content" 
+          hx-swap="innerHTML"
+          class="beneficiario-form">
+      {% csrf_token %}
+      
+      <div class="form-sections">
+        <!-- Información Personal -->
+        <div class="form-section beneficiario-form-section">
+          <h3 class="section-title beneficiario-section-title">
+            <div class="section-icon personal-icon">
+              <i class="fas fa-user"></i>
+            </div>
+            <span>Información Personal</span>
+          </h3>
+          
+          <div class="form-grid">
+            <div class="form-group full-width beneficiario-form-group">
+              <label for="{{ form.nombre_completo.id_for_label }}">
+                <i class="fas fa-user-circle label-icon"></i>
+                {{ form.nombre_completo.label }} <span class="required-asterisk">*</span>
+              </label>
+              {{ form.nombre_completo }}
+              {% if form.nombre_completo.errors %}
+                <div class="form-errors">
+                  {% for error in form.nombre_completo.errors %}
+                    <span class="error-message"><i class="fas fa-exclamation-circle"></i> {{ error }}</span>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+
+            <div class="form-group beneficiario-form-group">
+              <label for="{{ form.sexo.id_for_label }}">
+                <i class="fas fa-venus-mars label-icon"></i>
+                {{ form.sexo.label }}
+              </label>
+              {{ form.sexo }}
+              {% if form.sexo.errors %}
+                <div class="form-errors">
+                  {% for error in form.sexo.errors %}
+                    <span class="error-message"><i class="fas fa-exclamation-circle"></i> {{ error }}</span>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+
+            <div class="form-group beneficiario-form-group">
+              <label for="{{ form.numero_id.id_for_label }}">
+                <i class="fas fa-id-card label-icon"></i>
+                {{ form.numero_id.label }}
+              </label>
+              {{ form.numero_id }}
+              {% if form.numero_id.errors %}
+                <div class="form-errors">
+                  {% for error in form.numero_id.errors %}
+                    <span class="error-message"><i class="fas fa-exclamation-circle"></i> {{ error }}</span>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Información de Contacto -->
+        <div class="form-section beneficiario-form-section">
+          <h3 class="section-title beneficiario-section-title">
+            <div class="section-icon contact-icon">
+              <i class="fas fa-address-book"></i>
+            </div>
+            <span>Información de Contacto</span>
+          </h3>
+          
+          <div class="form-grid">
+            <div class="form-group beneficiario-form-group">
+              <label for="{{ form.telefono.id_for_label }}">
+                <i class="fas fa-phone label-icon"></i>
+                {{ form.telefono.label }}
+              </label>
+              {{ form.telefono }}
+              {% if form.telefono.errors %}
+                <div class="form-errors">
+                  {% for error in form.telefono.errors %}
+                    <span class="error-message"><i class="fas fa-exclamation-circle"></i> {{ error }}</span>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+
+            <div class="form-group beneficiario-form-group">
+              <label for="{{ form.email.id_for_label }}">
+                <i class="fas fa-envelope label-icon"></i>
+                {{ form.email.label }}
+              </label>
+              {{ form.email }}
+              {% if form.email.errors %}
+                <div class="form-errors">
+                  {% for error in form.email.errors %}
+                    <span class="error-message"><i class="fas fa-exclamation-circle"></i> {{ error }}</span>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Acciones del formulario -->
+      <div class="form-actions beneficiario-form-actions">
+        <button type="button" 
+                class="btn-cancel beneficiario-btn-cancel"
+                hx-get="{% if creating %}{% url 'dashboard:beneficiario_list' %}{% else %}{% url 'dashboard:beneficiario_detail' object.pk %}{% endif %}"
+                hx-target="#content" 
+                hx-swap="innerHTML"
+                hx-push-url="true">
+          <i class="fas fa-times"></i>
+          <span>Cancelar</span>
+        </button>
+        <button type="submit" class="btn-submit beneficiario-btn-submit">
+          <i class="fas fa-check"></i>
+          <span>{% if creating %}Crear Beneficiario{% else %}Guardar Cambios{% endif %}</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<style>
+/* ==== TEMA BENEFICIARIO - FORMULARIO ==== */
+.beneficiario-form-card {
+  position: relative;
+  overflow: hidden;
+  animation: fadeInUp 0.6s ease;
+}
+
+.beneficiario-form-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(90deg, #1E40AF 0%, #2563EB 25%, #3B82F6 50%, #60A5FA 75%, #93C5FD 100%);
+  background-size: 200% 100%;
+  animation: slideGradient 3s linear infinite;
+}
+
+@keyframes slideGradient {
+  0% { background-position: 0% 0%; }
+  100% { background-position: 200% 0%; }
+}
+
+/* ==== NAVEGACIÓN ==== */
+.btn-back.beneficiario-back {
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%);
+  border: 2px solid rgba(59, 130, 246, 0.3);
+  box-shadow: 0 4px 15px rgba(37, 99, 235, 0.15);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-back.beneficiario-back::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.btn-back.beneficiario-back:hover {
+  background: linear-gradient(135deg, #2563EB 0%, #3B82F6 100%);
+  border-color: #3B82F6;
+  color: white;
+  transform: translateX(-8px);
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.3);
+}
+
+.btn-back.beneficiario-back:hover::before {
+  left: 100%;
+}
+
+/* ==== HEADER DEL FORMULARIO ==== */
+.form-header.beneficiario-form-header {
+  background: linear-gradient(135deg, #1E40AF 0%, #2563EB 50%, #3B82F6 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.form-header.beneficiario-form-header::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+  animation: rotateGradient 10s linear infinite;
+}
+
+@keyframes rotateGradient {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.form-icon.beneficiario-form-icon {
+  background: rgba(255, 255, 255, 0.2);
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2), inset 0 0 20px rgba(255, 255, 255, 0.1);
+  animation: iconPulse 3s ease-in-out infinite;
+}
+
+@keyframes iconPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+/* ==== SECCIONES DEL FORMULARIO ==== */
+.form-section.beneficiario-form-section {
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.03) 0%, rgba(59, 130, 246, 0.03) 100%);
+  border: 1px solid rgba(59, 130, 246, 0.15);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.form-section.beneficiario-form-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 3px;
+  height: 100%;
+  background: linear-gradient(180deg, #2563EB 0%, #3B82F6 50%, #60A5FA 100%);
+}
+
+.form-section.beneficiario-form-section:hover {
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.06) 0%, rgba(59, 130, 246, 0.06) 100%);
+  border-color: rgba(59, 130, 246, 0.25);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(37, 99, 235, 0.12);
+}
+
+/* ==== TÍTULOS DE SECCIÓN ==== */
+.section-title.beneficiario-section-title {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.section-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1rem;
+  animation: iconFloat 3s ease-in-out infinite;
+}
+
+@keyframes iconFloat {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-5px); }
+}
+
+.section-icon.personal-icon {
+  background: linear-gradient(135deg, #2563EB 0%, #3B82F6 100%);
+  box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+}
+
+.section-icon.contact-icon {
+  background: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%);
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+}
+
+/* ==== GRUPOS DE FORMULARIO ==== */
+.form-group.beneficiario-form-group label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #1E40AF;
+  font-weight: 600;
+}
+
+.label-icon {
+  color: #3B82F6;
+  font-size: 0.9rem;
+}
+
+.required-asterisk {
+  color: #EF4444;
+  font-weight: 700;
+}
+
+.form-group.beneficiario-form-group input,
+.form-group.beneficiario-form-group select,
+.form-group.beneficiario-form-group textarea {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(59, 130, 246, 0.02) 100%);
+  border: 2px solid rgba(59, 130, 246, 0.2);
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.form-group.beneficiario-form-group input:focus,
+.form-group.beneficiario-form-group select:focus,
+.form-group.beneficiario-form-group textarea:focus {
+  border-color: #3B82F6;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(59, 130, 246, 0.05) 100%);
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15), 0 8px 25px rgba(37, 99, 235, 0.15);
+  transform: translateY(-3px);
+}
+
+.form-group.beneficiario-form-group input:hover,
+.form-group.beneficiario-form-group select:hover,
+.form-group.beneficiario-form-group textarea:hover {
+  border-color: #60A5FA;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, rgba(59, 130, 246, 0.03) 100%);
+}
+
+/* ==== VALIDACIÓN ==== */
+.form-group.beneficiario-form-group input.is-valid,
+.form-group.beneficiario-form-group select.is-valid,
+.form-group.beneficiario-form-group textarea.is-valid {
+  border-color: #10B981;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(5, 150, 105, 0.02) 100%);
+}
+
+.form-group.beneficiario-form-group input.is-invalid,
+.form-group.beneficiario-form-group select.is-invalid,
+.form-group.beneficiario-form-group textarea.is-invalid {
+  border-color: #EF4444;
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.05) 0%, rgba(220, 38, 38, 0.02) 100%);
+}
+
+/* ==== ERRORES ==== */
+.error-message {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(220, 38, 38, 0.1) 100%);
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  border-left: 3px solid #EF4444;
+  animation: shakeError 0.4s ease;
+}
+
+@keyframes shakeError {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+/* ==== BOTONES DE ACCIÓN ==== */
+.form-actions.beneficiario-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 2px solid rgba(59, 130, 246, 0.15);
+}
+
+.btn-cancel.beneficiario-btn-cancel,
+.btn-submit.beneficiario-btn-submit {
+  position: relative;
+  overflow: hidden;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.btn-cancel.beneficiario-btn-cancel::before,
+.btn-submit.beneficiario-btn-submit::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.btn-cancel.beneficiario-btn-cancel:hover::before,
+.btn-submit.beneficiario-btn-submit:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+.btn-cancel.beneficiario-btn-cancel {
+  background: linear-gradient(135deg, rgba(108, 117, 125, 0.15) 0%, rgba(73, 80, 87, 0.15) 100%);
+  border: 2px solid rgba(108, 117, 125, 0.3);
+}
+
+.btn-cancel.beneficiario-btn-cancel:hover {
+  background: linear-gradient(135deg, rgba(108, 117, 125, 0.25) 0%, rgba(73, 80, 87, 0.25) 100%);
+  border-color: #6C757D;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(108, 117, 125, 0.25);
+}
+
+.btn-submit.beneficiario-btn-submit {
+  background: linear-gradient(135deg, #1E40AF 0%, #2563EB 25%, #3B82F6 50%, #60A5FA 75%, #93C5FD 100%);
+  background-size: 200% 200%;
+  animation: gradientMove 4s ease infinite;
+  border: none;
+  color: white;
+  box-shadow: 0 8px 25px rgba(37, 99, 235, 0.35);
+}
+
+@keyframes gradientMove {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.btn-submit.beneficiario-btn-submit:hover {
+  transform: translateY(-4px) scale(1.05);
+  box-shadow: 0 12px 35px rgba(37, 99, 235, 0.45);
+}
+
+.btn-submit.beneficiario-btn-submit:active {
+  transform: translateY(-2px) scale(1.02);
+}
+
+/* ==== ESTADO DE CARGA ==== */
+.btn-submit.beneficiario-btn-submit:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-submit.beneficiario-btn-submit .fa-spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ==== ESTILOS BASE ==== */
+.form-navigation {
+  display: flex;
+  align-items: center;
+  animation: fadeInLeft 0.6s ease;
+}
+
+@keyframes fadeInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.btn-back {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  color: var(--text-primary);
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+}
+
+.form-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.form-header {
+  display: flex;
+  align-items: center;
+  padding: 2rem;
+  color: white;
+  gap: 1.5rem;
+}
+
+.form-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+}
+
+.form-title h1 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.form-title p {
+  margin: 0;
+  opacity: 0.9;
+}
+
+.beneficiario-form {
+  padding: 2rem;
+}
+
+.form-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.form-section {
+  padding: 1.5rem;
+  border-radius: 15px;
+}
+
+.section-title {
+  margin: 0 0 1.5rem 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group.full-width {
+  grid-column: 1 / -1;
+}
+
+.form-group label {
+  font-weight: 500;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  color: var(--text-primary);
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.form-errors {
+  margin-top: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-top: 2rem;
+}
+
+.btn-cancel, .btn-submit {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 10px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 1rem;
+}
+
+/* ==== RESPONSIVE ==== */
+@media (max-width: 768px) {
+  .form-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 1rem;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .btn-cancel, .btn-submit {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .beneficiario-form {
+    padding: 1.5rem;
+  }
+  
+  .form-section.beneficiario-form-section {
+    padding: 1rem;
+  }
+}
+
+/* ==== ANIMACIONES ==== */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+</style>
+
+<script>
+// Script para mejorar la experiencia del formulario
+document.addEventListener('DOMContentLoaded', function() {
+  initBeneficiarioForm();
+});
+
+// Reinicializar cuando HTMX carga contenido
+document.body.addEventListener('htmx:afterSwap', function(evt) {
+  if (evt.detail.target.id === 'content') {
+    setTimeout(initBeneficiarioForm, 50);
+  }
+});
+
+function initBeneficiarioForm() {
+  const formFields = document.querySelectorAll('.beneficiario-form input, .beneficiario-form select, .beneficiario-form textarea');
+  
+  formFields.forEach(field => {
+    // Agregar clase form-control si no la tiene
+    if (!field.classList.contains('form-control')) {
+      field.classList.add('form-control');
+    }
+    
+    // Efecto de focus mejorado
+    field.addEventListener('focus', function() {
+      this.parentElement.style.transform = 'translateX(5px)';
+    });
+    
+    field.addEventListener('blur', function() {
+      this.parentElement.style.transform = 'translateX(0)';
+      
+      // Validación visual
+      if (this.value.trim() !== '' && this.checkValidity()) {
+        this.classList.add('is-valid');
+        this.classList.remove('is-invalid');
+      } else if (this.hasAttribute('required') && this.value.trim() === '') {
+        this.classList.add('is-invalid');
+        this.classList.remove('is-valid');
+      }
+    });
+    
+    // Animación en input
+    field.addEventListener('input', function() {
+      if (this.classList.contains('is-invalid')) {
+        this.classList.remove('is-invalid');
+      }
+    });
+  });
+
+  // Manejar envío del formulario con HTMX
+  const form = document.querySelector('.beneficiario-form');
+  if (form) {
+    form.addEventListener('htmx:beforeRequest', function() {
+      const submitBtn = form.querySelector('.btn-submit');
+      if (submitBtn) {
+        const isCreating = submitBtn.textContent.includes('Crear');
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Procesando...</span>';
+        submitBtn.disabled = true;
+        submitBtn.style.opacity = '0.7';
+      }
+    });
+
+    form.addEventListener('htmx:afterRequest', function(evt) {
+      const submitBtn = form.querySelector('.btn-submit');
+      if (submitBtn && !evt.detail.successful) {
+        const isCreating = form.querySelector('[name="nombre_completo"]').value === '';
+        submitBtn.innerHTML = `<i class="fas fa-check"></i> <span>${isCreating ? 'Crear Beneficiario' : 'Guardar Cambios'}</span>`;
+        submitBtn.disabled = false;
+        submitBtn.style.opacity = '1';
+      }
+    });
+    
+    // Efecto de éxito visual
+    form.addEventListener('htmx:afterOnLoad', function() {
+      const submitBtn = form.querySelector('.btn-submit');
+      if (submitBtn) {
+        submitBtn.innerHTML = '<i class="fas fa-check-circle"></i> <span>¡Éxito!</span>';
+        submitBtn.style.background = 'linear-gradient(135deg, #10B981 0%, #059669 100%)';
+      }
+    });
+  }
+}
+
+// Animación de entrada para las secciones
+const observerOptions = {
+  threshold: 0.1,
+  rootMargin: '0px 0px -50px 0px'
+};
+
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach((entry, index) => {
+    if (entry.isIntersecting) {
+      setTimeout(() => {
+        entry.target.style.opacity = '1';
+        entry.target.style.transform = 'translateY(0)';
+      }, index * 100);
+      observer.unobserve(entry.target);
+    }
+  });
+}, observerOptions);
+
+document.querySelectorAll('.form-section').forEach(section => {
+  section.style.opacity = '0';
+  section.style.transform = 'translateY(20px)';
+  section.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+  observer.observe(section);
+});
+</script>
