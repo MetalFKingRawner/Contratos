@@ -8,7 +8,7 @@ RUN apt-get update && \
     libreoffice-core \
     libreoffice-writer \
     libreoffice-java-common \
-    openjdk-11-jre-headless \
+    openjdk-17-jre-headless \
     fonts-dejavu-core \
     fonts-liberation \
     fonts-crosextra-carlito \
@@ -20,6 +20,11 @@ RUN apt-get update && \
     libpq-dev && \
     fc-cache -f -v && \
     rm -rf /var/lib/apt/lists/*
+
+# 3. Configurar Java para LibreOffice
+ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+ENV URE_BOOTSTRAP=vnd.sun.star.pathname:/usr/lib/libreoffice/program/fundamentalrc
+ENV UNO_PATH=/usr/lib/libreoffice/program
 
 # 3. Crea directorio de la app
 WORKDIR /app
