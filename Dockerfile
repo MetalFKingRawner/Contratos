@@ -7,6 +7,8 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     libreoffice-core \
     libreoffice-writer \
+    libreoffice-java-common \
+    openjdk-11-jre-headless \
     fonts-dejavu-core \
     fonts-liberation \
     fonts-crosextra-carlito \
@@ -30,8 +32,7 @@ COPY . .
 
 # Comandos para aplicar migraciones directamente
 #python manage.py makemigrations && \
-RUN python manage.py makemigrations && \
-    python manage.py migrate && \
+RUN python manage.py migrate && \
     python manage.py collectstatic --noinput
  
 # 5. Variables de entorno (opcionalmente puedes moverlas a Render)
