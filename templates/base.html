@@ -11,6 +11,8 @@
           integrity="sha384-XLy+...tu-integrity..." crossorigin="anonymous">
     <!-- CSS personalizado -->
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     {% block extra_css %}{% endblock %}
     
     <style>
@@ -75,8 +77,10 @@
             <li class="nav-item">
               <a class="nav-link" href="{% url 'financiamiento:list' %}">Financiamiento</a>
             </li>
-            
-
+            <!-- Nuevo ítem para Carta de Intención -->
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'financiamiento:carta_intencion_list' %}">Carta de Intención</a>
+            </li>
             <li class="nav-item">
               <form id="logout-form" method="post" action="{% url 'core:logout' %}">
                 {% csrf_token %}
@@ -143,6 +147,7 @@
     {% block extra_js %}{% endblock %}
 </body>
 </html>
+
 
 
 
