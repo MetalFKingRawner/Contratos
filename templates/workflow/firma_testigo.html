@@ -1,0 +1,859 @@
+{% extends "workflow/firma_base.html" %}
+
+{% block title %}Firma Digital - Testigo{% endblock %}
+
+{% block firma_content %}
+<form method="post" id="firma-form">
+    {% csrf_token %}
+    
+    <!-- Información específica del testigo -->
+    <div class="signature-section">
+        <div class="section-header">
+            <div class="icon-wrapper">
+                <i class="fas fa-user-check"></i>
+            </div>
+            <div>
+                <h3>Firma del Testigo</h3>
+                <p class="section-description">Como testigo del contrato, por favor proporciona tu firma para certificar la autenticidad del documento.</p>
+            </div>
+        </div>
+        
+        <!-- Información del testigo -->
+        <div class="testigo-info-card">
+            <div class="testigo-badge">
+                <i class="fas fa-certificate"></i>
+                <span>TESTIGO OFICIAL</span>
+            </div>
+            <div class="testigo-info-body">
+                <div class="info-row">
+                    <i class="fas fa-user"></i>
+                    <div>
+                        <span class="info-label">Nombre del Testigo:</span>
+                        <span class="info-value">
+                            {% if tipo_firmante == 'testigo1' %}
+                                {{ tramite.testigo_1_nombre }}
+                            {% else %}
+                                {{ tramite.testigo_2_nombre }}
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+                <div class="info-row">
+                    <i class="fas fa-shield-alt"></i>
+                    <div>
+                        <span class="info-label">Rol en el Contrato:</span>
+                        <span class="info-value">
+                            Testigo 
+                            {% if tipo_firmante == 'testigo1' %}
+                                Número 1
+                            {% else %}
+                                Número 2
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Canvas para firma -->
+        <div class="canvas-container">
+            <label class="form-label">
+                <i class="fas fa-pen-fancy"></i> 
+                <strong>Dibuja tu firma:</strong>
+            </label>
+            <div class="canvas-wrapper">
+                <canvas id="signature-pad" class="signature-pad" width="700" height="250"></canvas>
+                <div class="canvas-overlay" id="canvas-hint">
+                    <i class="fas fa-hand-pointer"></i>
+                    <span>Toca o haz clic aquí para firmar</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Controles de firma -->
+        <div class="signature-controls">
+            <button type="button" id="clear-btn" class="btn-clear">
+                <i class="fas fa-eraser"></i> Borrar Firma
+            </button>
+            <div class="signature-help testigo-help">
+                <i class="fas fa-check-circle"></i> 
+                <span>Tu firma certifica la autenticidad del documento</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Declaración del testigo -->
+    <div class="declaration-section">
+        <div class="declaration-header">
+            <i class="fas fa-gavel"></i>
+            <h4>Declaración del Testigo</h4>
+        </div>
+        <div class="declaration-content">
+            <p class="declaration-text">
+                <i class="fas fa-quote-left"></i>
+                Como testigo de este contrato, declaro que he presenciado la firma del presente documento 
+                y que conozco a las partes involucradas. Certifico que las firmas son auténticas y que 
+                las partes han actuado de manera libre y voluntaria.
+                <i class="fas fa-quote-right"></i>
+            </p>
+        </div>
+        <label class="checkbox-label">
+            <input type="checkbox" name="aceptar_terminos" id="aceptar_terminos" required>
+            <span>
+                <strong>Declaro bajo protesta de decir verdad</strong> que conozco a las partes involucradas 
+                y certifico la autenticidad de las firmas en este documento.
+            </span>
+        </label>
+        {% if form.aceptar_terminos.errors %}
+            <div class="error-message">
+                <i class="fas fa-exclamation-triangle"></i>
+                {{ form.aceptar_terminos.errors.0 }}
+            </div>
+        {% endif %}
+    </div>
+    
+    <!-- Campo oculto para la firma -->
+    <input type="hidden" name="firma_data" id="firmaData">
+    
+    <!-- Botón de enviar -->
+    <button type="submit" class="btn-firmar btn-testigo" id="submit-btn" disabled>
+        <i class="fas fa-stamp"></i> 
+        <span>Firmar como Testigo</span>
+    </button>
+    
+    <!-- Indicador de estado -->
+    <div class="status-indicator" id="status-indicator">
+        <div class="status-item" id="status-signature">
+            <i class="fas fa-circle"></i>
+            <span>Firma proporcionada</span>
+        </div>
+        <div class="status-item" id="status-declaration">
+            <i class="fas fa-circle"></i>
+            <span>Declaración aceptada</span>
+        </div>
+    </div>
+</form>
+{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+/* Sección de firma mejorada */
+.signature-section {
+    margin: 2rem;
+    padding: 2rem;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border-radius: 15px;
+    border: 2px solid #e9ecef;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    animation: fadeInUp 0.6s ease-out 0.2s backwards;
+}
+
+.section-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.icon-wrapper {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #444dad 0%, #453483 100%);
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    color: white;
+    box-shadow: 0 8px 20px rgba(142, 68, 173, 0.25);
+    animation: pulse 2s ease-in-out infinite;
+    flex-shrink: 0;
+}
+
+.icon-wrapper i {
+    font-style: normal;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+.section-header h3 {
+    margin: 0 0 0.5rem 0;
+    color: var(--text-primary);
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.section-description {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+/* Card de información del testigo */
+.testigo-info-card {
+    background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);
+    border: 2px solid #ce93d8;
+    border-radius: 12px;
+    padding: 0;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 12px rgba(142, 68, 173, 0.15);
+    overflow: hidden;
+    animation: slideInLeft 0.6s ease-out 0.3s backwards;
+}
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.testigo-badge {
+    background: linear-gradient(135deg, #4447ad 0%, #453483 100%);
+    color: white;
+    padding: 1rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    font-weight: 700;
+    font-size: 1.1rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.testigo-badge i {
+    font-size: 1.5rem;
+    animation: rotateBadge 3s ease-in-out infinite;
+}
+
+@keyframes rotateBadge {
+    0%, 100% { transform: rotate(0deg); }
+    50% { transform: rotate(10deg); }
+}
+
+.testigo-info-body {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.info-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.info-row:hover {
+    background: rgba(255, 255, 255, 0.95);
+    transform: translateX(5px);
+}
+
+.info-row > i {
+    font-size: 1.3rem;
+    color: #4444ad;
+    min-width: 24px;
+}
+
+.info-row > div {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    flex: 1;
+}
+
+.info-label {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.info-value {
+    font-size: 1.1rem;
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+/* Canvas mejorado */
+.canvas-container {
+    margin-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* ← CENTRA HORIZONTALMENTE */
+    justify-content: center;
+}
+
+.form-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+    font-size: 1.1rem;
+}
+
+.form-label i {
+    color: #4446ad;
+}
+
+.canvas-wrapper {
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    width: 100%; /* ← OCUPA EL ANCHO COMPLETO */
+    max-width: 405px; /* ← MÁXIMO 400px COMO AVISO DE PRIVACIDAD */
+    margin: 0 auto; /* ← CENTRA EL CONTENEDOR */
+}
+
+/* Asegurar que el canvas ocupe todo el espacio disponible */
+.canvas-wrapper canvas {
+    width: 100% !important;
+    height: 150px !important;
+    display: block;
+}
+
+.signature-pad {
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    cursor: crosshair;
+    background: #ffffff;
+    transition: all 0.3s ease;
+    display: block;
+    width: 100% !important; /* ← FORZAR 100% DEL CONTENEDOR */
+    height: 150px !important; /* ← ALTURA FIJA */
+    max-width: 400px; /* ← MÁXIMO 400px */
+    touch-action: none;
+}
+
+.signature-pad:hover {
+    border-color: #4447ad;
+    box-shadow: 0 0 0 4px rgba(142, 68, 173, 0.1);
+}
+
+.signature-pad.signing {
+    border-color: #27ae60 !important;
+    box-shadow: 0 0 0 4px rgba(39, 174, 96, 0.1) !important;
+}
+
+.canvas-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    background: rgba(248, 249, 250, 0.8);
+    backdrop-filter: blur(2px);
+    pointer-events: none;
+    opacity: 1;
+    transition: opacity 0.3s ease;
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+}
+
+.canvas-overlay.hidden {
+    opacity: 0;
+}
+
+.canvas-overlay i {
+    font-size: 2.5rem;
+    color: #4644ad;
+    animation: bounce 2s ease-in-out infinite;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+/* Controles mejorados */
+.signature-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1.5rem;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.btn-clear {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+    color: white;
+    border: none;
+    padding: 0.875rem 1.75rem;
+    border-radius: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.2);
+    font-size: 1rem;
+}
+
+.btn-clear:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 107, 107, 0.3);
+}
+
+.btn-clear:active {
+    transform: translateY(0);
+}
+
+.signature-help {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    padding: 0.75rem 1rem;
+    background: rgba(46, 143, 204, 0.05);
+    border-radius: 8px;
+    border-left: 3px solid #2e8fcc;
+}
+
+.signature-help.testigo-help {
+    background: rgba(142, 68, 173, 0.05);
+    border-left-color: #8e44ad;
+}
+
+.signature-help i {
+    color: #4450ad;
+    font-size: 1.1rem;
+}
+
+/* Sección de declaración del testigo */
+.declaration-section {
+    margin: 2rem;
+    padding: 2rem;
+    background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%);
+    border: 2px solid #ffd54f;
+    border-radius: 15px;
+    box-shadow: 0 4px 12px rgba(255, 193, 7, 0.1);
+    animation: fadeInUp 0.6s ease-out 0.4s backwards;
+}
+
+.declaration-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.declaration-header i {
+    font-size: 1.5rem;
+    color: #f57c00;
+}
+
+.declaration-header h4 {
+    margin: 0;
+    color: #e65100;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.declaration-content {
+    background: rgba(255, 255, 255, 0.7);
+    padding: 1.5rem;
+    border-radius: 10px;
+    margin-bottom: 1.5rem;
+    border-left: 4px solid #f57c00;
+}
+
+.declaration-text {
+    color: #e65100;
+    line-height: 1.8;
+    margin: 0;
+    font-size: 1rem;
+    position: relative;
+    font-style: italic;
+}
+
+.declaration-text .fa-quote-left {
+    color: #ffa726;
+    font-size: 1.2rem;
+    margin-right: 0.5rem;
+}
+
+.declaration-text .fa-quote-right {
+    color: #ffa726;
+    font-size: 1.2rem;
+    margin-left: 0.5rem;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    cursor: pointer;
+    font-weight: 500;
+    color: #e65100;
+    line-height: 1.6;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.checkbox-label:hover {
+    background: rgba(255, 255, 255, 0.8);
+    transform: translateX(5px);
+}
+
+.checkbox-label input[type="checkbox"] {
+    margin-top: 0.25rem;
+    cursor: pointer;
+    width: 22px;
+    height: 22px;
+    accent-color: #8e44ad;
+    flex-shrink: 0;
+}
+
+.error-message {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #dc3545;
+    background: rgba(220, 53, 69, 0.1);
+    padding: 1rem;
+    border-radius: 8px;
+    margin-top: 1rem;
+    border-left: 3px solid #dc3545;
+    font-weight: 500;
+}
+
+.error-message i {
+    font-size: 1.2rem;
+}
+
+/* Botón de testigo especial */
+.btn-firmar.btn-testigo {
+    background: linear-gradient(135deg, #4e44ad 0%, #4c3483 100%);
+    color: white;
+    border: none;
+    padding: 1.5rem 3rem;
+    border-radius: 15px;
+    cursor: pointer;
+    font-size: 1.2rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    transition: all 0.3s ease;
+    width: 100%;
+    margin: 2rem;
+    margin-left: 0;
+    margin-right: 0;
+    box-shadow: 0 8px 20px rgba(142, 68, 173, 0.25);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    animation: fadeInUp 0.6s ease-out 0.5s backwards;
+}
+
+.btn-firmar.btn-testigo:hover:not(:disabled) {
+    background: linear-gradient(135deg, #403483 0%, #412e5f 100%);
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px rgba(142, 68, 173, 0.35);
+}
+
+.btn-firmar.btn-testigo:active:not(:disabled) {
+    transform: translateY(-1px);
+}
+
+.btn-firmar.btn-testigo:disabled {
+    background: linear-gradient(135deg, #bdc3c7 0%, #95a5a6 100%);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+    opacity: 0.7;
+}
+
+.btn-firmar i {
+    font-size: 1.5rem;
+}
+
+.btn-firmar.processing {
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    pointer-events: none;
+}
+
+/* Indicador de estado */
+.status-indicator {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin: 1rem 2rem 2rem;
+    padding: 1.5rem;
+    background: rgba(248, 249, 250, 0.5);
+    border-radius: 12px;
+    animation: fadeInUp 0.6s ease-out 0.6s backwards;
+}
+
+.status-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.status-item i {
+    font-size: 0.7rem;
+    color: #bdc3c7;
+    transition: all 0.3s ease;
+}
+
+.status-item.active {
+    color: #8e44ad;
+}
+
+.status-item.active i {
+    color: #8e44ad;
+    animation: checkPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes checkPulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.2); opacity: 0.7; }
+}
+
+/* Animaciones de entrada */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .signature-section,
+    .declaration-section {
+        margin: 1rem;
+        padding: 1.5rem;
+    }
+    
+    .section-header {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+    
+    .testigo-info-body {
+        padding: 1.25rem;
+    }
+    
+    .signature-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .btn-clear,
+    .signature-help {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .btn-firmar {
+        padding: 1.25rem 2rem;
+        font-size: 1rem;
+        margin: 1rem;
+        margin-left: 0;
+        margin-right: 0;
+    }
+    
+    .status-indicator {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .icon-wrapper {
+        width: 50px;
+        height: 50px;
+        font-size: 1.5rem;
+    }
+    
+    .section-header h3 {
+        font-size: 1.3rem;
+    }
+    
+    .testigo-badge {
+        padding: 0.875rem 1rem;
+        font-size: 0.95rem;
+    }
+    
+    .info-value {
+        font-size: 1rem;
+    }
+    
+    .canvas-overlay {
+        font-size: 0.95rem;
+    }
+    
+    .canvas-overlay i {
+        font-size: 2rem;
+    }
+    
+    .declaration-text {
+        font-size: 0.95rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const canvas = document.getElementById('signature-pad');
+    // CONFIGURACIÓN UNIFICADA
+    const signaturePad = new SignaturePad(canvas, {
+        minWidth: 0.5,
+        maxWidth: 2.5,
+        penColor: "#2c3e50",
+        throttle: 5,
+        velocityFilterWeight: 0.7
+    });
+    
+    const form = document.getElementById('firma-form');
+    const hiddenInput = document.getElementById('firmaData');
+    const clearBtn = document.getElementById('clear-btn');
+    const submitBtn = document.getElementById('submit-btn');
+    const termsCheckbox = document.getElementById('aceptar_terminos');
+    const canvasHint = document.getElementById('canvas-hint');
+    const statusSignature = document.getElementById('status-signature');
+    const statusDeclaration = document.getElementById('status-declaration');
+    
+    // Ajustar canvas al tamaño del contenedor
+    function resizeCanvas() {
+        const ratio = Math.max(window.devicePixelRatio || 1, 1);
+        const width = canvas.offsetWidth;
+        const height = 150;
+        
+        canvas.width = width * ratio;
+        canvas.height = height * ratio;
+        canvas.style.width = width + 'px';
+        canvas.style.height = height + 'px';
+        
+        const ctx = canvas.getContext("2d");
+        ctx.scale(ratio, ratio);
+        
+        signaturePad.clear();
+    }
+    
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+    
+    // Actualizar estado del botón de enviar
+    function updateSubmitButton() {
+        const hasSignature = !signaturePad.isEmpty();
+        const declarationAccepted = termsCheckbox.checked;
+        
+        // Actualizar estados visuales
+        if (hasSignature) {
+            statusSignature.classList.add('active');
+            canvas.classList.add('has-signature');
+        } else {
+            statusSignature.classList.remove('active');
+            canvas.classList.remove('has-signature');
+        }
+        
+        if (declarationAccepted) {
+            statusDeclaration.classList.add('active');
+        } else {
+            statusDeclaration.classList.remove('active');
+        }
+        
+        // Habilitar/deshabilitar botón
+        submitBtn.disabled = !(hasSignature && declarationAccepted);
+    }
+    
+    // Event listeners para el canvas
+    signaturePad.addEventListener('beginStroke', () => {
+        canvas.classList.add('signing');
+        canvasHint.classList.add('hidden');
+        updateSubmitButton();
+    });
+    
+    signaturePad.addEventListener('endStroke', () => {
+        canvas.classList.remove('signing');
+        updateSubmitButton();
+    });
+    
+    // Event listener para declaración
+    termsCheckbox.addEventListener('change', updateSubmitButton);
+    
+    // Botón limpiar
+    clearBtn.addEventListener('click', () => {
+        signaturePad.clear();
+        canvas.style.borderColor = "#dee2e6";
+        canvasHint.classList.remove('hidden');
+        updateSubmitButton();
+    });
+    
+    // Manejar envío del formulario
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        if (signaturePad.isEmpty()) {
+            alert('⚠️ Por favor, proporciona tu firma antes de continuar.');
+            canvas.style.borderColor = "#dc3545";
+            canvas.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            return;
+        }
+        
+        if (!termsCheckbox.checked) {
+            alert('⚠️ Debes aceptar la declaración para proceder como testigo.');
+            termsCheckbox.focus();
+            return;
+        }
+        
+        // Guardar la firma en el campo hidden
+        hiddenInput.value = signaturePad.toDataURL('image/png');
+        
+        // Cambiar estado del botón
+        submitBtn.classList.add('processing');
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Procesando firma del testigo...</span>';
+        submitBtn.disabled = true;
+        
+        // Enviar el formulario
+        form.submit();
+    });
+    
+    // Inicializar estado
+    updateSubmitButton();
+});
+</script>
+{% endblock %}

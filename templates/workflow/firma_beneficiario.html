@@ -1,0 +1,873 @@
+{% extends "workflow/firma_base.html" %}
+
+{% block title %}Firma Digital - Beneficiario{% endblock %}
+
+{% block firma_content %}
+<form method="post" id="firma-form">
+    {% csrf_token %}
+    
+    <!-- Formulario de datos del beneficiario -->
+    <div class="datos-section">
+        <div class="section-header">
+            <div class="icon-wrapper">
+                <i class="fas fa-user-edit"></i>
+            </div>
+            <div>
+                <h3>Completa tus Datos Personales</h3>
+                <p class="section-description">Por favor, completa o verifica tu información personal antes de firmar.</p>
+            </div>
+        </div>
+        
+        <div class="form-grid">
+            <!-- Nombre Completo -->
+            <div class="form-field full-width">
+                <label for="nombre_completo" class="form-label">
+                    <i class="fas fa-user"></i>
+                    <span>Nombre Completo <span class="required">*</span></span>
+                </label>
+                <input type="text" id="nombre_completo" name="nombre_completo" 
+                       value="{{ tramite.beneficiario_1.nombre_completo }}" 
+                       class="form-control" required
+                       placeholder="Ingresa tu nombre completo">
+                <small class="field-hint">Como aparece en tu identificación oficial</small>
+            </div>
+            
+            <!-- Sexo -->
+            <div class="form-field">
+                <label for="sexo" class="form-label">
+                    <i class="fas fa-venus-mars"></i>
+                    <span>Sexo</span>
+                </label>
+                <select id="sexo" name="sexo" class="form-control">
+                    <option value="">Seleccionar...</option>
+                    <option value="M" {% if tramite.beneficiario_1.sexo == 'M' %}selected{% endif %}>Masculino</option>
+                    <option value="F" {% if tramite.beneficiario_1.sexo == 'F' %}selected{% endif %}>Femenino</option>
+                </select>
+            </div>
+            
+            <!-- Teléfono -->
+            <div class="form-field">
+                <label for="telefono" class="form-label">
+                    <i class="fas fa-phone"></i>
+                    <span>Teléfono</span>
+                </label>
+                <input type="tel" id="telefono" name="telefono" 
+                       value="{{ tramite.beneficiario_1.telefono }}" 
+                       class="form-control" 
+                       placeholder="10 dígitos">
+                <small class="field-hint">Ejemplo: 951000000</small>
+            </div>
+            
+            <!-- Email -->
+            <div class="form-field full-width">
+                <label for="email" class="form-label">
+                    <i class="fas fa-envelope"></i>
+                    <span>Correo Electrónico</span>
+                </label>
+                <input type="email" id="email" name="email" 
+                       value="{{ tramite.beneficiario_1.email }}" 
+                       class="form-control" 
+                       placeholder="ejemplo@correo.com">
+                <small class="field-hint">Para seguimiento</small>
+            </div>
+            
+            <!-- Número de Identificación -->
+            <div class="form-field full-width">
+                <label for="numero_id" class="form-label">
+                    <i class="fas fa-id-card"></i>
+                    <span>Número de Identificación (INE/IFE)</span>
+                </label>
+                <input type="text" id="numero_id" name="numero_id" 
+                       value="{{ tramite.beneficiario_1.numero_id }}" 
+                       class="form-control" 
+                       placeholder="Número de tu identificación oficial">
+                <small class="field-hint">Debe empezar por "IDMEX" seguido de los 10 dígitos según la parte trasera de tu identificación</small>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sección de firma -->
+    <div class="signature-section">
+        <div class="section-header">
+            <div class="icon-wrapper">
+                <i class="fas fa-file-signature"></i>
+            </div>
+            <div>
+                <h3>Firma del Beneficiario</h3>
+                <p class="section-description">Ahora proporciona tu firma para completar el proceso.</p>
+            </div>
+        </div>
+        
+        <!-- Canvas para firma -->
+        <div class="canvas-container">
+            <label class="form-label">
+                <i class="fas fa-pen-fancy"></i> 
+                <strong>Dibuja tu firma:</strong>
+            </label>
+            <div class="canvas-wrapper">
+                <canvas id="signature-pad" class="signature-pad" width="400" height="150"></canvas>
+                <div class="canvas-overlay" id="canvas-hint">
+                    <i class="fas fa-hand-pointer"></i>
+                    <span>Toca o haz clic aquí para firmar</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Controles de firma -->
+        <div class="signature-controls">
+            <button type="button" id="clear-btn" class="btn-clear">
+                <i class="fas fa-eraser"></i> Borrar Firma
+            </button>
+            <div class="signature-help">
+                <i class="fas fa-info-circle"></i> 
+                <span>Dibuja tu firma como aparece en tu identificación oficial</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Términos y condiciones -->
+    <div class="terms-section">
+        <div class="terms-header">
+            <i class="fas fa-shield-check"></i>
+            <h4>Términos y Condiciones</h4>
+        </div>
+        <label class="checkbox-label">
+            <input type="checkbox" name="aceptar_terminos" id="aceptar_terminos" required>
+            <span>
+                He leído y acepto los términos y condiciones como beneficiario. 
+                Reconozco que esta firma tiene <strong>validez legal equivalente</strong> a una firma manuscrita y que los datos proporcionados son verídicos.
+            </span>
+        </label>
+        {% if form.aceptar_terminos.errors %}
+            <div class="error-message">
+                <i class="fas fa-exclamation-triangle"></i>
+                {{ form.aceptar_terminos.errors.0 }}
+            </div>
+        {% endif %}
+    </div>
+    
+    <!-- Campos ocultos -->
+    <input type="hidden" name="firma_data" id="firmaData">
+    
+    <!-- Botón de enviar -->
+    <button type="submit" class="btn-firmar" id="submit-btn" disabled>
+        <i class="fas fa-check-circle"></i> 
+        <span>Completar Datos y Firmar</span>
+    </button>
+    
+    <!-- Indicador de estado -->
+    <div class="status-indicator" id="status-indicator">
+        <div class="status-item" id="status-data">
+            <i class="fas fa-circle"></i>
+            <span>Datos completos</span>
+        </div>
+        <div class="status-item" id="status-signature">
+            <i class="fas fa-circle"></i>
+            <span>Firma proporcionada</span>
+        </div>
+        <div class="status-item" id="status-terms">
+            <i class="fas fa-circle"></i>
+            <span>Términos aceptados</span>
+        </div>
+    </div>
+</form>
+{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+/* Sección de datos del beneficiario */
+.datos-section {
+    margin: 2rem;
+    padding: 2rem;
+    background: linear-gradient(135deg, #f0f8ff 0%, #e6f2ff 100%);
+    border-radius: 15px;
+    border: 2px solid #b8d4f1;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    animation: fadeInUp 0.6s ease-out 0.1s backwards;
+}
+
+.section-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.icon-wrapper {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #2e8fcc 0%, #1e5f8c 100%);
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    color: white;
+    box-shadow: 0 8px 20px rgba(46, 143, 204, 0.25);
+    animation: pulse 2s ease-in-out infinite;
+    flex-shrink: 0;
+}
+
+.icon-wrapper i {
+    font-style: normal;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+.section-header h3 {
+    margin: 0 0 0.5rem 0;
+    color: var(--text-primary);
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.section-description {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+/* Grid de formulario */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-field.full-width {
+    grid-column: 1 / -1;
+}
+
+.form-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-primary);
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.form-label i {
+    color: #2e8fcc;
+    font-size: 1.1rem;
+}
+
+.required {
+    color: #e74c3c;
+    font-weight: 700;
+}
+
+.form-control {
+    padding: 0.875rem 1rem;
+    border: 2px solid #dee2e6;
+    border-radius: 10px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: white;
+    color: var(--text-primary);
+    font-family: inherit;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #2e8fcc;
+    box-shadow: 0 0 0 4px rgba(46, 143, 204, 0.1);
+    background: #fafbfc;
+}
+
+.form-control::placeholder {
+    color: #adb5bd;
+}
+
+select.form-control {
+    cursor: pointer;
+}
+
+.field-hint {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    margin-top: -0.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.field-hint::before {
+    content: "💡";
+    font-size: 0.9rem;
+}
+
+/* Sección de firma */
+.signature-section {
+    margin: 2rem;
+    padding: 2rem;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border-radius: 15px;
+    border: 2px solid #e9ecef;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    animation: fadeInUp 0.6s ease-out 0.2s backwards;
+}
+
+.canvas-container {
+    margin-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* ← CENTRA HORIZONTALMENTE */
+    justify-content: center;
+}
+
+.canvas-wrapper {
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    width: 100%; /* ← OCUPA EL ANCHO COMPLETO */
+    max-width: 405px; /* ← MÁXIMO 400px COMO AVISO DE PRIVACIDAD */
+    margin: 0 auto; /* ← CENTRA EL CONTENEDOR */
+}
+
+/* Asegurar que el canvas ocupe todo el espacio disponible */
+.canvas-wrapper canvas {
+    width: 100% !important;
+    height: 150px !important;
+    display: block;
+}
+
+.signature-pad {
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    cursor: crosshair;
+    background: #ffffff;
+    transition: all 0.3s ease;
+    display: block;
+    width: 100% !important; /* ← FORZAR 100% DEL CONTENEDOR */
+    height: 150px !important; /* ← ALTURA FIJA */
+    max-width: 400px; /* ← MÁXIMO 400px */
+    touch-action: none;
+}
+.signature-pad:hover {
+    border-color: #2e8fcc;
+    box-shadow: 0 0 0 4px rgba(46, 143, 204, 0.1);
+}
+
+.signature-pad.signing {
+    border-color: #27ae60 !important;
+    box-shadow: 0 0 0 4px rgba(39, 174, 96, 0.1) !important;
+}
+
+.canvas-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    background: rgba(248, 249, 250, 0.8);
+    backdrop-filter: blur(2px);
+    pointer-events: none;
+    opacity: 1;
+    transition: opacity 0.3s ease;
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+}
+
+.canvas-overlay.hidden {
+    opacity: 0;
+}
+
+.canvas-overlay i {
+    font-size: 2.5rem;
+    color: #2e8fcc;
+    animation: bounce 2s ease-in-out infinite;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+/* Controles */
+.signature-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1.5rem;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.btn-clear {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+    color: white;
+    border: none;
+    padding: 0.875rem 1.75rem;
+    border-radius: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.2);
+    font-size: 1rem;
+}
+
+.btn-clear:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 107, 107, 0.3);
+}
+
+.btn-clear:active {
+    transform: translateY(0);
+}
+
+.signature-help {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    padding: 0.75rem 1rem;
+    background: rgba(46, 143, 204, 0.05);
+    border-radius: 8px;
+    border-left: 3px solid #2e8fcc;
+}
+
+.signature-help i {
+    color: #2e8fcc;
+    font-size: 1.1rem;
+}
+
+/* Términos */
+.terms-section {
+    margin: 2rem;
+    padding: 2rem;
+    background: linear-gradient(135deg, #fff9e6 0%, #fff3cd 100%);
+    border: 2px solid #ffeaa7;
+    border-radius: 15px;
+    box-shadow: 0 4px 12px rgba(255, 193, 7, 0.1);
+    animation: fadeInUp 0.6s ease-out 0.3s backwards;
+}
+
+.terms-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+}
+
+.terms-header i {
+    font-size: 1.5rem;
+    color: #f39c12;
+}
+
+.terms-header h4 {
+    margin: 0;
+    color: #856404;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    cursor: pointer;
+    font-weight: 500;
+    color: #856404;
+    line-height: 1.6;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.checkbox-label:hover {
+    background: rgba(255, 255, 255, 0.8);
+    transform: translateX(5px);
+}
+
+.checkbox-label input[type="checkbox"] {
+    margin-top: 0.25rem;
+    cursor: pointer;
+    width: 22px;
+    height: 22px;
+    accent-color: #2e8fcc;
+    flex-shrink: 0;
+}
+
+.error-message {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #dc3545;
+    background: rgba(220, 53, 69, 0.1);
+    padding: 1rem;
+    border-radius: 8px;
+    margin-top: 1rem;
+    border-left: 3px solid #dc3545;
+    font-weight: 500;
+}
+
+.error-message i {
+    font-size: 1.2rem;
+}
+
+/* Botón principal */
+.btn-firmar {
+    background: linear-gradient(135deg, #27ae60 0%, #219653 100%);
+    color: white;
+    border: none;
+    padding: 1.5rem 3rem;
+    border-radius: 15px;
+    cursor: pointer;
+    font-size: 1.2rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    transition: all 0.3s ease;
+    width: 100%;
+    margin: 2rem;
+    margin-left: 0;
+    margin-right: 0;
+    box-shadow: 0 8px 20px rgba(39, 174, 96, 0.25);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    animation: fadeInUp 0.6s ease-out 0.4s backwards;
+}
+
+.btn-firmar:hover:not(:disabled) {
+    background: linear-gradient(135deg, #219653 0%, #1e8449 100%);
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px rgba(39, 174, 96, 0.35);
+}
+
+.btn-firmar:active:not(:disabled) {
+    transform: translateY(-1px);
+}
+
+.btn-firmar:disabled {
+    background: linear-gradient(135deg, #bdc3c7 0%, #95a5a6 100%);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+    opacity: 0.7;
+}
+
+.btn-firmar i {
+    font-size: 1.5rem;
+}
+
+.btn-firmar.processing {
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    pointer-events: none;
+}
+
+/* Indicador de estado */
+.status-indicator {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin: 1rem 2rem 2rem;
+    padding: 1.5rem;
+    background: rgba(248, 249, 250, 0.5);
+    border-radius: 12px;
+    animation: fadeInUp 0.6s ease-out 0.5s backwards;
+    flex-wrap: wrap;
+}
+
+.status-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.status-item i {
+    font-size: 0.7rem;
+    color: #bdc3c7;
+    transition: all 0.3s ease;
+}
+
+.status-item.active {
+    color: #27ae60;
+}
+
+.status-item.active i {
+    color: #27ae60;
+    animation: checkPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes checkPulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.2); opacity: 0.7; }
+}
+
+/* Animaciones */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .datos-section,
+    .signature-section,
+    .terms-section {
+        margin: 1rem;
+        padding: 1.5rem;
+    }
+    
+    .section-header {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+    
+    .form-grid {
+        grid-template-columns: 1fr;
+        gap: 1.25rem;
+    }
+    
+    .signature-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .btn-clear,
+    .signature-help {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .btn-firmar {
+        padding: 1.25rem 2rem;
+        font-size: 1rem;
+        margin: 1rem;
+        margin-left: 0;
+        margin-right: 0;
+    }
+    
+    .status-indicator {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .icon-wrapper {
+        width: 50px;
+        height: 50px;
+        font-size: 1.5rem;
+    }
+    
+    .section-header h3 {
+        font-size: 1.3rem;
+    }
+    
+    .form-control {
+        padding: 0.75rem 0.875rem;
+        font-size: 0.95rem;
+    }
+    
+    .canvas-overlay {
+        font-size: 0.95rem;
+    }
+    
+    .canvas-overlay i {
+        font-size: 2rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const canvas = document.getElementById('signature-pad');
+    const signaturePad = new SignaturePad(canvas, {
+        minWidth: 0.5,
+        maxWidth: 2.5,
+        penColor: "#2c3e50",
+        throttle: 5,
+        velocityFilterWeight: 0.7
+    });
+    
+    const form = document.getElementById('firma-form');
+    const hiddenInput = document.getElementById('firmaData');
+    const clearBtn = document.getElementById('clear-btn');
+    const submitBtn = document.getElementById('submit-btn');
+    const termsCheckbox = document.getElementById('aceptar_terminos');
+    const nombreInput = document.getElementById('nombre_completo');
+    const canvasHint = document.getElementById('canvas-hint');
+    
+    // Status indicators
+    const statusData = document.getElementById('status-data');
+    const statusSignature = document.getElementById('status-signature');
+    const statusTerms = document.getElementById('status-terms');
+    
+    // Ajustar canvas
+    function resizeCanvas() {
+        const ratio = Math.max(window.devicePixelRatio || 1, 1);
+        const width = canvas.offsetWidth;
+        const height = 150;
+        
+        canvas.width = width * ratio;
+        canvas.height = height * ratio;
+        canvas.style.width = width + 'px';
+        canvas.style.height = height + 'px';
+        
+        const ctx = canvas.getContext("2d");
+        ctx.scale(ratio, ratio);
+        
+        signaturePad.clear();
+    }
+    
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+    
+    // Validar formulario completo
+    function validateForm() {
+        const hasSignature = !signaturePad.isEmpty();
+        const termsAccepted = termsCheckbox.checked;
+        const nombreCompleto = nombreInput.value.trim();
+        
+        return hasSignature && termsAccepted && nombreCompleto;
+    }
+    
+    function updateSubmitButton() {
+        const nombreCompleto = nombreInput.value.trim();
+        const hasSignature = !signaturePad.isEmpty();
+        const termsAccepted = termsCheckbox.checked;
+        
+        // Actualizar estados visuales
+        if (nombreCompleto) {
+            statusData.classList.add('active');
+        } else {
+            statusData.classList.remove('active');
+        }
+        
+        if (hasSignature) {
+            statusSignature.classList.add('active');
+        } else {
+            statusSignature.classList.remove('active');
+        }
+        
+        if (termsAccepted) {
+            statusTerms.classList.add('active');
+        } else {
+            statusTerms.classList.remove('active');
+        }
+        
+        // Habilitar/deshabilitar botón
+        submitBtn.disabled = !validateForm();
+    }
+    
+    // Event listeners para el canvas
+    signaturePad.addEventListener('beginStroke', () => {
+        canvas.classList.add('signing');
+        canvasHint.classList.add('hidden');
+        updateSubmitButton();
+    });
+    
+    signaturePad.addEventListener('endStroke', () => {
+        canvas.classList.remove('signing');
+        updateSubmitButton();
+    });
+    
+    // Event listeners para campos
+    termsCheckbox.addEventListener('change', updateSubmitButton);
+    nombreInput.addEventListener('input', updateSubmitButton);
+    
+    // Escuchar cambios en otros campos
+    document.querySelectorAll('#sexo, #telefono, #email, #numero_id').forEach(input => {
+        input.addEventListener('input', updateSubmitButton);
+    });
+    
+    // Botón limpiar
+    clearBtn.addEventListener('click', () => {
+        signaturePad.clear();
+        canvas.style.borderColor = "#dee2e6";
+        canvasHint.classList.remove('hidden');
+        updateSubmitButton();
+    });
+    
+    // Manejar envío del formulario
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        if (!validateForm()) {
+            if (!nombreInput.value.trim()) {
+                alert('⚠️ Por favor, completa tu nombre completo.');
+                nombreInput.focus();
+                nombreInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            } else if (signaturePad.isEmpty()) {
+                alert('⚠️ Por favor, proporciona tu firma.');
+                canvas.style.borderColor = "#dc3545";
+                canvas.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            } else if (!termsCheckbox.checked) {
+                alert('⚠️ Debes aceptar los términos y condiciones.');
+                termsCheckbox.focus();
+            }
+            return;
+        }
+        
+        // Guardar la firma
+        hiddenInput.value = signaturePad.toDataURL('image/png');
+        
+        // Cambiar estado del botón
+        submitBtn.classList.add('processing');
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Guardando datos y firma...</span>';
+        submitBtn.disabled = true;
+        
+        // Enviar el formulario
+        form.submit();
+    });
+    
+    // Inicializar estado
+    updateSubmitButton();
+    
+    // Agregar validación visual a campos requeridos
+    nombreInput.addEventListener('blur', function() {
+        if (!this.value.trim()) {
+            this.style.borderColor = '#e74c3c';
+        } else {
+            this.style.borderColor = '#27ae60';
+        }
+    });
+    
+    nombreInput.addEventListener('focus', function() {
+        this.style.borderColor = '#2e8fcc';
+    });
+});
+</script>
+{% endblock %}

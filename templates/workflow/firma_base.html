@@ -1,0 +1,480 @@
+{% load static %}
+
+{% block extra_head %}
+    <title>{% block title %}Firma Digital - {{ titulo }}{% endblock %}</title>
+    <!-- CSS personalizado -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="firma-container">
+        <!-- Header informativo -->
+        <div class="firma-header">
+            <div class="header-icon">
+                <i class="fas fa-file-signature"></i>
+            </div>
+            <h1 class="firma-title">{{ titulo }}</h1>
+            <p class="firma-subtitle">{{ subtitulo }}</p>
+        </div>
+
+        <!-- Información del trámite -->
+        <div class="tramite-card">
+            <h3><i class="fas fa-info-circle"></i> Información del Trámite</h3>
+            <div class="tramite-info-grid">
+                <div class="info-item">
+                    <span class="info-label">Trámite ID:</span>
+                    <span class="info-value">#{{ tramite.id }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Cliente:</span>
+                    <span class="info-value">{{ tramite.cliente.nombre_completo }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Lote:</span>
+                    <span class="info-value">{{ tramite.financiamiento.lote }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Proyecto:</span>
+                    <span class="info-value">{{ tramite.financiamiento.lote.proyecto.nombre }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contenido específico de cada firma -->
+        {% block firma_content %}{% endblock %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+:root {
+    --primary-gradient: linear-gradient(135deg, #2e8fcc 0%, #1e5f8c 100%);
+    --accent-gradient: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+    --text-primary: #2c3e50;
+    --text-secondary: #6c757d;
+    --shadow-primary: 0 15px 35px rgba(46, 143, 204, 0.15);
+    --shadow-hover: 0 25px 50px rgba(46, 143, 204, 0.25);
+}
+
+.firma-container {
+    max-width: 900px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 20px;
+    box-shadow: var(--shadow-primary);
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.firma-container:hover {
+    box-shadow: var(--shadow-hover);
+    transform: translateY(-2px);
+}
+
+.firma-header {
+    background: var(--primary-gradient);
+    color: white;
+    padding: 3rem 2.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.firma-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    opacity: 0.4;
+}
+
+.header-icon {
+    font-size: 3.5rem;
+    margin-bottom: 1rem;
+    animation: float 3s ease-in-out infinite;
+    position: relative;
+    z-index: 1;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+}
+
+.firma-header .firma-title {
+    font-size: 2.4rem;
+    margin-bottom: 0.5rem;
+    font-weight: 700;
+    position: relative;
+    z-index: 1;
+    color: #ffffff !important;
+    background: none !important;
+    -webkit-background-clip: unset !important;
+    -webkit-text-fill-color: #ffffff !important;
+    background-clip: unset !important;
+    text-shadow: 
+        0 2px 10px rgba(0, 0, 0, 0.3),
+        0 4px 20px rgba(0, 0, 0, 0.2),
+        0 0 30px rgba(255, 255, 255, 0.3);
+    letter-spacing: 0.5px;
+}
+
+.firma-header .firma-subtitle {
+    font-size: 1.2rem;
+    opacity: 0.95;
+    margin-bottom: 0;
+    position: relative;
+    z-index: 1;
+    font-weight: 400;
+    color: #ffffff !important;
+}
+
+.tramite-card {
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+    padding: 2rem;
+    margin: 2rem;
+    border-radius: 15px;
+    border-left: 5px solid #2e8fcc;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.tramite-card:hover {
+    transform: translateX(5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+}
+
+.tramite-card h3 {
+    color: var(--text-primary);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.4rem;
+    font-weight: 600;
+}
+
+.tramite-card h3 i {
+    color: #2e8fcc;
+    font-size: 1.3rem;
+}
+
+.tramite-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.info-item {
+    padding: 1rem;
+    background: white;
+    border-radius: 10px;
+    border: 1px solid #e9ecef;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.info-item:hover {
+    border-color: #2e8fcc;
+    box-shadow: 0 4px 12px rgba(46, 143, 204, 0.1);
+    transform: translateY(-2px);
+}
+
+.info-label {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.info-value {
+    font-size: 1.1rem;
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+/* Estilos para el canvas de firma */
+.signature-section {
+    margin: 2rem;
+    padding: 2rem;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border-radius: 15px;
+    border: 2px solid #e9ecef;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+}
+
+.signature-section h4 {
+    color: var(--text-primary);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.3rem;
+    font-weight: 600;
+}
+
+.signature-section h4 i {
+    color: #2e8fcc;
+}
+
+.signature-pad {
+    border: 3px dashed #dee2e6;
+    border-radius: 12px;
+    cursor: crosshair;
+    background: #ffffff;
+    transition: all 0.3s ease;
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.signature-pad:hover {
+    border-color: #2e8fcc;
+    background: #fafbfc;
+}
+
+.signature-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1.5rem;
+    gap: 1rem;
+}
+
+.btn-clear {
+    background: var(--accent-gradient);
+    color: white;
+    border: none;
+    padding: 0.875rem 1.75rem;
+    border-radius: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.2);
+}
+
+.btn-clear:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 107, 107, 0.3);
+}
+
+.btn-clear:active {
+    transform: translateY(0);
+}
+
+.btn-firmar {
+    background: linear-gradient(135deg, #27ae60 0%, #219653 100%);
+    color: white;
+    border: none;
+    padding: 1.25rem 2.5rem;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 1.15rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    transition: all 0.3s ease;
+    width: 100%;
+    justify-content: center;
+    margin-top: 2rem;
+    box-shadow: 0 8px 20px rgba(39, 174, 96, 0.25);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.btn-firmar:hover:not(:disabled) {
+    background: linear-gradient(135deg, #219653 0%, #1e8449 100%);
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px rgba(39, 174, 96, 0.35);
+}
+
+.btn-firmar:active:not(:disabled) {
+    transform: translateY(-1px);
+}
+
+.btn-firmar:disabled {
+    background: linear-gradient(135deg, #bdc3c7 0%, #95a5a6 100%);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.btn-firmar i {
+    font-size: 1.3rem;
+}
+
+.terms-section {
+    margin: 2rem;
+    padding: 1.75rem;
+    background: linear-gradient(135deg, #fff9e6 0%, #fff3cd 100%);
+    border: 2px solid #ffeaa7;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(255, 193, 7, 0.1);
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    cursor: pointer;
+    font-weight: 500;
+    color: #856404;
+    line-height: 1.6;
+}
+
+.checkbox-label input[type="checkbox"] {
+    margin-top: 0.25rem;
+    cursor: pointer;
+    width: 20px;
+    height: 20px;
+    accent-color: #2e8fcc;
+}
+
+.checkbox-label:hover {
+    color: #533f03;
+}
+
+/* Animación de entrada */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.tramite-card,
+.signature-section,
+.terms-section {
+    animation: fadeInUp 0.6s ease-out forwards;
+}
+
+.tramite-card {
+    animation-delay: 0.1s;
+}
+
+.signature-section {
+    animation-delay: 0.2s;
+}
+
+.terms-section {
+    animation-delay: 0.3s;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .firma-header {
+        padding: 2.5rem 1.5rem;
+    }
+    
+    .header-icon {
+        font-size: 2.5rem;
+    }
+    
+    .firma-title {
+        font-size: 1.8rem;
+    }
+    
+    .firma-subtitle {
+        font-size: 1rem;
+    }
+    
+    .tramite-info-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .signature-section,
+    .tramite-card,
+    .terms-section {
+        margin: 1rem;
+        padding: 1.25rem;
+    }
+    
+    .signature-controls {
+        flex-direction: column;
+    }
+    
+    .btn-clear {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .btn-firmar {
+        padding: 1rem 2rem;
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .firma-title {
+        font-size: 1.5rem;
+    }
+    
+    .tramite-card h3 {
+        font-size: 1.2rem;
+    }
+    
+    .info-value {
+        font-size: 1rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_footer %}
+<!-- Footer -->
+    <footer class="bg-light text-center py-3 mt-auto">
+      <div class="container">
+        <small>© {% now "Y" %} Grupo Jora - Inversiones inmobiliarias. Todos los derechos reservados.</small>
+      </div>
+    </footer>
+{% endblock %}
+
+    <!-- Bootstrap 5 JS vía CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <!-- MANTENER APLICACIÓN ACTIVA - PING AUTOMÁTICO -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        function keepAlive() {
+            fetch('/workflow/health-check/')
+                .then(response => {
+                    if (!response.ok) throw new Error('Error en response');
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('✅ Workflow activo:', new Date().toLocaleTimeString());
+                })
+                .catch(error => {
+                    console.log('⚠️ Error en ping workflow:', error);
+                });
+        }
+        
+        // Ping cada 8 minutos (más seguro que 10)
+        setInterval(keepAlive, 4 * 60 * 1000);
+        
+        // Ping en interacciones del usuario
+        ['click', 'keypress', 'scroll'].forEach(event => {
+            document.addEventListener(event, keepAlive, { passive: true });
+        });
+        
+        // Primer ping al cargar
+        setTimeout(keepAlive, 2000);
+    });
+    </script>
+    {% block extra_js %}{% endblock %}
