@@ -651,6 +651,304 @@
     padding: 1rem;
   }
 }
+
+/* ============================================= */
+/* ESTILOS MEJORADOS PARA TESTIGOS Y BENEFICIARIOS */
+/* ============================================= */
+
+/* Toggle mejorado para testigos y beneficiarios */
+#testigosToggle,
+#beneficiariosToggle {
+  background: rgba(240, 245, 255, 0.6);
+  border-radius: 20px;
+  padding: 1.5rem;
+  margin-top: 2rem;
+  margin-bottom: 1.5rem;
+  border-left: 4px solid var(--bs-primary);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+#testigosToggle:hover,
+#beneficiariosToggle:hover {
+  background: rgba(230, 240, 255, 0.8);
+  transform: translateX(5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+#testigosToggle input,
+#beneficiariosToggle input {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: var(--bs-primary);
+}
+
+#testigosToggle label,
+#beneficiariosToggle label {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0;
+  cursor: pointer;
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+#testigosToggle i.fa-chevron-down,
+#beneficiariosToggle i.fa-chevron-down {
+  color: var(--bs-primary);
+  font-size: 1.2rem;
+  transition: transform 0.3s ease;
+}
+
+#testigosToggle.active i.fa-chevron-down,
+#beneficiariosToggle.active i.fa-chevron-down {
+  transform: rotate(180deg);
+}
+
+/* Secciones de testigos y beneficiarios */
+#testigosSection,
+#beneficiariosSection {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.5s ease-out, opacity 0.3s ease;
+  opacity: 0;
+  margin-top: 0;
+}
+
+#testigosSection.active,
+#beneficiariosSection.active {
+  max-height: 3000px;
+  opacity: 1;
+  margin-top: 1rem;
+}
+
+/* Títulos de secciones */
+#testigosSection .second-client-title,
+#beneficiariosSection .second-client-title {
+  font-size: 1.8rem !important;
+  margin-top: 1.5rem !important;
+  margin-bottom: 1.5rem !important;
+  text-align: center;
+  background: linear-gradient(135deg, #2e8fcc 0%, #1e5f8c 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 700;
+  position: relative;
+  animation: titleFloat 3s ease-in-out infinite alternate;
+}
+
+#testigosSection .second-client-title::after,
+#beneficiariosSection .second-client-title::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 50px;
+  height: 3px;
+  background: var(--accent-gradient);
+  border-radius: 2px;
+}
+
+/* Field groups dentro de testigos y beneficiarios */
+#testigosSection .field-group,
+#beneficiariosSection .field-group {
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 20px;
+  padding: 2rem;
+  margin-bottom: 1.5rem;
+  border-left: 4px solid var(--bs-primary);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  animation: cardSlideIn 0.6s ease-out;
+}
+
+#testigosSection .field-group:hover,
+#beneficiariosSection .field-group:hover {
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+/* Títulos de field groups */
+#testigosSection .field-group-title,
+#beneficiariosSection .field-group-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid rgba(46, 143, 204, 0.15);
+}
+
+#testigosSection .field-group-title i,
+#beneficiariosSection .field-group-title i {
+  color: var(--bs-primary);
+  font-size: 1.3rem;
+}
+
+/* Campos de formulario mejorados */
+#testigosSection .form-field-wrapper,
+#beneficiariosSection .form-field-wrapper {
+  position: relative;
+  margin-bottom: 0;
+}
+
+#testigosSection .form-field-wrapper label,
+#beneficiariosSection .form-field-wrapper label {
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.05rem;
+}
+
+#testigosSection .form-field-wrapper label i,
+#beneficiariosSection .form-field-wrapper label i {
+  color: var(--bs-primary);
+  font-size: 1rem;
+}
+
+#testigosSection .form-field-wrapper input,
+#testigosSection .form-field-wrapper select,
+#testigosSection .form-field-wrapper textarea,
+#beneficiariosSection .form-field-wrapper input,
+#beneficiariosSection .form-field-wrapper select,
+#beneficiariosSection .form-field-wrapper textarea {
+  border-radius: 15px;
+  border: 2px solid rgba(46, 143, 204, 0.2);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  padding: 1rem 1.25rem;
+  font-size: 1rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  width: 100%;
+}
+
+#testigosSection .form-field-wrapper input:focus,
+#testigosSection .form-field-wrapper select:focus,
+#testigosSection .form-field-wrapper textarea:focus,
+#beneficiariosSection .form-field-wrapper input:focus,
+#beneficiariosSection .form-field-wrapper select:focus,
+#beneficiariosSection .form-field-wrapper textarea:focus {
+  border-color: var(--bs-primary);
+  box-shadow: 0 0 0 0.2rem rgba(46, 143, 204, 0.25), 0 8px 25px rgba(46, 143, 204, 0.15);
+  background: rgba(255, 255, 255, 1);
+  outline: none;
+  transform: translateY(-2px);
+}
+
+#testigosSection .form-field-wrapper input:hover,
+#testigosSection .form-field-wrapper select:hover,
+#testigosSection .form-field-wrapper textarea:hover,
+#beneficiariosSection .form-field-wrapper input:hover,
+#beneficiariosSection .form-field-wrapper select:hover,
+#beneficiariosSection .form-field-wrapper textarea:hover {
+  border-color: var(--bs-primary);
+  transform: translateY(-1px);
+}
+
+/* Campo readonly especial para testigo 1 */
+#testigosSection .readonly-field {
+  background: linear-gradient(135deg, rgba(46, 143, 204, 0.05) 0%, rgba(46, 143, 204, 0.02) 100%);
+  border: 2px dashed rgba(46, 143, 204, 0.3);
+  color: #6c757d;
+  cursor: not-allowed;
+  font-style: italic;
+  font-weight: 500;
+}
+
+/* Help text mejorado */
+#testigosSection .help-text,
+#beneficiariosSection .help-text {
+  font-size: 0.875rem;
+  color: #6c757d;
+  margin-top: 0.5rem;
+  font-style: italic;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-left: 0.25rem;
+}
+
+#testigosSection .help-text::before,
+#beneficiariosSection .help-text::before {
+  content: '\f05a';
+  font-family: 'Font Awesome 6 Free';
+  font-weight: 900;
+  color: var(--bs-primary);
+  opacity: 0.6;
+  font-size: 0.8rem;
+}
+
+/* Animación específica para campos de testigos/beneficiarios */
+@keyframes fieldFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+#testigosSection.active .field-group,
+#beneficiariosSection.active .field-group {
+  animation: fieldFadeIn 0.6s ease-out forwards;
+}
+
+#testigosSection.active .field-group:nth-child(2) {
+  animation-delay: 0.1s;
+}
+
+#testigosSection.active .field-group:nth-child(3),
+#beneficiariosSection.active .field-group:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+#beneficiariosSection.active .field-group:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+/* Responsive para testigos y beneficiarios */
+@media (max-width: 768px) {
+  #testigosToggle,
+  #beneficiariosToggle {
+    padding: 1rem;
+    margin-top: 1.5rem;
+  }
+  
+  #testigosSection .field-group,
+  #beneficiariosSection .field-group {
+    padding: 1.25rem;
+  }
+  
+  #testigosSection .field-group-title,
+  #beneficiariosSection .field-group-title {
+    font-size: 1.1rem;
+  }
+  
+  #testigosSection .second-client-title,
+  #beneficiariosSection .second-client-title {
+    font-size: 1.5rem !important;
+  }
+}
 </style>
 {% endblock %}
 
@@ -1071,6 +1369,145 @@
         </div>
       </div>
 
+      <!-- ============================================= -->
+      <!-- NUEVA SECCIÓN: TESTIGOS (OPCIONAL) -->
+      <!-- ============================================= -->
+      <div class="second-client-toggle" id="testigosToggle">
+        <input type="checkbox" id="addTestigos" name="testigos_add">
+        <label for="addTestigos">
+          <i class="fas fa-users"></i>
+          Agregar Testigos (Opcional)
+        </label>
+        <i class="fas fa-chevron-down"></i>
+      </div>
+      
+      <!-- Sección de Testigos (inicialmente oculta) -->
+      <div class="second-client-section" id="testigosSection">
+        <h2 class="client-title second-client-title">Datos de los Testigos</h2>
+        
+        <!-- Testigo 1 (vendedor por defecto) -->
+        <div class="field-group">
+          <h3 class="field-group-title">
+            <i class="fas fa-user-check"></i>
+            Testigo 1 (Vendedor)
+          </h3>
+          <div class="form-row">
+            <div class="form-field-wrapper">
+              <label>
+                <i class="fas fa-user-tie"></i>
+                Nombre del Testigo 1
+              </label>
+              <input type="text" value="[Se asignará automáticamente el vendedor]" readonly class="readonly-field">
+              <small class="help-text">El vendedor que atienda el trámite será testigo por defecto</small>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Testigo 2 (opcional) -->
+        <div class="field-group">
+          <h3 class="field-group-title">
+            <i class="fas fa-user-plus"></i>
+            Testigo 2 (Opcional)
+          </h3>
+          <div class="form-row">
+            <div class="form-field-wrapper">
+              <label for="testigo2_nombre">
+                <i class="fas fa-user"></i>
+                Nombre completo del Testigo 2
+              </label>
+              <input type="text" id="testigo2_nombre" name="testigo2_nombre" 
+                     placeholder="Ej: Juan Pérez Hernández" maxlength="150">
+              <small class="help-text">Nombre del segundo testigo (opcional)</small>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================= -->
+      <!-- SECCIÓN ACTUALIZADA: BENEFICIARIO (OPCIONAL) -->
+      <!-- ============================================= -->
+      <div class="second-client-toggle" id="beneficiariosToggle">
+          <input type="checkbox" id="addBeneficiarios" name="beneficiarios_add">
+          <label for="addBeneficiarios">
+              <i class="fas fa-hand-holding-heart"></i>
+              Agregar Beneficiario (Opcional)
+          </label>
+          <i class="fas fa-chevron-down"></i>
+      </div>
+
+      <!-- Sección de Beneficiario (inicialmente oculta) -->
+      <div class="second-client-section" id="beneficiariosSection">
+          <h2 class="client-title second-client-title">Datos del Beneficiario</h2>
+          
+          <!-- Beneficiario Único -->
+          <div class="field-group">
+              <h3 class="field-group-title">
+                  <i class="fas fa-user-friends"></i>
+                  Beneficiario (Opcional)
+              </h3>
+              
+              <div class="form-row">
+                  <div class="form-field-wrapper {% if beneficiario_form.nombre_completo.errors %}error{% endif %}">
+                      <label for="{{ beneficiario_form.nombre_completo.id_for_label }}">
+                          <i class="fas fa-user"></i>
+                          {{ beneficiario_form.nombre_completo.label }}
+                      </label>
+                      {{ beneficiario_form.nombre_completo }}
+                      {% for error in beneficiario_form.nombre_completo.errors %}
+                          <div class="text-danger">{{ error }}</div>
+                      {% endfor %}
+                  </div>
+                  
+                  <div class="form-field-wrapper {% if beneficiario_form.sexo.errors %}error{% endif %}">
+                      <label for="{{ beneficiario_form.sexo.id_for_label }}">
+                          <i class="fas fa-venus-mars"></i>
+                          {{ beneficiario_form.sexo.label }}
+                      </label>
+                      {{ beneficiario_form.sexo }}
+                      {% for error in beneficiario_form.sexo.errors %}
+                          <div class="text-danger">{{ error }}</div>
+                      {% endfor %}
+                  </div>
+              </div>
+              
+              <div class="form-row">
+                  <div class="form-field-wrapper phone-field {% if beneficiario_form.telefono.errors %}error{% endif %}">
+                      <label for="{{ beneficiario_form.telefono.id_for_label }}">
+                          <i class="fas fa-phone"></i>
+                          {{ beneficiario_form.telefono.label }}
+                      </label>
+                      {{ beneficiario_form.telefono }}
+                      {% for error in beneficiario_form.telefono.errors %}
+                          <div class="text-danger">{{ error }}</div>
+                      {% endfor %}
+                  </div>
+                  
+                  <div class="form-field-wrapper email-field {% if beneficiario_form.email.errors %}error{% endif %}">
+                      <label for="{{ beneficiario_form.email.id_for_label }}">
+                          <i class="fas fa-envelope"></i>
+                          {{ beneficiario_form.email.label }}
+                      </label>
+                      {{ beneficiario_form.email }}
+                      {% for error in beneficiario_form.email.errors %}
+                          <div class="text-danger">{{ error }}</div>
+                      {% endfor %}
+                  </div>
+              </div>
+              
+              <div class="form-row">
+                  <div class="form-field-wrapper {% if beneficiario_form.numero_id.errors %}error{% endif %}">
+                      <label for="{{ beneficiario_form.numero_id.id_for_label }}">
+                          <i class="fas fa-fingerprint"></i>
+                          {{ beneficiario_form.numero_id.label }}
+                      </label>
+                      {{ beneficiario_form.numero_id }}
+                      {% for error in beneficiario_form.numero_id.errors %}
+                          <div class="text-danger">{{ error }}</div>
+                      {% endfor %}
+                  </div>
+              </div>
+          </div>
+      </div>
 
       <div class="submit-section">
         <button type="submit" class="btn btn-continue">
@@ -1147,6 +1584,56 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 
+  // =============================================
+  // TOGGLE PARA TESTIGOS (NUEVO)
+  // =============================================
+  const testigosToggle = document.getElementById('testigosToggle');
+  const testigosSection = document.getElementById('testigosSection');
+  const testigosCheckbox = document.getElementById('addTestigos');
+  
+  if (testigosSection && !testigosCheckbox.checked) {
+    toggleTestigosSection(false);
+  }
+
+  if (testigosToggle && testigosSection && testigosCheckbox) {
+    testigosCheckbox.addEventListener('change', function() {
+      toggleTestigosSection(this.checked);
+    });
+    
+    testigosToggle.addEventListener('click', function(e) {
+      if (e.target !== testigosCheckbox) {
+        const newState = !testigosCheckbox.checked;
+        testigosCheckbox.checked = newState;
+        toggleTestigosSection(newState);
+      }
+    });
+  }
+
+  // =============================================
+  // TOGGLE PARA BENEFICIARIOS (NUEVO)
+  // =============================================
+  const beneficiariosToggle = document.getElementById('beneficiariosToggle');
+  const beneficiariosSection = document.getElementById('beneficiariosSection');
+  const beneficiariosCheckbox = document.getElementById('addBeneficiarios');
+  
+  if (beneficiariosSection && !beneficiariosCheckbox.checked) {
+    toggleBeneficiariosSection(false);
+  }
+
+  if (beneficiariosToggle && beneficiariosSection && beneficiariosCheckbox) {
+    beneficiariosCheckbox.addEventListener('change', function() {
+      toggleBeneficiariosSection(this.checked);
+    });
+    
+    beneficiariosToggle.addEventListener('click', function(e) {
+      if (e.target !== beneficiariosCheckbox) {
+        const newState = !beneficiariosCheckbox.checked;
+        beneficiariosCheckbox.checked = newState;
+        toggleBeneficiariosSection(newState);
+      }
+    });
+  }
+  
   // Función para mostrar/ocultar la sección del segundo cliente
   function toggleSecondClientSection(show) {
       const secondClientInputs = secondClientSection.querySelectorAll('input, select, textarea');
@@ -1189,6 +1676,82 @@ document.addEventListener('DOMContentLoaded', function() {
       }
   }
 
+  // Función para mostrar/ocultar la sección de testigos
+  function toggleTestigosSection(show) {
+    const testigosInputs = testigosSection.querySelectorAll('input, select, textarea');
+    
+    if (show) {
+      testigosSection.classList.add('active');
+      testigosToggle.classList.add('active');
+      
+      testigosInputs.forEach(input => {
+        input.disabled = false;
+        if (input.dataset.originalRequired === 'true') {
+          input.required = true;
+        }
+      });
+    } else {
+      testigosSection.classList.remove('active');
+      testigosToggle.classList.remove('active');
+      
+      testigosInputs.forEach(input => {
+        if (input.hasAttribute('required')) {
+          input.dataset.originalRequired = 'true';
+          input.required = false;
+        }
+        input.disabled = true;
+        if (!input.readOnly) input.value = '';
+      });
+      
+      // Limpiar errores
+      testigosSection.querySelectorAll('.form-field-wrapper').forEach(wrapper => {
+        wrapper.classList.remove('error');
+        const input = wrapper.querySelector('input, select, textarea');
+        if (input) input.classList.remove('is-invalid');
+        const errorDiv = wrapper.querySelector('.text-danger');
+        if (errorDiv) errorDiv.remove();
+      });
+    }
+  }
+
+  // Función para mostrar/ocultar la sección de beneficiarios
+  function toggleBeneficiariosSection(show) {
+    const beneficiariosInputs = beneficiariosSection.querySelectorAll('input, select, textarea');
+    
+    if (show) {
+      beneficiariosSection.classList.add('active');
+      beneficiariosToggle.classList.add('active');
+      
+      beneficiariosInputs.forEach(input => {
+        input.disabled = false;
+        if (input.dataset.originalRequired === 'true') {
+          input.required = true;
+        }
+      });
+    } else {
+      beneficiariosSection.classList.remove('active');
+      beneficiariosToggle.classList.remove('active');
+      
+      beneficiariosInputs.forEach(input => {
+        if (input.hasAttribute('required')) {
+          input.dataset.originalRequired = 'true';
+          input.required = false;
+        }
+        input.disabled = true;
+        if (!input.readOnly) input.value = '';
+      });
+      
+      // Limpiar errores
+      beneficiariosSection.querySelectorAll('.form-field-wrapper').forEach(wrapper => {
+        wrapper.classList.remove('error');
+        const input = wrapper.querySelector('input, select, textarea');
+        if (input) input.classList.remove('is-invalid');
+        const errorDiv = wrapper.querySelector('.text-danger');
+        if (errorDiv) errorDiv.remove();
+      });
+    }
+  }
+
   function validateField(field) {
     const wrapper = field.closest('.form-field-wrapper');
     // Si no hay wrapper, salir temprano para evitar errores
@@ -1203,6 +1766,20 @@ document.addEventListener('DOMContentLoaded', function() {
     // Si el campo pertenece al segundo cliente y la sección está oculta, no validar
     if (wrapper.closest('.second-client-section') && 
         secondClientSection && !secondClientSection.classList.contains('active')) {
+      hideFieldError(wrapper);
+      return true;
+    }
+    
+    // Si el campo pertenece a testigos y la sección está oculta, no validar
+    if (wrapper.closest('#testigosSection') && 
+        testigosSection && !testigosSection.classList.contains('active')) {
+      hideFieldError(wrapper);
+      return true;
+    }
+    
+    // Si el campo pertenece a beneficiarios y la sección está oculta, no validar
+    if (wrapper.closest('#beneficiariosSection') && 
+        beneficiariosSection && !beneficiariosSection.classList.contains('active')) {
       hideFieldError(wrapper);
       return true;
     }
@@ -1280,6 +1857,20 @@ document.addEventListener('DOMContentLoaded', function() {
         hideFieldError(wrapper); // Limpiar posibles errores previos
         return;
       }
+
+      // Si es campo de testigos y la sección no está visible, saltar validación
+      if (wrapper.closest('#testigosSection') && 
+          testigosSection && !testigosSection.classList.contains('active')) {
+        hideFieldError(wrapper);
+        return;
+      }
+      
+      // Si es campo de beneficiarios y la sección no está visible, saltar validación
+      if (wrapper.closest('#beneficiariosSection') && 
+          beneficiariosSection && !beneficiariosSection.classList.contains('active')) {
+          hideFieldError(wrapper);
+          return;
+      }
       
       if (!validateField(input)) {
         isValid = false;
@@ -1322,3 +1913,4 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 {% endblock %}
+
