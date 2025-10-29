@@ -24,7 +24,6 @@ def obtener_letra_identificador(lote):
     else:
         return numero_a_letras(float(lote.identificador), apocopado=False)
 
-
 def _parse_coord(text):
     """
     Dado un campo como "52.26 MTS | CON LOTE #2 (DOS)"
@@ -75,6 +74,110 @@ def build_aviso_privacidad_context(fin, cli, ven, request=None, tpl=None,firma_d
                 f.write(img_data)
             # Inserta la imagen de firma
             context['FIRMA_CLIENTE'] = InlineImage(tpl, tmp, width=Mm(70))
+        else:
+            context['FIRMA_CLIENTE'] = ''
+    else:
+        context['FIRMA_CLIENTE'] = ''
+
+    return context
+
+def build_financiamiento_context(fin, cli, ven, request=None, tpl=None, firma_data=None):
+    """
+    Context para Tabla de Financiamiento
+    """
+    # 1) Fecha actual
+    hoy = date.today()
+    meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+             "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
+    
+    # 2) Cálculos iniciales
+    resta_apartado = float(fin.precio_lote) - float(fin.apartado)
+    resta_enganche = resta_apartado - float(fin.enganche or 0)
+    
+    # 3) Generar lista de pagos para las mensualidades
+    pagos = []
+    saldo_actual = resta_enganche
+    
+    if fin.tipo_pago == 'financiado' and fin.num_mensualidades and fin.monto_mensualidad:
+        fecha_pago = fin.fecha_primer_pago
+        
+        for i in range(1, fin.num_mensualidades + 1):
+            # Determinar monto de la cuota - CORREGIDO
+            if i == fin.num_mensualidades:
+                # En el último pago, la cuota es el saldo actual (lo que queda por pagar)
+                cuota = saldo_actual
+            else:
+                cuota = float(fin.monto_mensualidad)
+            
+            # Calcular saldo final
+            saldo_final = max(0, saldo_actual - cuota)
+            
+            pagos.append({
+                'numero': i,
+                'fecha': fecha_pago.strftime("%d/%m/%Y") if fecha_pago else '',
+                'saldo_inicial': fmt_money(saldo_actual),  # Formateado con comas
+                'cuota': fmt_money(cuota),  # Formateado con comas
+                'saldo_final': fmt_money(saldo_final),  # Formateado con comas
+            })
+            
+            # Actualizar para siguiente pago
+            saldo_actual = saldo_final
+            if fecha_pago:
+                # Avanzar un mes (manejo simple de fecha)
+                if fecha_pago.month == 12:
+                    fecha_pago = fecha_pago.replace(year=fecha_pago.year + 1, month=1)
+                else:
+                    fecha_pago = fecha_pago.replace(month=fecha_pago.month + 1)
+
+    # 4) Pronombres según sexo
+    def art(sex, masculino, femenino):
+        return masculino if sex == 'M' else femenino
+
+    SEXO_COM = art(cli.sexo, 'COMPRADOR', 'COMPRADORA')
+    SEXO_VEN = art(ven.sexo, 'VENDEDOR', 'VENDEDORA')
+
+    # 5) Construir contexto
+    context = {
+        # Fechas
+        'FECHA': hoy.strftime("%d/%m/%Y"),
+        'FECHA_APARTADO': fin.creado_en.strftime("%d/%m/%Y") if fin.creado_en else hoy.strftime("%d/%m/%Y"),
+        'FECHA_ENGANCHE': fin.fecha_enganche.strftime("%d/%m/%Y") if fin.fecha_enganche else '',
+        
+        # Datos del lote y cliente
+        'LOTE': fin.lote.identificador,
+        'NOMBRE_CLIENTE': cli.nombre_completo.upper(),
+        'NOMBRE_COMPRADOR': cli.nombre_completo.upper(),
+        'NOMBRE_VENDEDOR': ven.nombre_completo.upper(),
+        
+        # Montos financiamiento - FORMATEADOS CON COMAS
+        'PRECIO_LOTE': fmt_money(fin.precio_lote),
+        'APARTADO': fmt_money(fin.apartado),
+        'ENGANCHE': fmt_money(fin.enganche) if fin.enganche else '',
+        'NUM_MENSUALIDADES': fin.num_mensualidades,
+        
+        # Cálculos intermedios - FORMATEADOS CON COMAS
+        'RESTA_APARTADO': fmt_money(resta_apartado),
+        'RESTA_ENGANCHE': fmt_money(resta_enganche),
+        
+        # Lista de pagos
+        'pagos': pagos,
+        
+        # Pronombres
+        'SEXO_COM': SEXO_COM,
+        'SEXO_VEN': SEXO_VEN,
+    }
+
+    # 6) Firma del cliente (igual al otro builder)
+    if request and tpl:
+        data_url = firma_data or (request.session.get('firma_cliente_data') if request else None)
+        if data_url:
+            header, b64 = data_url.split(',', 1)
+            img_data = base64.b64decode(b64)
+            fd, tmp = tempfile.mkstemp(suffix='.png')
+            with os.fdopen(fd, 'wb') as f:
+                f.write(img_data)
+            # Inserta la imagen de firma
+            context['FIRMA_CLIENTE'] = InlineImage(tpl, tmp, width=Mm(40))
         else:
             context['FIRMA_CLIENTE'] = ''
     else:
@@ -594,7 +697,7 @@ def fmt_money(val):
     # El formato con ',' funciona con Decimal en Python 3.6+
     return f"{d:,.2f}"
 
-def build_contrato_propiedad_contado_context(fin, cli, ven, request=None, tpl=None, firma_data=None, clausulas_adicionales=None, fecha=None):
+def build_contrato_propiedad_contado_context(fin, cli, ven, request=None, tpl=None, firma_data=None, clausulas_adicionales=None, tramite=None, fecha=None):
 
     print("Entré al build de pequeña propiedad a contado de un comprador")
 
@@ -667,6 +770,18 @@ def build_contrato_propiedad_contado_context(fin, cli, ven, request=None, tpl=No
         correo_comprador = email.upper()
     else:
         correo_comprador = 'NO PROPORCIONADO'
+
+    testigo1 = (tramite.testigo_1_nombre or '')        # convierte None -> ''
+    if testigo1:
+        test1 = testigo1.upper()
+    else:
+        test1 = testigo1
+    
+    testigo2 = (tramite.testigo_2_nombre or '')        # convierte None -> ''
+    if testigo2:
+        test2 = testigo2.upper()
+    else:
+        test2 = testigo2
 
 # 3) Miembro B dinámico según relación:
     # — Si ven es propietario:
@@ -765,23 +880,53 @@ def build_contrato_propiedad_contado_context(fin, cli, ven, request=None, tpl=No
 
         # Y la cláusula B variable:
         'CLAUSULA_B': claus_b,
+        'NOMBRE_TESTIGO2': test2,
+        'NOMBRE_TESTIGO1': test1,
+
     }
 
-    # 6) Firma del cliente (igual al otro builder)
+    # 6) Firma
     if request and tpl:
-        data_url = firma_data or (request.session.get('firma_cliente_data') if request else None)
-        if data_url:
-            header, b64 = data_url.split(',', 1)
-            img_data = base64.b64decode(b64)
-            fd, tmp = tempfile.mkstemp(suffix='.png')
-            with os.fdopen(fd, 'wb') as f:
-                f.write(img_data)
-            # Inserta la imagen de firma
-            context['FIRMA_CLIENTE'] = InlineImage(tpl, tmp, width=Mm(40))
-        else:
-            context['FIRMA_CLIENTE'] = ''
+        # Tamaño consistente para TODAS las firmas
+        FIRMA_ANCHO = 40  # 40mm de ancho
+        FIRMA_ALTO = 15   # 15mm de alto
+        
+        # Función reutilizable para procesar firmas
+        def crear_firma_unificada(data_url):
+            if not data_url:
+                return ''
+            
+            try:
+                # Decodificar base64
+                header, b64 = data_url.split(',', 1)
+                img_data = base64.b64decode(b64)
+                
+                # Crear archivo temporal
+                fd, temp_path = tempfile.mkstemp(suffix='.png')
+                with os.fdopen(fd, 'wb') as f:
+                    f.write(img_data)
+                
+                # ✅ MISMO TAMAÑO para todas las firmas
+                return InlineImage(tpl, temp_path, width=Mm(FIRMA_ANCHO), height=Mm(FIRMA_ALTO))
+                
+            except Exception as e:
+                print(f"Error al procesar firma: {e}")
+                return ''
+        
+        # Procesar cada firma con el mismo tamaño
+        context['FIRMA_CLIENTE'] = crear_firma_unificada(firma_data)
+        context['FIRMA_VENDEDOR'] = crear_firma_unificada(tramite.firma_vendedor)
+        context['FIRMA_TESTIGO1'] = crear_firma_unificada(tramite.testigo_1_firma)
+        context['FIRMA_TESTIGO2'] = crear_firma_unificada(tramite.testigo_2_firma)
+        context['FIRMA_BENE'] = crear_firma_unificada(tramite.beneficiario_1_firma)
+        
     else:
+        # Valores por defecto si no hay template
         context['FIRMA_CLIENTE'] = ''
+        context['FIRMA_VENDEDOR'] = ''
+        context['FIRMA_TESTIGO1'] = ''
+        context['FIRMA_TESTIGO2'] = ''
+        context['FIRMA_BENE'] = ''
 
     # Determinar qué cláusulas adicionales existen
     tiene_pago = clausulas_adicionales and 'pago' in clausulas_adicionales and bool(clausulas_adicionales['pago'])
@@ -811,7 +956,7 @@ def build_contrato_propiedad_contado_context(fin, cli, ven, request=None, tpl=No
 
     return context
 
-def build_contrato_propiedad_contado_varios_context(fin, cli, ven, cliente2=None, request=None, tpl=None, firma_data=None, clausulas_adicionales=None, fecha=None):
+def build_contrato_propiedad_contado_varios_context(fin, cli, ven, cliente2=None,request=None, tpl=None, firma_data=None, clausulas_adicionales=None, tramite=None, fecha=None):
 
     print("Entré al build de pequeña propiedad para DOS COMPRADORES")
 
@@ -904,6 +1049,18 @@ def build_contrato_propiedad_contado_varios_context(fin, cli, ven, cliente2=None
         correo_comprador2 = email2.upper()
     else:
         correo_comprador2 = 'NO PROPORCIONADO'
+
+    testigo1 = (tramite.testigo_1_nombre or '')        # convierte None -> ''
+    if testigo1:
+        test1 = testigo1.upper()
+    else:
+        test1 = testigo1
+    
+    testigo2 = (tramite.testigo_2_nombre or '')        # convierte None -> ''
+    if testigo2:
+        test2 = testigo2.upper()
+    else:
+        test2 = testigo2
 
     # 6) Miembro B dinámico según relación (igual que antes)
     if ven.ine == prop.ine and prop.tipo == 'propietario':
@@ -1009,23 +1166,54 @@ def build_contrato_propiedad_contado_varios_context(fin, cli, ven, cliente2=None
 
         # Cláusula B variable
         'CLAUSULA_B': claus_b,
+        'NOMBRE_TESTIGO2': test2,
+        'NOMBRE_TESTIGO1': test1,
     }
 
-    # 8) Firma del cliente (para DOS clientes, usar la misma firma o implementar lógica para dos firmas)
-    # (Manteniendo la misma lógica por ahora)
+    # 6) Firma
     if request and tpl:
-        data_url = firma_data or (request.session.get('firma_cliente_data') if request else None)
-        if data_url:
-            header, b64 = data_url.split(',', 1)
-            img_data = base64.b64decode(b64)
-            fd, tmp = tempfile.mkstemp(suffix='.png')
-            with os.fdopen(fd, 'wb') as f:
-                f.write(img_data)
-            context['FIRMA_CLIENTE'] = InlineImage(tpl, tmp, width=Mm(40))
-        else:
-            context['FIRMA_CLIENTE'] = ''
+        # Tamaño consistente para TODAS las firmas
+        FIRMA_ANCHO = 40  # 40mm de ancho
+        FIRMA_ALTO = 15   # 15mm de alto
+        
+        # Función reutilizable para procesar firmas
+        def crear_firma_unificada(data_url):
+            if not data_url:
+                return ''
+            
+            try:
+                # Decodificar base64
+                header, b64 = data_url.split(',', 1)
+                img_data = base64.b64decode(b64)
+                
+                # Crear archivo temporal
+                fd, temp_path = tempfile.mkstemp(suffix='.png')
+                with os.fdopen(fd, 'wb') as f:
+                    f.write(img_data)
+                
+                # ✅ MISMO TAMAÑO para todas las firmas
+                return InlineImage(tpl, temp_path, width=Mm(FIRMA_ANCHO), height=Mm(FIRMA_ALTO))
+                
+            except Exception as e:
+                print(f"Error al procesar firma: {e}")
+                return ''
+        
+        # Procesar cada firma con el mismo tamaño
+        context['FIRMA_CLIENTE'] = crear_firma_unificada(firma_data)
+        context['FIRMA_CLIENTE2'] = crear_firma_unificada(tramite.firma_cliente2)
+        context['FIRMA_VENDEDOR'] = crear_firma_unificada(tramite.firma_vendedor)
+        context['FIRMA_TESTIGO1'] = crear_firma_unificada(tramite.testigo_1_firma)
+        context['FIRMA_TESTIGO2'] = crear_firma_unificada(tramite.testigo_2_firma)
+        context['FIRMA_BENE'] = crear_firma_unificada(tramite.beneficiario_1_firma)
+        
     else:
+        # Valores por defecto si no hay template
         context['FIRMA_CLIENTE'] = ''
+        context['FIRMA_CLIENTE_2'] = ''
+        context['FIRMA_VENDEDOR'] = ''
+        context['FIRMA_TESTIGO1'] = ''
+        context['FIRMA_TESTIGO2'] = ''
+        context['FIRMA_BENE'] = ''
 
     # Determinar qué cláusulas adicionales existen
     tiene_pago = clausulas_adicionales and 'pago' in clausulas_adicionales and bool(clausulas_adicionales['pago'])
@@ -1055,7 +1243,7 @@ def build_contrato_propiedad_contado_varios_context(fin, cli, ven, cliente2=None
 
     return context
 
-def build_contrato_propiedad_pagos_context(fin, cli, ven, request=None, tpl=None, firma_data=None, clausulas_adicionales=None, fecha=None):
+def build_contrato_propiedad_pagos_context(fin, cli, ven, request=None, tpl=None, firma_data=None, clausulas_adicionales=None, tramite=None, fecha=None):
 
     print("Entré al build de pequeña propiedad a pagos")
 
@@ -1092,6 +1280,10 @@ def build_contrato_propiedad_pagos_context(fin, cli, ven, request=None, tpl=None
     SEXO_19 = art(cli.sexo, 'AL "', 'A "LA ')
     SEXO_20 = art(prop.sexo, 'EL', 'LA')
 
+    SEXO_11 = art(cli.sexo, 'EL', 'LA') #Referente al beneficiario
+    SEXO_12 = art(cli.sexo, 'O', 'A') #Referente al beneficiario
+
+
     # 2) Fecha actual
     if fecha == None:
         hoy = date.today()
@@ -1118,6 +1310,18 @@ def build_contrato_propiedad_pagos_context(fin, cli, ven, request=None, tpl=None
         correo_comprador1 = email1.upper()
     else:
         correo_comprador1 = 'NO PROPORCIONADO'
+
+    testigo1 = (tramite.testigo_1_nombre or '')        # convierte None -> ''
+    if testigo1:
+        test1 = testigo1.upper()
+    else:
+        test1 = testigo1
+    
+    testigo2 = (tramite.testigo_2_nombre or '')        # convierte None -> ''
+    if testigo2:
+        test2 = testigo2.upper()
+    else:
+        test2 = testigo2
 
     # 3) Miembro B dinámico según relación:
     # — Si ven es propietario:
@@ -1219,23 +1423,52 @@ def build_contrato_propiedad_pagos_context(fin, cli, ven, request=None, tpl=None
         'LETRA_MENSUALIDAD_FINAL':         letra_fin,
         # Y la cláusula B variable:
         'CLAUSULA_B': claus_b,
+        'NOMBRE_TESTIGO2': test2,
+        'NOMBRE_TESTIGO1': test1,
     }
 
-    # 6) Firma del cliente
+    # 6) Firma
     if request and tpl:
-        data_url = firma_data or (request.session.get('firma_cliente_data') if request else None)
-        if data_url:
-            header, b64 = data_url.split(',', 1)
-            img_data = base64.b64decode(b64)
-            fd, tmp = tempfile.mkstemp(suffix='.png')
-            with os.fdopen(fd, 'wb') as f:
-                f.write(img_data)
-            # Inserta la imagen de firma
-            context['FIRMA_CLIENTE'] = InlineImage(tpl, tmp, width=Mm(40))
-        else:
-            context['FIRMA_CLIENTE'] = ''
+        # Tamaño consistente para TODAS las firmas
+        FIRMA_ANCHO = 40  # 40mm de ancho
+        FIRMA_ALTO = 15   # 15mm de alto
+        
+        # Función reutilizable para procesar firmas
+        def crear_firma_unificada(data_url):
+            if not data_url:
+                return ''
+            
+            try:
+                # Decodificar base64
+                header, b64 = data_url.split(',', 1)
+                img_data = base64.b64decode(b64)
+                
+                # Crear archivo temporal
+                fd, temp_path = tempfile.mkstemp(suffix='.png')
+                with os.fdopen(fd, 'wb') as f:
+                    f.write(img_data)
+                
+                # ✅ MISMO TAMAÑO para todas las firmas
+                return InlineImage(tpl, temp_path, width=Mm(FIRMA_ANCHO), height=Mm(FIRMA_ALTO))
+                
+            except Exception as e:
+                print(f"Error al procesar firma: {e}")
+                return ''
+        
+        # Procesar cada firma con el mismo tamaño
+        context['FIRMA_CLIENTE'] = crear_firma_unificada(firma_data)
+        context['FIRMA_VENDEDOR'] = crear_firma_unificada(tramite.firma_vendedor)
+        context['FIRMA_TESTIGO1'] = crear_firma_unificada(tramite.testigo_1_firma)
+        context['FIRMA_TESTIGO2'] = crear_firma_unificada(tramite.testigo_2_firma)
+        context['FIRMA_BENE'] = crear_firma_unificada(tramite.beneficiario_1_firma)
+        
     else:
+        # Valores por defecto si no hay template
         context['FIRMA_CLIENTE'] = ''
+        context['FIRMA_VENDEDOR'] = ''
+        context['FIRMA_TESTIGO1'] = ''
+        context['FIRMA_TESTIGO2'] = ''
+        context['FIRMA_BENE'] = ''
 
     # Determinar qué cláusulas adicionales existen
     tiene_pago = clausulas_adicionales and 'pago' in clausulas_adicionales and bool(clausulas_adicionales['pago'])
@@ -1268,7 +1501,7 @@ def build_contrato_propiedad_pagos_context(fin, cli, ven, request=None, tpl=None
 
     return context
 
-def build_contrato_propiedad_pagos_varios_context(fin, cli, ven, cliente2=None, request=None, tpl=None, firma_data=None, clausulas_adicionales=None, fecha=None):
+def build_contrato_propiedad_pagos_varios_context(fin, cli, ven, cliente2=None,request=None, tpl=None, firma_data=None, clausulas_adicionales=None, tramite=None, fecha=None):
 
     print("Entré al build de pequeña propiedad para DOS COMPRADORES a pagos")
 
@@ -1321,6 +1554,8 @@ def build_contrato_propiedad_pagos_varios_context(fin, cli, ven, cliente2=None, 
         SEXO_13 = 'DE "LOS '
         SEXO_17 = 'ÉSTOS'
 
+    SEXO_21 = art(cli.sexo, 'EL', 'LA') #Referente al beneficiario
+    SEXO_22 = art(cli.sexo, 'O', 'A') #Referente al beneficiario
 
     # 2) Fecha actual
     if fecha == None:
@@ -1344,6 +1579,18 @@ def build_contrato_propiedad_pagos_varios_context(fin, cli, ven, cliente2=None, 
         correo_comprador2 = email2.upper()
     else:
         correo_comprador2 = 'NO PROPORCIONADO'
+
+    testigo1 = (tramite.testigo_1_nombre or '')        # convierte None -> ''
+    if testigo1:
+        test1 = testigo1.upper()
+    else:
+        test1 = testigo1
+    
+    testigo2 = (tramite.testigo_2_nombre or '')        # convierte None -> ''
+    if testigo2:
+        test2 = testigo2.upper()
+    else:
+        test2 = testigo2
 
     # 4) Coordenadas por cada lado (igual que antes)
     dir_fields = {}
@@ -1486,23 +1733,54 @@ def build_contrato_propiedad_pagos_varios_context(fin, cli, ven, cliente2=None, 
         'LETRA_MENSUALIDAD_FINAL':         letra_fin,
         # Y la cláusula B variable:
         'CLAUSULA_B': claus_b,
+        'NOMBRE_TESTIGO2': test2,
+        'NOMBRE_TESTIGO1': test1,
     }
 
-    # 8) Firma del cliente (para DOS clientes, usar la misma firma o implementar lógica para dos firmas)
-    # (Manteniendo la misma lógica por ahora)
+    # 6) Firma
     if request and tpl:
-        data_url = firma_data or (request.session.get('firma_cliente_data') if request else None)
-        if data_url:
-            header, b64 = data_url.split(',', 1)
-            img_data = base64.b64decode(b64)
-            fd, tmp = tempfile.mkstemp(suffix='.png')
-            with os.fdopen(fd, 'wb') as f:
-                f.write(img_data)
-            context['FIRMA_CLIENTE'] = InlineImage(tpl, tmp, width=Mm(40))
-        else:
-            context['FIRMA_CLIENTE'] = ''
+        # Tamaño consistente para TODAS las firmas
+        FIRMA_ANCHO = 40  # 40mm de ancho
+        FIRMA_ALTO = 15   # 15mm de alto
+        
+        # Función reutilizable para procesar firmas
+        def crear_firma_unificada(data_url):
+            if not data_url:
+                return ''
+            
+            try:
+                # Decodificar base64
+                header, b64 = data_url.split(',', 1)
+                img_data = base64.b64decode(b64)
+                
+                # Crear archivo temporal
+                fd, temp_path = tempfile.mkstemp(suffix='.png')
+                with os.fdopen(fd, 'wb') as f:
+                    f.write(img_data)
+                
+                # ✅ MISMO TAMAÑO para todas las firmas
+                return InlineImage(tpl, temp_path, width=Mm(FIRMA_ANCHO), height=Mm(FIRMA_ALTO))
+                
+            except Exception as e:
+                print(f"Error al procesar firma: {e}")
+                return ''
+        
+        # Procesar cada firma con el mismo tamaño
+        context['FIRMA_CLIENTE'] = crear_firma_unificada(firma_data)
+        context['FIRMA_CLIENTE2'] = crear_firma_unificada(tramite.firma_cliente2)
+        context['FIRMA_VENDEDOR'] = crear_firma_unificada(tramite.firma_vendedor)
+        context['FIRMA_TESTIGO1'] = crear_firma_unificada(tramite.testigo_1_firma)
+        context['FIRMA_TESTIGO2'] = crear_firma_unificada(tramite.testigo_2_firma)
+        context['FIRMA_BENE'] = crear_firma_unificada(tramite.beneficiario_1_firma)
+        
     else:
+        # Valores por defecto si no hay template
         context['FIRMA_CLIENTE'] = ''
+        context['FIRMA_CLIENTE_2'] = ''
+        context['FIRMA_VENDEDOR'] = ''
+        context['FIRMA_TESTIGO1'] = ''
+        context['FIRMA_TESTIGO2'] = ''
+        context['FIRMA_BENE'] = ''
 
     # Determinar qué cláusulas adicionales existen
     tiene_pago = clausulas_adicionales and 'pago' in clausulas_adicionales and bool(clausulas_adicionales['pago'])
@@ -1535,7 +1813,7 @@ def build_contrato_propiedad_pagos_varios_context(fin, cli, ven, cliente2=None, 
 
     return context
 
-def build_contrato_ejidal_contado_context(fin, cli, ven, request=None, tpl=None, firma_data=None, clausulas_adicionales=None, fecha=None):
+def build_contrato_ejidal_contado_context(fin, cli, ven, request=None, tpl=None, firma_data=None, clausulas_adicionales=None, tramite=None, fecha=None):
 
     print("Entré al build de ejido a contado de un comprador")
 
@@ -1575,6 +1853,18 @@ def build_contrato_ejidal_contado_context(fin, cli, ven, request=None, tpl=None,
         correo_comprador1 = email1.upper()
     else:
         correo_comprador1 = 'NO PROPORCIONADO'
+    
+    testigo1 = (tramite.testigo_1_nombre or '')        # convierte None -> ''
+    if testigo1:
+        test1 = testigo1.upper()
+    else:
+        test1 = testigo1
+    
+    testigo2 = (tramite.testigo_2_nombre or '')        # convierte None -> ''
+    if testigo2:
+        test2 = testigo2.upper()
+    else:
+        test2 = testigo2
 
     # 3) Parse coordenadas
     dir_fields = {}
@@ -1674,23 +1964,52 @@ def build_contrato_ejidal_contado_context(fin, cli, ven, request=None, tpl=None,
 
         # Y la cláusula B variable:
         'CLAUSULA_B': claus_b,
+        'NOMBRE_TESTIGO2': test2,
+        'NOMBRE_TESTIGO1': test1,
     }
 
-    # 5) Firma del cliente (igual que en carta)
+    # 6) Firma
     if request and tpl:
-        data_url = firma_data or (request.session.get('firma_cliente_data') if request else None)
-        if data_url:
-            header, b64 = data_url.split(',', 1)
-            img_data = base64.b64decode(b64)
-            fd, tmp = tempfile.mkstemp(suffix='.png')
-            with os.fdopen(fd, 'wb') as f:
-                f.write(img_data)
-            # Inserta la imagen de firma
-            context['FIRMA_CLIENTE'] = InlineImage(tpl, tmp, width=Mm(40))
-        else:
-            context['FIRMA_CLIENTE'] = ''
+        # Tamaño consistente para TODAS las firmas
+        FIRMA_ANCHO = 40  # 40mm de ancho
+        FIRMA_ALTO = 15   # 15mm de alto
+        
+        # Función reutilizable para procesar firmas
+        def crear_firma_unificada(data_url):
+            if not data_url:
+                return ''
+            
+            try:
+                # Decodificar base64
+                header, b64 = data_url.split(',', 1)
+                img_data = base64.b64decode(b64)
+                
+                # Crear archivo temporal
+                fd, temp_path = tempfile.mkstemp(suffix='.png')
+                with os.fdopen(fd, 'wb') as f:
+                    f.write(img_data)
+                
+                # ✅ MISMO TAMAÑO para todas las firmas
+                return InlineImage(tpl, temp_path, width=Mm(FIRMA_ANCHO), height=Mm(FIRMA_ALTO))
+                
+            except Exception as e:
+                print(f"Error al procesar firma: {e}")
+                return ''
+        
+        # Procesar cada firma con el mismo tamaño
+        context['FIRMA_CLIENTE'] = crear_firma_unificada(firma_data)
+        context['FIRMA_VENDEDOR'] = crear_firma_unificada(tramite.firma_vendedor)
+        context['FIRMA_TESTIGO1'] = crear_firma_unificada(tramite.testigo_1_firma)
+        context['FIRMA_TESTIGO2'] = crear_firma_unificada(tramite.testigo_2_firma)
+        context['FIRMA_BENE'] = crear_firma_unificada(tramite.beneficiario_1_firma)
+        
     else:
+        # Valores por defecto si no hay template
         context['FIRMA_CLIENTE'] = ''
+        context['FIRMA_VENDEDOR'] = ''
+        context['FIRMA_TESTIGO1'] = ''
+        context['FIRMA_TESTIGO2'] = ''
+        context['FIRMA_BENE'] = ''
     
 
     # Determinar qué cláusulas adicionales existen
@@ -1721,7 +2040,7 @@ def build_contrato_ejidal_contado_context(fin, cli, ven, request=None, tpl=None,
 
     return context
 
-def build_contrato_ejidal_contado_varios_context(fin, cli, ven, cliente2=None, request=None, tpl=None, firma_data=None, clausulas_adicionales=None, fecha=None):
+def build_contrato_ejidal_contado_varios_context(fin, cli, ven, cliente2=None,request=None, tpl=None, firma_data=None, clausulas_adicionales=None, tramite=None, fecha=None):
     
     print("Entré al build de ejido a contado de varios compradores")
 
@@ -1787,6 +2106,18 @@ def build_contrato_ejidal_contado_varios_context(fin, cli, ven, cliente2=None, r
         correo_comprador2 = email2.upper()
     else:
         correo_comprador2 = 'NO PROPORCIONADO'
+
+    testigo1 = (tramite.testigo_1_nombre or '')        # convierte None -> ''
+    if testigo1:
+        test1 = testigo1.upper()
+    else:
+        test1 = testigo1
+    
+    testigo2 = (tramite.testigo_2_nombre or '')        # convierte None -> ''
+    if testigo2:
+        test2 = testigo2.upper()
+    else:
+        test2 = testigo2
 
     # 3) Parse coordenadas
     dir_fields = {}
@@ -1896,23 +2227,54 @@ def build_contrato_ejidal_contado_varios_context(fin, cli, ven, cliente2=None, r
 
         # Y la cláusula B variable:
         'CLAUSULA_B': claus_b,
+        'NOMBRE_TESTIGO2': test2,
+        'NOMBRE_TESTIGO1': test1,
     }
 
-    # 5) Firma del cliente (igual que en carta)
+    # 6) Firma
     if request and tpl:
-        data_url = firma_data or (request.session.get('firma_cliente_data') if request else None)
-        if data_url:
-            header, b64 = data_url.split(',', 1)
-            img_data = base64.b64decode(b64)
-            fd, tmp = tempfile.mkstemp(suffix='.png')
-            with os.fdopen(fd, 'wb') as f:
-                f.write(img_data)
-            # Inserta la imagen de firma
-            context['FIRMA_CLIENTE'] = InlineImage(tpl, tmp, width=Mm(40))
-        else:
-            context['FIRMA_CLIENTE'] = ''
+        # Tamaño consistente para TODAS las firmas
+        FIRMA_ANCHO = 40  # 40mm de ancho
+        FIRMA_ALTO = 15   # 15mm de alto
+        
+        # Función reutilizable para procesar firmas
+        def crear_firma_unificada(data_url):
+            if not data_url:
+                return ''
+            
+            try:
+                # Decodificar base64
+                header, b64 = data_url.split(',', 1)
+                img_data = base64.b64decode(b64)
+                
+                # Crear archivo temporal
+                fd, temp_path = tempfile.mkstemp(suffix='.png')
+                with os.fdopen(fd, 'wb') as f:
+                    f.write(img_data)
+                
+                # ✅ MISMO TAMAÑO para todas las firmas
+                return InlineImage(tpl, temp_path, width=Mm(FIRMA_ANCHO), height=Mm(FIRMA_ALTO))
+                
+            except Exception as e:
+                print(f"Error al procesar firma: {e}")
+                return ''
+        
+        # Procesar cada firma con el mismo tamaño
+        context['FIRMA_CLIENTE'] = crear_firma_unificada(firma_data)
+        context['FIRMA_CLIENTE2'] = crear_firma_unificada(tramite.firma_cliente2)
+        context['FIRMA_VENDEDOR'] = crear_firma_unificada(tramite.firma_vendedor)
+        context['FIRMA_TESTIGO1'] = crear_firma_unificada(tramite.testigo_1_firma)
+        context['FIRMA_TESTIGO2'] = crear_firma_unificada(tramite.testigo_2_firma)
+        context['FIRMA_BENE'] = crear_firma_unificada(tramite.beneficiario_1_firma)
+        
     else:
+        # Valores por defecto si no hay template
         context['FIRMA_CLIENTE'] = ''
+        context['FIRMA_CLIENTE_2'] = ''
+        context['FIRMA_VENDEDOR'] = ''
+        context['FIRMA_TESTIGO1'] = ''
+        context['FIRMA_TESTIGO2'] = ''
+        context['FIRMA_BENE'] = ''
     
 
     # Determinar qué cláusulas adicionales existen
@@ -1943,9 +2305,11 @@ def build_contrato_ejidal_contado_varios_context(fin, cli, ven, cliente2=None, r
 
     return context
 
-def build_contrato_ejidal_pagos_context(fin, cli, ven, request=None, tpl=None, firma_data=None, clausulas_adicionales=None, fecha=None):
+def build_contrato_ejidal_pagos_context(fin, cli, ven, request=None, tpl=None, firma_data=None, clausulas_adicionales=None, tramite=None, fecha=None):
 
     print("Entré al build de ejido a pagos de un comprador")
+    #print("Esta es la firma del cliente: "+ firma_data)
+    #print("Esta es la firma en request: " + request.session.get('firma_cliente_data'))
 
     if clausulas_adicionales is None:
         clausulas_adicionales = {}
@@ -1968,6 +2332,9 @@ def build_contrato_ejidal_pagos_context(fin, cli, ven, request=None, tpl=None, f
     SEXO_8 = art(ven.sexo, 'DEL "', 'DE "LA ')
     SEXO_9 = art(cli.sexo, 'AL "', 'A "LA ')
     SEXO_10 = art(cli.sexo, 'O', 'A')
+
+    SEXO_11 = art(tramite.beneficiario_1.sexo, 'O', 'A')  #SEXO REFERENTE AL BENEFICIARIO
+    SEXO_12 = art(tramite.beneficiario_1.sexo, 'EL', 'LA') #EL/LA REFERENTE AL BENEFICIARIO
 
     # 2) Fecha de cesión (hoy, o fin.fecha_enganche)
     if fecha == None:
@@ -2022,6 +2389,18 @@ def build_contrato_ejidal_pagos_context(fin, cli, ven, request=None, tpl=None, f
     else:
         correo_comprador1 = 'NO PROPORCIONADO'
 
+    testigo1 = (tramite.testigo_1_nombre or '')        # convierte None -> ''
+    if testigo1:
+        test1 = testigo1.upper()
+    else:
+        test1 = testigo1
+    
+    testigo2 = (tramite.testigo_2_nombre or '')        # convierte None -> ''
+    if testigo2:
+        test2 = testigo2.upper()
+    else:
+        test2 = testigo2
+
     # 3) Miembro B dinámico según relación:
     # — Si ven es propietario:
     if ven.ine == prop.ine and prop.tipo == 'propietario':
@@ -2061,6 +2440,8 @@ def build_contrato_ejidal_pagos_context(fin, cli, ven, request=None, tpl=None, f
         'SEXO_8': SEXO_8,
         'SEXO_9': SEXO_9,
         'SEXO_10': SEXO_10,
+        'SEXO_11': SEXO_11,
+        'SEXO_12': SEXO_12,
 
         'NOMBRE_VENDEDOR':    ven.nombre_completo.upper(),
         'NOMBRE_COMPRADOR':   cli.nombre_completo.upper(),
@@ -2111,23 +2492,60 @@ def build_contrato_ejidal_pagos_context(fin, cli, ven, request=None, tpl=None, f
         'LETRA_MENSUALIDAD_FINAL':         letra_final,
 
         'CLAUSULA_B': claus_b,
+        'NOMBRE_TESTIGO2': test2,
+        'NOMBRE_TESTIGO1': test1,
+        #nom_bene = None #Nombre del beneficiario
+        #id_bene = None #Clave ine beneficiarii
+        #num_bene = None #Número del beneficiario
+        #correo_bene = None #Correo del beneficiario
+        'NOMBRE_BENE': tramite.beneficiario_1.nombre_completo.upper(),
+        'ID_BENE': tramite.beneficiario_1.numero_id,
+        'NUMERO_BENE': tramite.beneficiario_1.telefono,
+        'CORREO_BENE': tramite.beneficiario_1.email,
     }
 
     # 6) Firma
     if request and tpl:
-        data_url = firma_data or (request.session.get('firma_cliente_data') if request else None)
-        if data_url:
-            header, b64 = data_url.split(',', 1)
-            img_data = base64.b64decode(b64)
-            fd, tmp = tempfile.mkstemp(suffix='.png')
-            with os.fdopen(fd, 'wb') as f:
-                f.write(img_data)
-            # Inserta la imagen de firma
-            context['FIRMA_CLIENTE'] = InlineImage(tpl, tmp, width=Mm(40))
-        else:
-            context['FIRMA_CLIENTE'] = ''
+        # Tamaño consistente para TODAS las firmas
+        FIRMA_ANCHO = 40  # 40mm de ancho
+        FIRMA_ALTO = 15   # 15mm de alto
+        
+        # Función reutilizable para procesar firmas
+        def crear_firma_unificada(data_url):
+            if not data_url:
+                return ''
+            
+            try:
+                # Decodificar base64
+                header, b64 = data_url.split(',', 1)
+                img_data = base64.b64decode(b64)
+                
+                # Crear archivo temporal
+                fd, temp_path = tempfile.mkstemp(suffix='.png')
+                with os.fdopen(fd, 'wb') as f:
+                    f.write(img_data)
+                
+                # ✅ MISMO TAMAÑO para todas las firmas
+                return InlineImage(tpl, temp_path, width=Mm(FIRMA_ANCHO), height=Mm(FIRMA_ALTO))
+                
+            except Exception as e:
+                print(f"Error al procesar firma: {e}")
+                return ''
+        
+        # Procesar cada firma con el mismo tamaño
+        context['FIRMA_CLIENTE'] = crear_firma_unificada(firma_data)
+        context['FIRMA_VENDEDOR'] = crear_firma_unificada(tramite.firma_vendedor)
+        context['FIRMA_TESTIGO1'] = crear_firma_unificada(tramite.testigo_1_firma)
+        context['FIRMA_TESTIGO2'] = crear_firma_unificada(tramite.testigo_2_firma)
+        context['FIRMA_BENE'] = crear_firma_unificada(tramite.beneficiario_1_firma)
+        
     else:
+        # Valores por defecto si no hay template
         context['FIRMA_CLIENTE'] = ''
+        context['FIRMA_VENDEDOR'] = ''
+        context['FIRMA_TESTIGO1'] = ''
+        context['FIRMA_TESTIGO2'] = ''
+        context['FIRMA_BENE'] = ''
 
     # Determinar qué cláusulas adicionales existen
     tiene_pago = clausulas_adicionales and 'pago' in clausulas_adicionales and bool(clausulas_adicionales['pago'])
@@ -2160,8 +2578,7 @@ def build_contrato_ejidal_pagos_context(fin, cli, ven, request=None, tpl=None, f
 
     return context
 
-def build_contrato_ejidal_pagos_varios_context(fin, cli, ven, cliente2=None,request=None, tpl=None, firma_data=None, clausulas_adicionales=None, fecha=None):
-
+def build_contrato_ejidal_pagos_varios_context(fin, cli, ven, cliente2=None,request=None, tpl=None, firma_data=None, clausulas_adicionales=None, tramite=None, fecha=None):
     print("Entré al build de ejido a pagos de varios compradores")
 
     if clausulas_adicionales is None:
@@ -2269,6 +2686,18 @@ def build_contrato_ejidal_pagos_varios_context(fin, cli, ven, cliente2=None,requ
         correo_comprador2 = email2.upper()
     else:
         correo_comprador2 = 'NO PROPORCIONADO'
+    
+    testigo1 = (tramite.testigo_1_nombre or '')        # convierte None -> ''
+    if testigo1:
+        test1 = testigo1.upper()
+    else:
+        test1 = testigo1
+    
+    testigo2 = (tramite.testigo_2_nombre or '')        # convierte None -> ''
+    if testigo2:
+        test2 = testigo2.upper()
+    else:
+        test2 = testigo2
 
     # 3) Miembro B dinámico según relación:
     # — Si ven es propietario:
@@ -2371,23 +2800,54 @@ def build_contrato_ejidal_pagos_varios_context(fin, cli, ven, cliente2=None,requ
         'LETRA_MENSUALIDAD_FINAL':         letra_final,
 
         'CLAUSULA_B': claus_b,
+        'NOMBRE_TESTIGO2': test2,
+        'NOMBRE_TESTIGO1': test1,
     }
 
     # 6) Firma
     if request and tpl:
-        data_url = firma_data or (request.session.get('firma_cliente_data') if request else None)
-        if data_url:
-            header, b64 = data_url.split(',', 1)
-            img_data = base64.b64decode(b64)
-            fd, tmp = tempfile.mkstemp(suffix='.png')
-            with os.fdopen(fd, 'wb') as f:
-                f.write(img_data)
-            # Inserta la imagen de firma
-            context['FIRMA_CLIENTE'] = InlineImage(tpl, tmp, width=Mm(40))
-        else:
-            context['FIRMA_CLIENTE'] = ''
+        # Tamaño consistente para TODAS las firmas
+        FIRMA_ANCHO = 40  # 40mm de ancho
+        FIRMA_ALTO = 15   # 15mm de alto
+        
+        # Función reutilizable para procesar firmas
+        def crear_firma_unificada(data_url):
+            if not data_url:
+                return ''
+            
+            try:
+                # Decodificar base64
+                header, b64 = data_url.split(',', 1)
+                img_data = base64.b64decode(b64)
+                
+                # Crear archivo temporal
+                fd, temp_path = tempfile.mkstemp(suffix='.png')
+                with os.fdopen(fd, 'wb') as f:
+                    f.write(img_data)
+                
+                # ✅ MISMO TAMAÑO para todas las firmas
+                return InlineImage(tpl, temp_path, width=Mm(FIRMA_ANCHO), height=Mm(FIRMA_ALTO))
+                
+            except Exception as e:
+                print(f"Error al procesar firma: {e}")
+                return ''
+        
+        # Procesar cada firma con el mismo tamaño
+        context['FIRMA_CLIENTE'] = crear_firma_unificada(firma_data)
+        context['FIRMA_CLIENTE2'] = crear_firma_unificada(tramite.firma_cliente2)
+        context['FIRMA_VENDEDOR'] = crear_firma_unificada(tramite.firma_vendedor)
+        context['FIRMA_TESTIGO1'] = crear_firma_unificada(tramite.testigo_1_firma)
+        context['FIRMA_TESTIGO2'] = crear_firma_unificada(tramite.testigo_2_firma)
+        context['FIRMA_BENE'] = crear_firma_unificada(tramite.beneficiario_1_firma)
+        
     else:
+        # Valores por defecto si no hay template
         context['FIRMA_CLIENTE'] = ''
+        context['FIRMA_CLIENTE2'] = ''
+        context['FIRMA_VENDEDOR'] = ''
+        context['FIRMA_TESTIGO1'] = ''
+        context['FIRMA_TESTIGO2'] = ''
+        context['FIRMA_BENE'] = ''
 
     # Determinar qué cláusulas adicionales existen
     tiene_pago = clausulas_adicionales and 'pago' in clausulas_adicionales and bool(clausulas_adicionales['pago'])
@@ -2420,7 +2880,7 @@ def build_contrato_ejidal_pagos_varios_context(fin, cli, ven, cliente2=None,requ
     
     return context
 
-def build_contrato_canario_contado_context(fin, cli, ven, request=None, tpl=None, firma_data=None, clausulas_adicionales=None, fecha=None):
+def build_contrato_canario_contado_context(fin, cli, ven, request=None, tpl=None, firma_data=None, clausulas_adicionales=None, tramite=None, fecha=None):
 
     print("Entré al build de casa canario a contado de un comprador")
 
@@ -2485,6 +2945,18 @@ def build_contrato_canario_contado_context(fin, cli, ven, request=None, tpl=None
         correo_comprador = email.upper()
     else:
         correo_comprador = 'NO PROPORCIONADO'
+
+    testigo1 = (tramite.testigo_1_nombre or '')        # convierte None -> ''
+    if testigo1:
+        test1 = testigo1.upper()
+    else:
+        test1 = testigo1
+    
+    testigo2 = (tramite.testigo_2_nombre or '')        # convierte None -> ''
+    if testigo2:
+        test2 = testigo2.upper()
+    else:
+        test2 = testigo2
 
     # 3) Miembro B dinámico según relación:
     # — Si ven es propietario:
@@ -2564,23 +3036,52 @@ def build_contrato_canario_contado_context(fin, cli, ven, request=None, tpl=None
 
         # Y la cláusula B variable:
         'CLAUSULA_B': claus_b,
+        'NOMBRE_TESTIGO2': test2,
+        'NOMBRE_TESTIGO1': test1,
     }
 
-    # 6) Firma del cliente
+    # 6) Firma
     if request and tpl:
-        data_url = firma_data or (request.session.get('firma_cliente_data') if request else None)
-        if data_url:
-            header, b64 = data_url.split(',', 1)
-            img_data = base64.b64decode(b64)
-            fd, tmp = tempfile.mkstemp(suffix='.png')
-            with os.fdopen(fd, 'wb') as f:
-                f.write(img_data)
-            # Inserta la imagen de firma
-            context['FIRMA_CLIENTE'] = InlineImage(tpl, tmp, width=Mm(40))
-        else:
-            context['FIRMA_CLIENTE'] = ''
+        # Tamaño consistente para TODAS las firmas
+        FIRMA_ANCHO = 40  # 40mm de ancho
+        FIRMA_ALTO = 15   # 15mm de alto
+        
+        # Función reutilizable para procesar firmas
+        def crear_firma_unificada(data_url):
+            if not data_url:
+                return ''
+            
+            try:
+                # Decodificar base64
+                header, b64 = data_url.split(',', 1)
+                img_data = base64.b64decode(b64)
+                
+                # Crear archivo temporal
+                fd, temp_path = tempfile.mkstemp(suffix='.png')
+                with os.fdopen(fd, 'wb') as f:
+                    f.write(img_data)
+                
+                # ✅ MISMO TAMAÑO para todas las firmas
+                return InlineImage(tpl, temp_path, width=Mm(FIRMA_ANCHO), height=Mm(FIRMA_ALTO))
+                
+            except Exception as e:
+                print(f"Error al procesar firma: {e}")
+                return ''
+        
+        # Procesar cada firma con el mismo tamaño
+        context['FIRMA_CLIENTE'] = crear_firma_unificada(firma_data)
+        context['FIRMA_VENDEDOR'] = crear_firma_unificada(tramite.firma_vendedor)
+        context['FIRMA_TESTIGO1'] = crear_firma_unificada(tramite.testigo_1_firma)
+        context['FIRMA_TESTIGO2'] = crear_firma_unificada(tramite.testigo_2_firma)
+        context['FIRMA_BENE'] = crear_firma_unificada(tramite.beneficiario_1_firma)
+        
     else:
+        # Valores por defecto si no hay template
         context['FIRMA_CLIENTE'] = ''
+        context['FIRMA_VENDEDOR'] = ''
+        context['FIRMA_TESTIGO1'] = ''
+        context['FIRMA_TESTIGO2'] = ''
+        context['FIRMA_BENE'] = ''
 
     # Determinar qué cláusulas adicionales existen
     tiene_pago = clausulas_adicionales and 'pago' in clausulas_adicionales and bool(clausulas_adicionales['pago'])
@@ -2610,7 +3111,7 @@ def build_contrato_canario_contado_context(fin, cli, ven, request=None, tpl=None
 
     return context
 
-def build_contrato_canario_contado_varios_context(fin, cli, ven, cliente2=None, request=None, tpl=None, firma_data=None, clausulas_adicionales=None, fecha=None):
+def build_contrato_canario_contado_varios_context(fin, cli, ven, cliente2=None,request=None, tpl=None, firma_data=None, clausulas_adicionales=None, tramite=None, fecha=None):
     
     print("Entré al build de casa canario para DOS COMPRADORES")
 
@@ -2694,6 +3195,18 @@ def build_contrato_canario_contado_varios_context(fin, cli, ven, cliente2=None, 
     else:
         correo_comprador2 = 'NO PROPORCIONADO' if cliente2 else ''
 
+    testigo1 = (tramite.testigo_1_nombre or '')        # convierte None -> ''
+    if testigo1:
+        test1 = testigo1.upper()
+    else:
+        test1 = testigo1
+    
+    testigo2 = (tramite.testigo_2_nombre or '')        # convierte None -> ''
+    if testigo2:
+        test2 = testigo2.upper()
+    else:
+        test2 = testigo2
+
     # 6) Miembro B dinámico según relación (igual que antes)
     if ven.ine == prop.ine and prop.tipo == 'propietario':
         claus_b = (
@@ -2775,22 +3288,54 @@ def build_contrato_canario_contado_varios_context(fin, cli, ven, cliente2=None, 
 
         # Cláusula B variable
         'CLAUSULA_B': claus_b,
+        'NOMBRE_TESTIGO2': test2,
+        'NOMBRE_TESTIGO1': test1,
     }
 
-    # 8) Firma del cliente
+    # 6) Firma
     if request and tpl:
-        data_url = firma_data or (request.session.get('firma_cliente_data') if request else None)
-        if data_url:
-            header, b64 = data_url.split(',', 1)
-            img_data = base64.b64decode(b64)
-            fd, tmp = tempfile.mkstemp(suffix='.png')
-            with os.fdopen(fd, 'wb') as f:
-                f.write(img_data)
-            context['FIRMA_CLIENTE'] = InlineImage(tpl, tmp, width=Mm(40))
-        else:
-            context['FIRMA_CLIENTE'] = ''
+        # Tamaño consistente para TODAS las firmas
+        FIRMA_ANCHO = 40  # 40mm de ancho
+        FIRMA_ALTO = 15   # 15mm de alto
+        
+        # Función reutilizable para procesar firmas
+        def crear_firma_unificada(data_url):
+            if not data_url:
+                return ''
+            
+            try:
+                # Decodificar base64
+                header, b64 = data_url.split(',', 1)
+                img_data = base64.b64decode(b64)
+                
+                # Crear archivo temporal
+                fd, temp_path = tempfile.mkstemp(suffix='.png')
+                with os.fdopen(fd, 'wb') as f:
+                    f.write(img_data)
+                
+                # ✅ MISMO TAMAÑO para todas las firmas
+                return InlineImage(tpl, temp_path, width=Mm(FIRMA_ANCHO), height=Mm(FIRMA_ALTO))
+                
+            except Exception as e:
+                print(f"Error al procesar firma: {e}")
+                return ''
+        
+        # Procesar cada firma con el mismo tamaño
+        context['FIRMA_CLIENTE'] = crear_firma_unificada(firma_data)
+        context['FIRMA_CLIENTE2'] = crear_firma_unificada(tramite.firma_cliente2)
+        context['FIRMA_VENDEDOR'] = crear_firma_unificada(tramite.firma_vendedor)
+        context['FIRMA_TESTIGO1'] = crear_firma_unificada(tramite.testigo_1_firma)
+        context['FIRMA_TESTIGO2'] = crear_firma_unificada(tramite.testigo_2_firma)
+        context['FIRMA_BENE'] = crear_firma_unificada(tramite.beneficiario_1_firma)
+        
     else:
+        # Valores por defecto si no hay template
         context['FIRMA_CLIENTE'] = ''
+        context['FIRMA_CLIENTE_2'] = ''
+        context['FIRMA_VENDEDOR'] = ''
+        context['FIRMA_TESTIGO1'] = ''
+        context['FIRMA_TESTIGO2'] = ''
+        context['FIRMA_BENE'] = ''
 
     # 9) Cláusulas adicionales
     # Determinar qué cláusulas adicionales existen
@@ -2821,7 +3366,7 @@ def build_contrato_canario_contado_varios_context(fin, cli, ven, cliente2=None, 
 
     return context
 
-def build_contrato_canario_pagos_context(fin, cli, ven, request=None, tpl=None, firma_data=None, clausulas_adicionales=None, fecha=None):
+def build_contrato_canario_pagos_context(fin, cli, ven, request=None, tpl=None, firma_data=None, clausulas_adicionales=None, tramite=None, fecha=None):
 
     print("Entré al build de casa canario a pagos")
 
@@ -2879,6 +3424,18 @@ def build_contrato_canario_pagos_context(fin, cli, ven, request=None, tpl=None, 
         correo_comprador1 = email1.upper()
     else:
         correo_comprador1 = 'NO PROPORCIONADO'
+
+    testigo1 = (tramite.testigo_1_nombre or '')        # convierte None -> ''
+    if testigo1:
+        test1 = testigo1.upper()
+    else:
+        test1 = testigo1
+    
+    testigo2 = (tramite.testigo_2_nombre or '')        # convierte None -> ''
+    if testigo2:
+        test2 = testigo2.upper()
+    else:
+        test2 = testigo2
 
     # 3) Miembro B dinámico según relación:
     # — Si ven es propietario:
@@ -2960,23 +3517,52 @@ def build_contrato_canario_pagos_context(fin, cli, ven, request=None, tpl=None, 
         'LETRA_MENSUALIDAD_FINAL':         letra_fin,
         # Y la cláusula B variable:
         'CLAUSULA_B': claus_b,
+        'NOMBRE_TESTIGO2': test2,
+        'NOMBRE_TESTIGO1': test1,
     }
 
-    # 6) Firma del cliente
+    # 6) Firma
     if request and tpl:
-        data_url = firma_data or (request.session.get('firma_cliente_data') if request else None)
-        if data_url:
-            header, b64 = data_url.split(',', 1)
-            img_data = base64.b64decode(b64)
-            fd, tmp = tempfile.mkstemp(suffix='.png')
-            with os.fdopen(fd, 'wb') as f:
-                f.write(img_data)
-            # Inserta la imagen de firma
-            context['FIRMA_CLIENTE'] = InlineImage(tpl, tmp, width=Mm(40))
-        else:
-            context['FIRMA_CLIENTE'] = ''
+        # Tamaño consistente para TODAS las firmas
+        FIRMA_ANCHO = 40  # 40mm de ancho
+        FIRMA_ALTO = 15   # 15mm de alto
+        
+        # Función reutilizable para procesar firmas
+        def crear_firma_unificada(data_url):
+            if not data_url:
+                return ''
+            
+            try:
+                # Decodificar base64
+                header, b64 = data_url.split(',', 1)
+                img_data = base64.b64decode(b64)
+                
+                # Crear archivo temporal
+                fd, temp_path = tempfile.mkstemp(suffix='.png')
+                with os.fdopen(fd, 'wb') as f:
+                    f.write(img_data)
+                
+                # ✅ MISMO TAMAÑO para todas las firmas
+                return InlineImage(tpl, temp_path, width=Mm(FIRMA_ANCHO), height=Mm(FIRMA_ALTO))
+                
+            except Exception as e:
+                print(f"Error al procesar firma: {e}")
+                return ''
+        
+        # Procesar cada firma con el mismo tamaño
+        context['FIRMA_CLIENTE'] = crear_firma_unificada(firma_data)
+        context['FIRMA_VENDEDOR'] = crear_firma_unificada(tramite.firma_vendedor)
+        context['FIRMA_TESTIGO1'] = crear_firma_unificada(tramite.testigo_1_firma)
+        context['FIRMA_TESTIGO2'] = crear_firma_unificada(tramite.testigo_2_firma)
+        context['FIRMA_BENE'] = crear_firma_unificada(tramite.beneficiario_1_firma)
+        
     else:
+        # Valores por defecto si no hay template
         context['FIRMA_CLIENTE'] = ''
+        context['FIRMA_VENDEDOR'] = ''
+        context['FIRMA_TESTIGO1'] = ''
+        context['FIRMA_TESTIGO2'] = ''
+        context['FIRMA_BENE'] = ''
 
     # Determinar qué cláusulas adicionales existen
     tiene_pago = clausulas_adicionales and 'pago' in clausulas_adicionales and bool(clausulas_adicionales['pago'])
@@ -3009,7 +3595,7 @@ def build_contrato_canario_pagos_context(fin, cli, ven, request=None, tpl=None, 
 
     return context
 
-def build_contrato_canario_pagos_varios_context(fin, cli, ven, cliente2=None, request=None, tpl=None, firma_data=None, clausulas_adicionales=None, fecha=None):
+def build_contrato_canario_pagos_varios_context(fin, cli, ven, cliente2=None,request=None, tpl=None, firma_data=None, clausulas_adicionales=None, tramite=None, fecha=None):
 
     print("Entré al build de casa canario para DOS COMPRADORES a pagos")
 
@@ -3085,6 +3671,18 @@ def build_contrato_canario_pagos_varios_context(fin, cli, ven, cliente2=None, re
         correo_comprador2 = email2.upper()
     else:
         correo_comprador2 = 'NO PROPORCIONADO'
+
+    testigo1 = (tramite.testigo_1_nombre or '')        # convierte None -> ''
+    if testigo1:
+        test1 = testigo1.upper()
+    else:
+        test1 = testigo1
+    
+    testigo2 = (tramite.testigo_2_nombre or '')        # convierte None -> ''
+    if testigo2:
+        test2 = testigo2.upper()
+    else:
+        test2 = testigo2
 
     # 4) Coordenadas por cada lado (igual que antes)
     dir_fields = {}
@@ -3199,23 +3797,54 @@ def build_contrato_canario_pagos_varios_context(fin, cli, ven, cliente2=None, re
         'LETRA_MENSUALIDAD_FINAL':         letra_fin,
         # Y la cláusula B variable:
         'CLAUSULA_B': claus_b,
+        'NOMBRE_TESTIGO2': test2,
+        'NOMBRE_TESTIGO1': test1,
     }
 
-    # 8) Firma del cliente (para DOS clientes, usar la misma firma o implementar lógica para dos firmas)
-    # (Manteniendo la misma lógica por ahora)
+    # 6) Firma
     if request and tpl:
-        data_url = firma_data or (request.session.get('firma_cliente_data') if request else None)
-        if data_url:
-            header, b64 = data_url.split(',', 1)
-            img_data = base64.b64decode(b64)
-            fd, tmp = tempfile.mkstemp(suffix='.png')
-            with os.fdopen(fd, 'wb') as f:
-                f.write(img_data)
-            context['FIRMA_CLIENTE'] = InlineImage(tpl, tmp, width=Mm(40))
-        else:
-            context['FIRMA_CLIENTE'] = ''
+        # Tamaño consistente para TODAS las firmas
+        FIRMA_ANCHO = 40  # 40mm de ancho
+        FIRMA_ALTO = 15   # 15mm de alto
+        
+        # Función reutilizable para procesar firmas
+        def crear_firma_unificada(data_url):
+            if not data_url:
+                return ''
+            
+            try:
+                # Decodificar base64
+                header, b64 = data_url.split(',', 1)
+                img_data = base64.b64decode(b64)
+                
+                # Crear archivo temporal
+                fd, temp_path = tempfile.mkstemp(suffix='.png')
+                with os.fdopen(fd, 'wb') as f:
+                    f.write(img_data)
+                
+                # ✅ MISMO TAMAÑO para todas las firmas
+                return InlineImage(tpl, temp_path, width=Mm(FIRMA_ANCHO), height=Mm(FIRMA_ALTO))
+                
+            except Exception as e:
+                print(f"Error al procesar firma: {e}")
+                return ''
+        
+        # Procesar cada firma con el mismo tamaño
+        context['FIRMA_CLIENTE'] = crear_firma_unificada(firma_data)
+        context['FIRMA_CLIENTE2'] = crear_firma_unificada(tramite.firma_cliente2)
+        context['FIRMA_VENDEDOR'] = crear_firma_unificada(tramite.firma_vendedor)
+        context['FIRMA_TESTIGO1'] = crear_firma_unificada(tramite.testigo_1_firma)
+        context['FIRMA_TESTIGO2'] = crear_firma_unificada(tramite.testigo_2_firma)
+        context['FIRMA_BENE'] = crear_firma_unificada(tramite.beneficiario_1_firma)
+        
     else:
+        # Valores por defecto si no hay template
         context['FIRMA_CLIENTE'] = ''
+        context['FIRMA_CLIENTE_2'] = ''
+        context['FIRMA_VENDEDOR'] = ''
+        context['FIRMA_TESTIGO1'] = ''
+        context['FIRMA_TESTIGO2'] = ''
+        context['FIRMA_BENE'] = ''
 
     # Determinar qué cláusulas adicionales existen
     tiene_pago = clausulas_adicionales and 'pago' in clausulas_adicionales and bool(clausulas_adicionales['pago'])
@@ -3247,11 +3876,3 @@ def build_contrato_canario_pagos_varios_context(fin, cli, ven, cliente2=None, re
     })
 
     return context
-
-
-
-
-
-
-
-
