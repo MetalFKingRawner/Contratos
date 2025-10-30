@@ -109,8 +109,6 @@
   z-index: 1;
   border-radius: 10px;
   box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-  width: 100% !important;
-  height: 700px !important;
 }
 
 .signature-section {
@@ -144,56 +142,86 @@
   margin-bottom: 1.5rem;
   display: flex;
   flex-direction: column;
-  align-items:center;
-  /* FIX: Contenedor con altura fija en móviles */
-  height: 200px; /* Altura fija para todos los dispositivos */
+  align-items: center;
+}
+
+.canvas-wrapper {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  width: 400px; /* ← Ancho fijo: 400px */
+  height: 150px; /* ← Alto fijo: 150px */
+  margin: 0 auto;
 }
 
 .signature-canvas {
-  background: white;
-  border-radius: 15px;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-  border: 2px solid rgba(46, 143, 204, 0.2);
+  border: 2px solid #dee2e6;
+  border-radius: 8px;
   cursor: crosshair;
-  transition: border-color 0.3s;
-  /* FIX: Dimensiones fijas para el canvas */
-  width: 100% !important;
-  height: 150px !important;
+  background: #ffffff;
+  transition: all 0.3s ease;
+  display: block;
+  width: 400px !important; /* ← Forzar 400px */
+  height: 150px !important; /* ← Forzar 150px */
+  touch-action: none;
 }
 
 .signature-canvas:hover {
-  border-color: var(--bs-primary);
+  border-color: #2e8fcc;
+  box-shadow: 0 0 0 4px rgba(46, 143, 204, 0.1);
+}
+
+.signature-canvas.signing {
+  border-color: #27ae60 !important;
+  box-shadow: 0 0 0 4px rgba(39, 174, 96, 0.1) !important;
 }
 
 .signature-controls {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  flex-wrap: wrap;
+  width: 400px; /* ← Mismo ancho que canvas */
+  margin: 1rem auto 0;
+  gap: 1rem;
 }
 
 .signature-controls .btn-clear {
-  background: rgba(255, 107, 107, 0.1);
-  color: #ee5a6f;
+  background: var(--accent-gradient);
+  color: white;
   border: none;
-  border-radius: 50px;
-  padding: 0.5rem 1.25rem;
-  font-weight: 500;
-  transition: all 0.3s;
-  margin-bottom: 0.5rem;
+  padding: 0.875rem 1.75rem;
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(255, 107, 107, 0.2);
+  font-size: 1rem;
 }
 
 .signature-controls .btn-clear:hover {
-  background: rgba(255, 107, 107, 0.2);
   transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 107, 107, 0.3);
 }
 
 .signature-preview {
-  text-align: center;
-  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   color: var(--text-secondary);
-  font-style: italic;
-  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+  padding: 0.75rem 1rem;
+  background: rgba(46, 143, 204, 0.05);
+  border-radius: 8px;
+  border-left: 3px solid #2e8fcc;
+}
+
+.signature-preview i {
+  color: #2e8fcc;
+  font-size: 1.1rem;
 }
 
 .acceptance-section {
@@ -396,28 +424,29 @@
     padding: 1.5rem;
   }
   
-  .btn-submit {
-    width: 100%;
-    min-width: auto;
-  }
-  
-  /* FIX: Estilos específicos para móviles */
-  .signature-canvas-container {
-    height: 180px; /* Altura ligeramente reducida para móviles */
-  }
-  
+  /* Ajustar canvas en móviles */
+  .canvas-wrapper,
   .signature-canvas {
-    height: 140px !important; /* Altura ligeramente reducida para móviles */
+    width: 100% !important;
+    max-width: 400px;
   }
   
   .signature-controls {
     flex-direction: column;
     align-items: stretch;
+    width: 100%;
+    max-width: 400px;
   }
   
+  .btn-clear,
   .signature-preview {
-    margin-top: 0.5rem;
-    text-align: center;
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .btn-submit {
+    width: 100%;
+    min-width: auto;
   }
 }
 
@@ -431,15 +460,6 @@
   
   .progress-step::after {
     width: 40px;
-  }
-  
-  /* FIX: Estilos para móviles muy pequeños */
-  .signature-canvas-container {
-    height: 160px;
-  }
-  
-  .signature-canvas {
-    height: 130px !important;
   }
 }
 
@@ -485,73 +505,6 @@
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.1); }
 }
-
-.form-group .radio-group {
-  display: flex;
-  gap: 1.5rem;
-  margin-bottom: 1rem;
-}
-
-.form-group .radio-group li {
-  list-style: none;
-}
-
-.form-group .radio-group label {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.6rem 1rem;
-  border: 2px solid rgba(46,143,204,0.3);
-  border-radius: 30px;
-  cursor: pointer;
-  transition: all .3s;
-}
-
-.form-group .radio-group input[type="radio"] {
-  display: none;
-}
-
-.form-group .radio-group input[type="radio"] + span {
-  position: relative;
-  padding-left: 1.4rem;
-}
-
-.form-group .radio-group input[type="radio"] + span::before {
-  content: '';
-  position: absolute;
-  left: 0; top: 50%;
-  transform: translateY(-50%);
-  width: 1rem; height: 1rem;
-  border: 2px solid rgba(46,143,204,0.5);
-  border-radius: 50%;
-  background: white;
-  transition: background .3s, border-color .3s;
-}
-
-.form-group .radio-group input[type="radio"]:checked + span::before {
-  background: var(--primary-gradient);
-  border-color: var(--primary-gradient);
-}
-
-.form-group .radio-group label:hover {
-  border-color: var(--bs-primary);
-}
-
-@media (min-width: 992px) {
-  .pdf-container object {
-    height: 800px !important;
-  }
-}
-@media (max-width: 991px) {
-  .pdf-container object {
-    height: 600px !important;
-  }
-}
-@media (max-width: 576px) {
-  .pdf-container object {
-    height: 400px !important;
-  }
-}
 </style>
 {% endblock %}
 
@@ -588,61 +541,44 @@
 
   <form method="post" novalidate id="privacyForm">
     {% csrf_token %}
-
-    <!-- 1) Elección de firma digital -->
-    <div class="form-group">
-      <label class="section-title">
-        <i class="fas fa-signature"></i>
-        {{ form.firmar.label }}
-      </label>
-      <ul class="radio-group">
-        {% for radio in form.firmar %}
-          <li>
-            <label for="{{ radio.id_for_label }}">
-              {{ radio.tag }}
-              <span>{{ radio.choice_label }}</span>
-            </label>
-          </li>
-        {% endfor %}
-      </ul>
-      {% if form.firmar.errors %}
-        <div class="text-danger small">{{ form.firmar.errors.0 }}</div>
-      {% endif %}
-    </div>
-
-    <!-- 2) Canvas solo si firmar == 'sí' -->
-    <div id="signature-block" class="signature-section">
+    
+    <!-- Sección de firma -->
+    <div class="signature-section">
       <h3 class="section-title">
         <i class="fas fa-signature"></i>
         Firma de aceptación
       </h3>
+      
       <div class="signature-canvas-container">
         <label class="form-label mb-3">Dibuja tu firma en el área de abajo:</label>
-        <canvas id="sig-canvas"
-                width="400" height="150"
-                class="signature-canvas"></canvas>
+        <div class="canvas-wrapper">
+          <canvas id="sig-canvas"
+                  class="signature-canvas"></canvas>
+        </div>
       </div>
+      
       <div class="signature-controls">
         <button id="sig-clear" type="button" class="btn-clear">
-          <i class="fas fa-eraser me-1"></i> Borrar firma
+          <i class="fas fa-eraser"></i>
+          Borrar firma
         </button>
         <div class="signature-preview">
-          <i class="fas fa-info-circle me-1"></i>
+          <i class="fas fa-info-circle"></i>
           Tu firma aparecerá en los documentos legales
         </div>
       </div>
-      <!-- Campo oculto para la firma CON ID FIJO -->
-      <input type="hidden" name="firma_data" id="firmaData">
       
-      {{ form.firma_data }}
+      <!-- ✅ CORRECCIÓN: Ahora el name coincide con lo que Django espera -->
+      <input type="hidden" name="firma_data" id="firma_data">
     </div>
-
-    <!-- 3) Aceptación del aviso -->
+    
+    <!-- Sección de aceptación -->
     <div class="acceptance-section">
       <h3 class="section-title">
         <i class="fas fa-check-circle"></i>
         Confirmación de aceptación
       </h3>
+      
       <div class="form-check">
         <label class="checkbox-container">
           {{ form.aceptar }}
@@ -651,6 +587,7 @@
             He leído y acepto los términos del Aviso de Privacidad
           </span>
         </label>
+        
         {% if form.aceptar.errors %}
           <div class="text-danger small mt-2">
             <i class="fas fa-exclamation-circle me-1"></i>
@@ -659,7 +596,7 @@
         {% endif %}
       </div>
     </div>
-
+    
     <button type="submit" class="btn-submit">
       <i class="fas fa-file-contract"></i>
       Aceptar y continuar
@@ -673,103 +610,113 @@
 <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  const canvas = document.getElementById('sig-canvas');
-  const form = document.getElementById('privacyForm');
-  const hiddenInput = document.getElementById('firmaData');
-  const sigPad = new SignaturePad(canvas, {
-    minWidth: 0.5,
-    maxWidth: 2.5,
-    penColor: "#2c3e50",
-    throttle: 5,
-    velocityFilterWeight: 0.7
-  });
-  
-  // Función corregida para redimensionar el canvas
-  function resizeCanvas() {
-    const ratio = Math.max(window.devicePixelRatio || 1, 1);
-    const width = canvas.offsetWidth;
-    const height = 150;
+    const canvas = document.getElementById('sig-canvas');
+    const form = document.getElementById('privacyForm');
+    const hiddenInput = document.getElementById('firma_data'); // ✅ CORREGIDO: mismo ID que el name
+    
+    console.log('Elementos encontrados:', {
+        canvas: !!canvas,
+        form: !!form,
+        hiddenInput: !!hiddenInput,
+        hiddenInputName: hiddenInput?.name
+    });
+    
+    // CONFIGURACIÓN UNIFICADA
+    const signaturePad = new SignaturePad(canvas, {
+        minWidth: 0.5,
+        maxWidth: 2.5,
+        penColor: "#2c3e50",
+        throttle: 5,
+        velocityFilterWeight: 0.7
+    });
+    
+    // RESIZE UNIFICADO - DIMENSIONES FIJAS COMO firma_cliente.html
+    function resizeCanvas() {
+        const ratio = Math.max(window.devicePixelRatio || 1, 1);
         
-    canvas.width = width * ratio;
-    canvas.height = height * ratio;
-    canvas.style.width = width + 'px';
-    canvas.style.height = height + 'px';
+        // ✅ DIMENSIONES FIJAS: 400x150 (igual que firma_cliente.html)
+        const fixedWidth = 400;
+        const fixedHeight = 150;
         
-    const ctx = canvas.getContext("2d");
-    ctx.scale(ratio, ratio);
-  
-    // Redibujar si ya había una firma
-    //if (!sigPad.isEmpty()) {
-      //sigPad.fromData(sigPad.toData());
-    //}
-    sigPad.clear();
-  }
-  
-  // Inicializar y ajustar tamaño
-  window.addEventListener('resize', resizeCanvas);
-  resizeCanvas();
-  
-  // Botón borrar
-  document.getElementById('sig-clear').onclick = () => {
-    sigPad.clear();
-    canvas.style.borderColor = "rgba(46, 143, 204, 0.2)";
-  };
-  
-  // Manejar envío del formulario - VERSIÓN CORREGIDA
-  form.addEventListener('submit', function(e) {
-      console.log('Formulario enviándose...');
+        // En móviles, usar el ancho disponible (máximo 400px)
+        const actualWidth = Math.min(fixedWidth, canvas.parentElement.offsetWidth);
         
-      // CORREGIDO: usa signaturePad
-      if (sigPad.isEmpty()) {
-          canvas.style.borderColor = "#dc3545";
-          e.preventDefault();
-          alert('Por favor, proporciona tu firma');
-          console.log('Firma vacía - formulario bloqueado');
-          return;
-      }
+        // Establecer dimensiones del canvas interno (para dibujo de alta calidad)
+        canvas.width = actualWidth * ratio;
+        canvas.height = fixedHeight * ratio;
         
-      // Obtener la firma y asignarla al campo hidden
-      const firmaData = sigPad.toDataURL('image/png'); // ← CORREGIDO: usa signaturePad
-      hiddenInput.value = firmaData;
-      
-      console.log('Firma guardada en hidden input:', firmaData.substring(0, 100) + '...');
-      console.log('Longitud de la firma:', firmaData.length);
-      console.log('Valor del hidden input:', hiddenInput.value ? 'TIENE VALOR' : 'VACÍO');
+        // Establecer dimensiones visuales CSS
+        canvas.style.width = actualWidth + 'px';
+        canvas.style.height = fixedHeight + 'px';
         
-      // Continuar con el envío normal
-      // No llamamos e.preventDefault() porque queremos que se envíe
-  });
-  
-  // Cambiar estilo al dibujar
-  canvas.addEventListener('pointerdown', () => {
-    canvas.style.borderColor = "#2e8fcc";
-  });
-  
-  // Animación de entrada para las secciones
-  const sections = document.querySelectorAll('.pdf-container, .signature-section, .acceptance-section');
-  sections.forEach((section, index) => {
-    section.style.opacity = '0';
-    section.style.transform = 'translateY(30px)';
-    setTimeout(() => {
-      section.style.transition = 'all 0.6s ease';
-      section.style.opacity = '1';
-      section.style.transform = 'translateY(0)';
-    }, 150 * index);
-  });
+        // Escalar contexto para alta resolución
+        const ctx = canvas.getContext("2d");
+        ctx.scale(ratio, ratio);
+        
+        signaturePad.clear();
+    }
+    
+    // Inicializar y ajustar tamaño
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+    
+    // Botón borrar
+    document.getElementById('sig-clear').onclick = () => {
+        signaturePad.clear();
+        canvas.style.borderColor = "#dee2e6";
+        canvas.classList.remove('signing');
+    };
+    
+    // Event listeners para el canvas
+    canvas.addEventListener('pointerdown', () => {
+        canvas.classList.add('signing');
+    });
+    
+    canvas.addEventListener('pointerup', () => {
+        canvas.classList.remove('signing');
+    });
+    
+    // ✅ CORRECCIÓN CRÍTICA: Manejar envío del formulario
+    form.addEventListener('submit', function(e) {
+        e.preventDefault(); // Prevenir envío inicial
+        
+        console.log('🔍 Formulario enviándose...');
+        console.log('🔍 Firma vacía?', signaturePad.isEmpty());
+        
+        // Validar firma
+        if (signaturePad.isEmpty()) {
+            canvas.style.borderColor = "#dc3545";
+            alert('⚠️ Por favor, proporciona tu firma antes de continuar.');
+            canvas.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            return;
+        }
+        
+        // ✅ OBTENER Y GUARDAR LA FIRMA
+        const firmaData = signaturePad.toDataURL('image/png');
+        hiddenInput.value = firmaData;
+        
+        console.log('✅ Firma capturada');
+        console.log('📊 Longitud:', firmaData.length);
+        console.log('📊 Preview:', firmaData.substring(0, 100) + '...');
+        console.log('📊 Hidden input value:', hiddenInput.value ? 'TIENE VALOR ✅' : 'VACÍO ❌');
+        console.log('📊 Hidden input name:', hiddenInput.name);
+        
+        // ✅ ENVIAR EL FORMULARIO
+        console.log('📤 Enviando formulario...');
+        form.submit();
+    });
+    
+    // Animación de entrada para las secciones
+    const sections = document.querySelectorAll('.pdf-container, .signature-section, .acceptance-section');
+    sections.forEach((section, index) => {
+        section.style.opacity = '0';
+        section.style.transform = 'translateY(30px)';
+        setTimeout(() => {
+            section.style.transition = 'all 0.6s ease';
+            section.style.opacity = '1';
+            section.style.transform = 'translateY(0)';
+        }, 150 * index);
+    });
 });
-</script>
-<script>
-document.querySelectorAll('input[name="firmar"]').forEach(radio => {
-  radio.addEventListener('change', () => {
-    document.getElementById('signature-block').style.display =
-      (radio.value === 'sí') ? 'block' : 'none';
-  });
-});
-// Al cargar, ocultamos si no está en “sí”
-if (document.querySelector('input[name="firmar"]:checked')?.value !== 'sí') {
-  document.getElementById('signature-block').style.display = 'none';
-}
 </script>
 {% endblock %}
-
-
