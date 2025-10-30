@@ -15,13 +15,6 @@ RUN apt-get update && \
     fonts-wqy-zenhei \
     fontconfig \
     build-essential \
-    # DEPENDENCIAS PARA PILLOW ↓
-    libjpeg-dev \
-    zlib1g-dev \
-    libfreetype6-dev \
-    liblcms2-dev \
-    libopenjp2-7-dev \
-    libtiff5-dev \
     libpq-dev && \
     fc-cache -f -v && \
     rm -rf /var/lib/apt/lists/*
