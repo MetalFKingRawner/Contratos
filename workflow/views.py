@@ -569,6 +569,9 @@ class SeleccionDocumentosView(FormView):
         regime = fin.lote.proyecto.tipo_contrato.lower()
         pago   = fin.tipo_pago
 
+        if pago == 'financiado':
+            slugs.append('financiamiento')
+
         # Verificar si hay segundo cliente
         has_second_client = tramite and tramite.cliente_2 is not None
 
@@ -1060,3 +1063,4 @@ class FirmaTestigo2View(FirmaBaseView):
 # Vista de éxito después de firmar
 class FirmaExitosaView(TemplateView):
     template_name = 'workflow/firma_exitosa.html'
+
