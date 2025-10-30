@@ -2519,6 +2519,18 @@ def build_contrato_ejidal_pagos_context(fin, cli, ven, request=None, tpl=None, f
                 # Decodificar base64
                 header, b64 = data_url.split(',', 1)
                 img_data = base64.b64decode(b64)
+                from PIL import Image
+                import io
+
+                # Abrir imagen
+                image = Image.open(io.BytesIO(img_data))
+                # Rotar 90 grados
+                image_rotated = image.rotate(-90, expand=True)
+                
+                # Guardar imagen rotada
+                buffer = io.BytesIO()
+                image_rotated.save(buffer, format='PNG')
+                img_data = buffer.getvalue()
                 
                 # Crear archivo temporal
                 fd, temp_path = tempfile.mkstemp(suffix='.png')
@@ -3876,3 +3888,4 @@ def build_contrato_canario_pagos_varios_context(fin, cli, ven, cliente2=None,req
     })
 
     return context
+
