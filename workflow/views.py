@@ -773,6 +773,30 @@ class AvisoForm(forms.Form):
         widget=forms.HiddenInput(attrs={'id': 'firmaData'}),  # ← AGREGAR ID
         required=False
     )
+    def clean(self):
+        """Validación condicional: solo requerir firma si eligió firmar digitalmente"""
+        cleaned_data = super().clean()
+        firmar = cleaned_data.get('firmar')
+        firma_data = cleaned_data.get('firma_data')
+        
+        # ✅ VALIDACIÓN CONDICIONAL
+        if firmar == 'sí':
+            # Si eligió firma digital, debe proporcionar la firma
+            if not firma_data or firma_data.strip() == '':
+                raise forms.ValidationError(
+                    'Debes proporcionar tu firma digital o seleccionar la opción de firma en papel'
+                )
+            
+            # Validar que sea una imagen base64 válida
+            if not firma_data.startswith('data:image/png;base64,'):
+                raise forms.ValidationError(
+                    'La firma digital no tiene un formato válido'
+                )
+        else:
+            # Si eligió NO firmar digitalmente, limpiamos el campo
+            cleaned_data['firma_data'] = None
+        
+        return cleaned_data
 
 class AvisoPrivacidadView(FormView):
     template_name = "workflow/aviso_privacidad.html"
@@ -782,10 +806,20 @@ class AvisoPrivacidadView(FormView):
         print("=== INICIANDO form_valid ===")  # Esto debería aparecer
         # 1) Guarda aceptación y firma en sesión
         self.request.session['privacy_accepted'] = True
+        firmar_digitalmente = form.cleaned_data.get('firmar') == 'sí'
         firma = form.cleaned_data.get('firma_data')
+        print(f"¿Firmará digitalmente?: {firmar_digitalmente}")
         print(f"Firma obtenida: {firma[:50] if firma else 'None'}...")  # Debug
-        if firma:
+        # Guardar en sesión según la elección
+        if firmar_digitalmente and firma:
             self.request.session['firma_cliente_data'] = firma
+            self.request.session['tipo_firma'] = 'digital'
+            print("✅ Firma digital guardada en sesión")
+        else:
+            # Usuario prefiere firma física
+            self.request.session['firma_cliente_data'] = None
+            self.request.session['tipo_firma'] = 'fisica'
+            print("✅ Usuario optó por firma física")
         
         # 2) Recupera IDs de pasos previos (deben existir en sesión)
         fin_id = self.request.session.get('financiamiento_id')
@@ -838,9 +872,13 @@ class AvisoPrivacidadView(FormView):
             tramite.cliente = cliente
             tramite.vendedor = vendedor
             tramite.propietario = propietario
-            if firma:
+            # ✅ CORRECCIÓN: Asignar firma solo si existe
+            if firmar_digitalmente and firma:
                 tramite.firma_vendedor = firma
-                print("Firma asignada a firma_vendedor")
+                print("✅ Firma digital asignada a tramite.firma_vendedor")
+            else:
+                tramite.firma_vendedor = None  # O "" si el campo no acepta None
+                print("⚠️ Trámite sin firma digital (se firmará en físico)")
             #tramite.firma_vendedor = firma or tramite.firma_cliente
             if cliente2:
                 tramite.cliente_2 = cliente2
@@ -875,6 +913,9 @@ class AvisoPrivacidadView(FormView):
             elif propietario:
                 testigo_1_nombre = f"{propietario.nombre_completo}"
 
+            # ✅ CORRECCIÓN: Asignar firma según la elección
+            firma_para_guardar = firma if (firmar_digitalmente and firma) else ""
+
             tramite = Tramite.objects.create(
                 financiamiento=financiamiento,
                 cliente=cliente,
@@ -882,7 +923,7 @@ class AvisoPrivacidadView(FormView):
                 propietario=propietario,
                 persona_tipo=persona_tipo,
                 persona_id=persona_id,
-                firma_vendedor=firma or "",  # CORRECCIÓN: usar firma_vendedor
+                firma_vendedor=firma_para_guardar,  # CORRECCIÓN: usar firma_vendedor
                 cliente_2=cliente2,
                 usuario_creador=self.request.user,  # ← Aquí asignamos el usuario
                 # Asignar testigos
@@ -904,6 +945,12 @@ class AvisoPrivacidadView(FormView):
 
         # 5) Vamos a la selección de documentos
         return redirect('workflow:clausulas_especiales')
+    
+    def form_invalid(self, form):
+        """Mostrar errores de validación en consola"""
+        print("❌ Formulario inválido")
+        print(f"Errores: {form.errors}")
+        return super().form_invalid(form)
 
 class Paso1FinanciamientoView(TemplateView):
     template_name = "workflow/paso1_financiamiento.html"
@@ -1063,4 +1110,5 @@ class FirmaTestigo2View(FirmaBaseView):
 # Vista de éxito después de firmar
 class FirmaExitosaView(TemplateView):
     template_name = 'workflow/firma_exitosa.html'
+
 
