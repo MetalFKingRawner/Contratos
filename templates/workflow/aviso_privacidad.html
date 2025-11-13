@@ -789,32 +789,42 @@ document.addEventListener('DOMContentLoaded', function() {
   // 🔧 CORRECCIÓN: Manejar envío correctamente
   form.addEventListener('submit', function(e) {
     console.log('📝 Formulario enviándose...');
+    const firmarRadio = document.querySelector('input[name="firmar"]:checked');
+    const eligeFirmarDigital = firmarRadio && firmarRadio.value === 'sí';
+  
+    console.log('🔍 Usuario eligió firmar digitalmente:', eligeFirmarDigital);
     
-    if (sigPad.isEmpty()) {
-      e.preventDefault();
-      canvas.style.borderColor = "#dc3545";
-      alert('⚠️ Por favor, proporciona tu firma');
-      canvas.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      console.log('❌ Firma vacía - formulario bloqueado');
-      return;
+    // Solo validar el canvas si eligió firma digital
+    if (eligeFirmarDigital) {
+      if (sigPad.isEmpty()) {
+        e.preventDefault();
+        canvas.style.borderColor = "#dc3545";
+        alert('⚠️ Por favor, proporciona tu firma digital');
+        canvas.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        console.log('❌ Firma vacía - formulario bloqueado');
+        return;
+      }
+    
+      // Obtener la firma y asignarla al campo hidden
+      const firmaData = sigPad.toDataURL('image/png');
+      hiddenInput.value = firmaData;
+      
+      console.log('✅ Firma guardada en campo:', hiddenInput.name);
+      console.log('📊 Longitud de la firma:', firmaData.length);
+      console.log('🎯 Primeros 100 caracteres:', firmaData.substring(0, 100));
+    
+      // Verificar que se guardó
+      if (!hiddenInput.value) {
+        e.preventDefault();
+        alert('❌ Error al guardar la firma. Intenta de nuevo.');
+        console.error('ERROR: No se guardó la firma en el input hidden');
+        return;
+      }
+    } else {
+      // Usuario eligió NO firmar digitalmente (firma física)
+      console.log('✅ Usuario optó por firma física - omitiendo validación de canvas');
+      hiddenInput.value = ''; // Limpiar el campo por si acaso
     }
-    
-    // Obtener la firma y asignarla al campo hidden
-    const firmaData = sigPad.toDataURL('image/png');
-    hiddenInput.value = firmaData;
-    
-    console.log('✅ Firma guardada en campo:', hiddenInput.name);
-    console.log('📊 Longitud de la firma:', firmaData.length);
-    console.log('🎯 Primeros 100 caracteres:', firmaData.substring(0, 100));
-    
-    // Verificar que se guardó
-    if (!hiddenInput.value) {
-      e.preventDefault();
-      alert('❌ Error al guardar la firma. Intenta de nuevo.');
-      console.error('ERROR: No se guardó la firma en el input hidden');
-      return;
-    }
-    
     console.log('✅ Formulario listo para enviar');
     // El formulario se enviará normalmente
   });
