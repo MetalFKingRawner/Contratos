@@ -272,6 +272,46 @@
           </div>
         </div>
       </div>
+
+      <!-- Sección de Proyectos Asignados (solo para edición) -->
+      {% if not creating %}
+      <div class="form-section">
+        <div class="section-header">
+          <div class="section-icon projects">
+            <i class="fas fa-folder-open"></i>
+          </div>
+          <h3 class="section-title">Proyectos Asignados</h3>
+        </div>
+        
+        <div class="projects-selector">
+          <p class="projects-help-text">
+            <i class="fas fa-info-circle"></i>
+            Selecciona los proyectos que este vendedor puede gestionar
+          </p>
+          
+          <div class="checkbox-grid">
+            {% for checkbox in form.proyectos %}
+              <label class="checkbox-item">
+                {{ checkbox.tag }}
+                <span class="checkbox-label">{{ checkbox.choice_label }}</span>
+                <span class="checkbox-checkmark"></span>
+              </label>
+            {% endfor %}
+          </div>
+          
+          {% if form.proyectos.errors %}
+            <div class="field-errors">
+              {% for error in form.proyectos.errors %}
+                <span class="field-error">
+                  <i class="fas fa-exclamation-circle"></i>
+                  {{ error }}
+                </span>
+              {% endfor %}
+            </div>
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}
       
       <!-- Sección de Credenciales (solo para edición cuando mostrar_credenciales es True) -->
       {% if not creating and mostrar_credenciales %}
@@ -880,6 +920,146 @@ input[type="hidden"] {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
+/* ==== SECCIÓN DE PROYECTOS ==== */
+.section-icon.projects {
+  background: linear-gradient(135deg, #F59E0B 0%, #EF4444 100%);
+}
+
+.projects-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.projects-help-text {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  border-radius: 10px;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.projects-help-text i {
+  color: #F59E0B;
+  font-size: 1rem;
+}
+
+.checkbox-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.checkbox-item {
+  display: flex;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1.5px solid var(--glass-border);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  gap: 0.75rem;
+  user-select: none;
+}
+
+.checkbox-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(245, 158, 11, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.checkbox-item input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  width: 0;
+  height: 0;
+  padding: 0;
+  margin: 0;
+}
+
+.checkbox-checkmark {
+  position: relative;
+  height: 22px;
+  width: 22px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid var(--glass-border);
+  border-radius: 6px;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+
+.checkbox-item input[type="checkbox"]:checked ~ .checkbox-checkmark {
+  background: var(--accent-gradient);
+  border-color: #F59E0B;
+}
+
+.checkbox-checkmark::after {
+  content: '';
+  position: absolute;
+  display: none;
+  left: 6px;
+  top: 2px;
+  width: 5px;
+  height: 10px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.checkbox-item input[type="checkbox"]:checked ~ .checkbox-checkmark::after {
+  display: block;
+}
+
+.checkbox-label {
+  color: var(--text-primary);
+  font-weight: 500;
+  font-size: 0.95rem;
+  flex: 1;
+}
+
+.checkbox-item input[type="checkbox"]:checked ~ .checkbox-label {
+  color: #F59E0B;
+}
+
+/* Animación al cargar */
+.checkbox-item {
+  animation: fadeInUp 0.4s ease;
+  animation-fill-mode: both;
+}
+
+.checkbox-item:nth-child(1) { animation-delay: 0.05s; }
+.checkbox-item:nth-child(2) { animation-delay: 0.1s; }
+.checkbox-item:nth-child(3) { animation-delay: 0.15s; }
+.checkbox-item:nth-child(4) { animation-delay: 0.2s; }
+.checkbox-item:nth-child(5) { animation-delay: 0.25s; }
+.checkbox-item:nth-child(6) { animation-delay: 0.3s; }
+
+/* Responsive para checkboxes */
+@media (max-width: 768px) {
+  .checkbox-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .checkbox-item {
+    padding: 0.875rem 1rem;
+  }
+  
+  .checkbox-label {
+    font-size: 0.9rem;
+  }
+}
 </style>
 
 <script>
@@ -949,3 +1129,4 @@ function initFormEnhancements() {
   });
 }
 </script>
+
