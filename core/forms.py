@@ -4,6 +4,7 @@ from django import forms
 from .models import Cliente, Vendedor, Beneficiario
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
+from core.models import Proyecto
 
 class ClienteForm(forms.ModelForm):
     class Meta:
@@ -50,10 +51,18 @@ class VendedorForm(forms.ModelForm):
         label="Nueva contraseña (dejar vacío para no cambiar)"
     )
 
+    # ✨ NUEVO: Campo para seleccionar proyectos con checkboxes
+    proyectos = forms.ModelMultipleChoiceField(
+        queryset=Proyecto.objects.all(),
+        widget=forms.CheckboxSelectMultiple,
+        required=False,
+        label="Proyectos asignados"
+    )
+
     class Meta:
         model = Vendedor
         fields = ['nombre_completo', 'sexo', 'nacionalidad',
-                  'domicilio', 'ine', 'telefono', 'email', 'tipo']
+                  'domicilio', 'ine', 'telefono', 'email', 'tipo', 'proyectos']
         widgets = {
             'domicilio': forms.Textarea(attrs={'rows': 2}),
         }
@@ -70,6 +79,15 @@ class VendedorForm(forms.ModelForm):
             # Ocultar campos de credenciales en creación
             self.fields['nombre_usuario'].widget = forms.HiddenInput()
             self.fields['nueva_contraseña'].widget = forms.HiddenInput()
+
+        # ✨ NUEVO: Ocultar proyectos en creación, mostrar en edición
+        if not self.instance.pk:
+            # En creación: ocultar el campo de proyectos
+            self.fields['proyectos'].widget = forms.HiddenInput()
+            self.fields['proyectos'].required = False
+        else:
+            # En edición: mostrar checkboxes con los proyectos actuales seleccionados
+            self.fields['proyectos'].initial = self.instance.proyectos.all()
 
     def clean_nombre_usuario(self):
         nombre_usuario = self.cleaned_data.get('nombre_usuario')
@@ -101,6 +119,8 @@ class VendedorForm(forms.ModelForm):
         
         if commit:
             vendedor.save()
+            # ✨ IMPORTANTE: Guardar la relación ManyToMany de proyectos
+            self.save_m2m()
         
         return vendedor
 
@@ -157,4 +177,5 @@ class BeneficiarioForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         # Hacer el campo de teléfono opcional si lo prefieres
         self.fields['telefono'].required = False
+
 
