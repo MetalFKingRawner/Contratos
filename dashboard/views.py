@@ -1122,6 +1122,15 @@ class ProyectoCreateView(CreateView):
         return context
 
     def form_valid(self, form):
+        # Guardar el proyecto primero
+        self.object = form.save(commit=False)
+        self.object.save()
+        form.save_m2m()  # Guardar relaciones ManyToMany si las hay
+        
+        # ✨ NUEVO: Asignar automáticamente a todos los vendedores activos
+        vendedores_activos = Vendedor.objects.filter(activo=True)
+        self.object.vendedores.set(vendedores_activos)
+        
         response = super().form_valid(form)
         if self.request.headers.get('HX-Request'):
             return HttpResponse(
@@ -1833,3 +1842,4 @@ def health_check(request):
         "message": "Application is alive",
         "app": "dashboard"
     })
+
