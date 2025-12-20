@@ -783,9 +783,18 @@ def build_contrato_propiedad_contado_context(fin, cli, ven, request=None, tpl=No
     else:
         test2 = testigo2
 
+    tipo = fin.lote.proyecto.tipo_contrato.upper()
+
 # 3) Miembro B dinámico según relación:
     # — Si ven es propietario:
-    if ven.ine == prop.ine and prop.tipo == 'propietario':
+    if ven.ine == prop.ine and prop.tipo == 'propietario' and tipo == 'PEQUEÑA PROPIEDAD':
+        claus_b = (
+            f"QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, "
+            f"QUE ACREDITA CON EL CONTRATO PRIVADO DE COMPRAVENTA Y CONSTANCIA DE POSESIÓN Y APEO Y DESLINDE DE FECHA {fecha_posesion} "
+            f"EXPEDIDOS POR LOS INTEGRANTES {autoridad}"
+        )
+    
+    elif ven.ine == prop.ine and prop.tipo == 'propietario':
         claus_b = (
             f"QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, "
             f"QUE ACREDITA CON EL CONTRATO PRIVADO DE COMPRAVENTA Y CONSTANCIA DE POSESIÓN DE FECHA {fecha_posesion} "
@@ -1062,8 +1071,17 @@ def build_contrato_propiedad_contado_varios_context(fin, cli, ven, cliente2=None
     else:
         test2 = testigo2
 
+    tipo = fin.lote.proyecto.tipo_contrato.upper()
+
     # 6) Miembro B dinámico según relación (igual que antes)
-    if ven.ine == prop.ine and prop.tipo == 'propietario':
+    if ven.ine == prop.ine and prop.tipo == 'propietario' and tipo == 'PEQUEÑA PROPIEDAD':
+        claus_b = (
+            f"QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, "
+            f"QUE ACREDITA CON EL CONTRATO PRIVADO DE COMPRAVENTA Y CONSTANCIA DE POSESIÓN Y APEO Y DESLINDE DE FECHA {fecha_posesion} "
+            f"EXPEDIDOS POR LOS INTEGRANTES {autoridad}"
+        )
+    
+    elif ven.ine == prop.ine and prop.tipo == 'propietario':
         claus_b = (
             f"QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, "
             f"QUE ACREDITA CON EL CONTRATO PRIVADO DE COMPRAVENTA Y CONSTANCIA DE POSESIÓN DE FECHA {fecha_posesion} "
@@ -1280,8 +1298,8 @@ def build_contrato_propiedad_pagos_context(fin, cli, ven, request=None, tpl=None
     SEXO_19 = art(cli.sexo, 'AL "', 'A "LA ')
     SEXO_20 = art(prop.sexo, 'EL', 'LA')
 
-    SEXO_11 = art(cli.sexo, 'EL', 'LA') #Referente al beneficiario
-    SEXO_12 = art(cli.sexo, 'O', 'A') #Referente al beneficiario
+    SEXO_11 = art(tramite.beneficiario_1.sexo, 'EL', 'LA') #Referente al beneficiario
+    SEXO_12 = art(tramite.beneficiario_1.sexo, 'O', 'A') #Referente al beneficiario
 
 
     # 2) Fecha actual
@@ -1323,9 +1341,32 @@ def build_contrato_propiedad_pagos_context(fin, cli, ven, request=None, tpl=None
     else:
         test2 = testigo2
 
+    bene = (tramite.beneficiario_1.nombre_completo or '')        # convierte None -> ''
+    if bene:
+        benef = bene.upper()
+    else:
+        benef = bene
+    
+    bene_telefono = (tramite.beneficiario_1.telefono or '')
+    bene_correo = (tramite.beneficiario_1.email or '')
+    if bene_correo:
+        bene_correo1 = bene_correo.upper()
+    else:
+        bene_correo1 = bene_correo
+    bene_id = (tramite.beneficiario_1.numero_id or '')
+
+    tipo = fin.lote.proyecto.tipo_contrato.upper()
+
     # 3) Miembro B dinámico según relación:
     # — Si ven es propietario:
-    if ven.ine == prop.ine and prop.tipo == 'propietario':
+    if ven.ine == prop.ine and prop.tipo == 'propietario' and tipo == 'PEQUEÑA PROPIEDAD':
+        claus_b = (
+            f"QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, "
+            f"QUE ACREDITA CON EL CONTRATO PRIVADO DE COMPRAVENTA Y CONSTANCIA DE POSESIÓN Y APEO Y DESLINDE DE FECHA {fecha_posesion} "
+            f"EXPEDIDOS POR LOS INTEGRANTES {autoridad}"
+        )
+    
+    elif ven.ine == prop.ine and prop.tipo == 'propietario':
         claus_b = (
             f"QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, "
             f"QUE ACREDITA CON EL CONTRATO PRIVADO DE COMPRAVENTA Y CONSTANCIA DE POSESIÓN DE FECHA {fecha_posesion} "
@@ -1425,6 +1466,14 @@ def build_contrato_propiedad_pagos_context(fin, cli, ven, request=None, tpl=None
         'CLAUSULA_B': claus_b,
         'NOMBRE_TESTIGO2': test2,
         'NOMBRE_TESTIGO1': test1,
+
+        #BENEFICIARIO
+        'SEXO_11':SEXO_11,
+        'SEXO_12': SEXO_12,
+        'NOMBRE_BENE': benef,
+        'ID_BENE': bene_id,
+        'NUMERO_BENE': bene_telefono,
+        'CORREO_BENE':bene_correo1,
     }
 
     # 6) Firma
@@ -1554,8 +1603,8 @@ def build_contrato_propiedad_pagos_varios_context(fin, cli, ven, cliente2=None,r
         SEXO_13 = 'DE "LOS '
         SEXO_17 = 'ÉSTOS'
 
-    SEXO_21 = art(cli.sexo, 'EL', 'LA') #Referente al beneficiario
-    SEXO_22 = art(cli.sexo, 'O', 'A') #Referente al beneficiario
+    SEXO_21 = art(tramite.beneficiario_1.sexo, 'EL', 'LA') #Referente al beneficiario
+    SEXO_22 = art(tramite.beneficiario_1.sexo, 'EL', 'LA') #Referente al beneficiario
 
     # 2) Fecha actual
     if fecha == None:
@@ -1592,6 +1641,20 @@ def build_contrato_propiedad_pagos_varios_context(fin, cli, ven, cliente2=None,r
     else:
         test2 = testigo2
 
+    bene = (tramite.beneficiario_1.nombre_completo or '')        # convierte None -> ''
+    if bene:
+        benef = bene.upper()
+    else:
+        benef = bene
+
+    bene_telefono = (tramite.beneficiario_1.telefono or '')
+    bene_correo = (tramite.beneficiario_1.email or '')
+    if bene_correo:
+        bene_correo1 = bene_correo.upper()
+    else:
+        bene_correo1 = bene_correo
+    bene_id = (tramite.beneficiario_1.numero_id or '')
+
     # 4) Coordenadas por cada lado (igual que antes)
     dir_fields = {}
     for dir_name in ('norte','sur','este','oeste'):
@@ -1610,8 +1673,17 @@ def build_contrato_propiedad_pagos_varios_context(fin, cli, ven, cliente2=None,r
     fecha_contrato = fin.lote.proyecto.fecha_emision_contrato
     autoridad = fin.lote.proyecto.autoridad
 
+    tipo = fin.lote.proyecto.tipo_contrato.upper()
+
     # 6) Miembro B dinámico según relación (igual que antes)
-    if ven.ine == prop.ine and prop.tipo == 'propietario':
+    if ven.ine == prop.ine and prop.tipo == 'propietario' and tipo == 'PEQUEÑA PROPIEDAD':
+        claus_b = (
+            f"QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, "
+            f"QUE ACREDITA CON EL CONTRATO PRIVADO DE COMPRAVENTA Y CONSTANCIA DE POSESIÓN Y APEO Y DESLINDE DE FECHA {fecha_posesion} "
+            f"EXPEDIDOS POR LOS INTEGRANTES {autoridad}"
+        )
+    
+    elif ven.ine == prop.ine and prop.tipo == 'propietario':
         claus_b = (
             f"QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, "
             f"QUE ACREDITA CON EL CONTRATO PRIVADO DE COMPRAVENTA Y CONSTANCIA DE POSESIÓN DE FECHA {fecha_posesion} "
@@ -1735,6 +1807,14 @@ def build_contrato_propiedad_pagos_varios_context(fin, cli, ven, cliente2=None,r
         'CLAUSULA_B': claus_b,
         'NOMBRE_TESTIGO2': test2,
         'NOMBRE_TESTIGO1': test1,
+
+        #BENEFICIARIO
+        'SEXO_21':SEXO_21,
+        'SEXO_22': SEXO_22,
+        'NOMBRE_BENE': benef,
+        'ID_BENE': bene_id,
+        'NUMERO_BENE': bene_telefono,
+        'CORREO_BENE':bene_correo1,
     }
 
     # 6) Firma
@@ -2426,6 +2506,18 @@ def build_contrato_ejidal_pagos_context(fin, cli, ven, request=None, tpl=None, f
             f", OTORGADO POR {SEXO_5} C. {prop.nombre_completo.upper()}."
         )
 
+    bene = (tramite.beneficiario_1.nombre_completo or '')        # convierte None -> ''
+    if bene:
+        benef = bene.upper()
+    else:
+        benef = bene
+
+    bene_correo = (tramite.beneficiario_1.email or '')
+    if bene_correo:
+        bene_correo1 = bene_correo.upper()
+    else:
+        bene_correo1 = bene_correo
+
     # 5) Construcción del context
     context = {
         'DIA' : DIA_CESION,
@@ -2498,10 +2590,10 @@ def build_contrato_ejidal_pagos_context(fin, cli, ven, request=None, tpl=None, f
         #id_bene = None #Clave ine beneficiarii
         #num_bene = None #Número del beneficiario
         #correo_bene = None #Correo del beneficiario
-        'NOMBRE_BENE': tramite.beneficiario_1.nombre_completo.upper(),
+        'NOMBRE_BENE': benef,
         'ID_BENE': tramite.beneficiario_1.numero_id,
         'NUMERO_BENE': tramite.beneficiario_1.telefono,
-        'CORREO_BENE': tramite.beneficiario_1.email,
+        'CORREO_BENE': bene_correo1,
     }
 
     # 6) Firma
@@ -2699,6 +2791,23 @@ def build_contrato_ejidal_pagos_varios_context(fin, cli, ven, cliente2=None,requ
     else:
         test2 = testigo2
 
+    SEXO_21 = art(tramite.beneficiario_1.sexo, 'EL', 'LA') #Referente al beneficiario
+    SEXO_22 = art(tramite.beneficiario_1.sexo, 'O', 'A') #Referente al beneficiario
+    
+    bene = (tramite.beneficiario_1.nombre_completo or '')        # convierte None -> ''
+    if bene:
+        benef = bene.upper()
+    else:
+        benef = bene
+    
+    bene_telefono = (tramite.beneficiario_1.telefono or '')
+    bene_correo = (tramite.beneficiario_1.email or '')
+    if bene_correo:
+        bene_correo1 = bene_correo.upper()
+    else:
+        bene_correo1 = bene_correo
+    bene_id = (tramite.beneficiario_1.numero_id or '')
+
     # 3) Miembro B dinámico según relación:
     # — Si ven es propietario:
     if ven.ine == prop.ine and prop.tipo == 'propietario':
@@ -2802,6 +2911,14 @@ def build_contrato_ejidal_pagos_varios_context(fin, cli, ven, cliente2=None,requ
         'CLAUSULA_B': claus_b,
         'NOMBRE_TESTIGO2': test2,
         'NOMBRE_TESTIGO1': test1,
+
+        #BENEFICIARIO
+        'SEXO_22':SEXO_21,
+        'SEXO_21': SEXO_22,
+        'NOMBRE_BENE': benef,
+        'ID_BENE': bene_id,
+        'NUMERO_BENE': bene_telefono,
+        'CORREO_BENE':bene_correo1,
     }
 
     # 6) Firma
@@ -3402,6 +3519,9 @@ def build_contrato_canario_pagos_context(fin, cli, ven, request=None, tpl=None, 
     SEXO_18 = art(cli.sexo, 'DEL "', 'DE "LA ')
     SEXO_19 = art(cli.sexo, 'AL "', 'A "LA ')
 
+    SEXO_11 = art(tramite.beneficiario_1.sexo, 'EL', 'LA') #Referente al beneficiario
+    SEXO_12 = art(tramite.beneficiario_1.sexo, 'O', 'A') #Referente al beneficiario
+
     # 2) Fecha actual
     if fecha == None:
         hoy = date.today()
@@ -3436,6 +3556,20 @@ def build_contrato_canario_pagos_context(fin, cli, ven, request=None, tpl=None, 
         test2 = testigo2.upper()
     else:
         test2 = testigo2
+
+    bene = (tramite.beneficiario_1.nombre_completo or '')        # convierte None -> ''
+    if bene:
+        benef = bene.upper()
+    else:
+        benef = bene
+    
+    bene_telefono = (tramite.beneficiario_1.telefono or '')
+    bene_correo = (tramite.beneficiario_1.email or '')
+    if bene_correo:
+        bene_correo1 = bene_correo.upper()
+    else:
+        bene_correo1 = bene_correo
+    bene_id = (tramite.beneficiario_1.numero_id or '')
 
     # 3) Miembro B dinámico según relación:
     # — Si ven es propietario:
@@ -3519,6 +3653,14 @@ def build_contrato_canario_pagos_context(fin, cli, ven, request=None, tpl=None, 
         'CLAUSULA_B': claus_b,
         'NOMBRE_TESTIGO2': test2,
         'NOMBRE_TESTIGO1': test1,
+
+        #BENEFICIARIO
+        'SEXO_11':SEXO_11,
+        'SEXO_12': SEXO_12,
+        'NOMBRE_BENE': benef,
+        'ID_BENE': bene_id,
+        'NUMERO_BENE': bene_telefono,
+        'CORREO_BENE':bene_correo1,
     }
 
     # 6) Firma
@@ -3684,6 +3826,23 @@ def build_contrato_canario_pagos_varios_context(fin, cli, ven, cliente2=None,req
     else:
         test2 = testigo2
 
+    SEXO_21 = art(tramite.beneficiario_1.sexo, 'EL', 'LA') #Referente al beneficiario
+    SEXO_22 = art(tramite.beneficiario_1.sexo, 'O', 'A') #Referente al beneficiario
+
+    bene = (tramite.beneficiario_1.nombre_completo or '')        # convierte None -> ''
+    if bene:
+        benef = bene.upper()
+    else:
+        benef = bene
+
+    bene_telefono = (tramite.beneficiario_1.telefono or '')
+    bene_correo = (tramite.beneficiario_1.email or '')
+    if bene_correo:
+        bene_correo1 = bene_correo.upper()
+    else:
+        bene_correo1 = bene_correo
+    bene_id = (tramite.beneficiario_1.numero_id or '')
+
     # 4) Coordenadas por cada lado (igual que antes)
     dir_fields = {}
     for dir_name in ('norte','sur','este','oeste'):
@@ -3799,6 +3958,14 @@ def build_contrato_canario_pagos_varios_context(fin, cli, ven, cliente2=None,req
         'CLAUSULA_B': claus_b,
         'NOMBRE_TESTIGO2': test2,
         'NOMBRE_TESTIGO1': test1,
+
+        #BENEFICIARIO
+        'SEXO_21':SEXO_21,
+        'SEXO_22': SEXO_22,
+        'NOMBRE_BENE': benef,
+        'ID_BENE': bene_id,
+        'NUMERO_BENE': bene_telefono,
+        'CORREO_BENE':bene_correo1,
     }
 
     # 6) Firma
@@ -3876,5 +4043,6 @@ def build_contrato_canario_pagos_varios_context(fin, cli, ven, cliente2=None,req
     })
 
     return context
+
 
 
