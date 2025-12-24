@@ -1389,16 +1389,17 @@
         <div class="field-group">
           <h3 class="field-group-title">
             <i class="fas fa-user-check"></i>
-            Testigo 1 (Vendedor)
+            Testigo 1 (Opcional)
           </h3>
           <div class="form-row">
             <div class="form-field-wrapper">
-              <label>
-                <i class="fas fa-user-tie"></i>
-                Nombre del Testigo 1
-              </label>
-              <input type="text" value="[Se asignará automáticamente el vendedor]" readonly class="readonly-field">
-              <small class="help-text">El vendedor que atienda el trámite será testigo por defecto</small>
+              <label for="testigo1_nombre">
+                    <i class="fas fa-user-tie"></i>
+                    Nombre completo del Testigo 1
+                </label>
+              <input type="text" id="testigo1_nombre" name="testigo1_nombre" 
+                       placeholder="Ej: María González López" maxlength="150">
+                <small class="help-text">Nombre del primer testigo (opcional)</small>
             </div>
           </div>
         </div>
@@ -1913,4 +1914,5 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 {% endblock %}
+
 
