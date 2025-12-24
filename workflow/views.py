@@ -397,8 +397,12 @@ class ClienteDataView(FormView):
         # Manejar testigos (opcionales)
         testigos_data = {}
         if add_testigos:
-            # Testigo 2 es opcional (el testigo 1 se asignará automáticamente como vendedor)
+            # Ahora ambos testigos son opcionales
+            testigo1_nombre = request.POST.get('testigo1_nombre', '').strip()
             testigo2_nombre = request.POST.get('testigo2_nombre', '').strip()
+            
+            if testigo1_nombre:
+                testigos_data['testigo1_nombre'] = testigo1_nombre
             if testigo2_nombre:
                 testigos_data['testigo2_nombre'] = testigo2_nombre
         
@@ -889,13 +893,8 @@ class AvisoPrivacidadView(FormView):
 
             # Actualizar testigos y beneficiarios si existen
             if testigos_data:
-                # Testigo 1 es el vendedor automáticamente
-                if vendedor:
-                    tramite.testigo_1_nombre = f"{vendedor.nombre} {vendedor.apellido}"
-                elif propietario:
-                    tramite.testigo_1_nombre = f"{propietario.nombre} {propietario.apellido}"
-                
-                # Testigo 2 opcional
+                # Ahora ambos testigos son opcionales
+                tramite.testigo_1_nombre = testigos_data.get('testigo1_nombre', '')
                 tramite.testigo_2_nombre = testigos_data.get('testigo2_nombre', '')
             
             # NUEVO: Actualizar beneficiario si existe
@@ -927,7 +926,7 @@ class AvisoPrivacidadView(FormView):
                 cliente_2=cliente2,
                 usuario_creador=self.request.user,  # ← Aquí asignamos el usuario
                 # Asignar testigos
-                testigo_1_nombre=testigo_1_nombre,
+                testigo_1_nombre=testigos_data.get('testigo1_nombre', ''),  # <-- Usa testigos_data
                 testigo_2_nombre=testigos_data.get('testigo2_nombre', ''),
                 # NUEVO: Asignar beneficiario (puede ser None)
                 beneficiario_1=beneficiario
@@ -1110,5 +1109,6 @@ class FirmaTestigo2View(FirmaBaseView):
 # Vista de éxito después de firmar
 class FirmaExitosaView(TemplateView):
     template_name = 'workflow/firma_exitosa.html'
+
 
 
