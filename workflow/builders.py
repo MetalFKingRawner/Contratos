@@ -791,14 +791,14 @@ def build_contrato_propiedad_contado_context(fin, cli, ven, request=None, tpl=No
         claus_b = (
             f"QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, "
             f"QUE ACREDITA CON EL CONTRATO PRIVADO DE COMPRAVENTA, CONSTANCIA DE POSESIÓN Y APEO Y DESLINDE DE FECHA {fecha_posesion} "
-            f"EXPEDIDOS POR LOS INTEGRANTES {autoridad}"
+            f"EXPEDIDOS POR {autoridad}"
         )
     
     elif ven.ine == prop.ine and prop.tipo == 'propietario':
         claus_b = (
             f"QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, "
             f"QUE ACREDITA CON EL CONTRATO PRIVADO DE COMPRAVENTA, CONSTANCIA DE POSESIÓN Y APEO Y DESLINDE DE FECHA {fecha_posesion} "
-            f"EXPEDIDA POR LOS INTEGRANTES {autoridad}"
+            f"EXPEDIDA POR {autoridad}"
         )
     # — Si ven es apoderado:
     elif ven.ine == prop.ine and prop.tipo == 'apoderado':
@@ -1078,14 +1078,14 @@ def build_contrato_propiedad_contado_varios_context(fin, cli, ven, cliente2=None
         claus_b = (
             f"QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, "
             f"QUE ACREDITA CON EL CONTRATO PRIVADO DE COMPRAVENTA, CONSTANCIA DE POSESIÓN Y APEO Y DESLINDE DE FECHA {fecha_posesion} "
-            f"EXPEDIDOS POR LOS INTEGRANTES {autoridad}"
+            f"EXPEDIDOS POR {autoridad}"
         )
     
     elif ven.ine == prop.ine and prop.tipo == 'propietario':
         claus_b = (
             f"QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, "
             f"QUE ACREDITA CON EL CONTRATO PRIVADO DE COMPRAVENTA, CONSTANCIA DE POSESIÓN Y APEO Y DESLINDE DE FECHA {fecha_posesion} "
-            f"EXPEDIDA POR LOS INTEGRANTES {autoridad}"
+            f"EXPEDIDA POR {autoridad}"
         )
     elif ven.ine == prop.ine and prop.tipo == 'apoderado':
         claus_b = (
@@ -1363,14 +1363,14 @@ def build_contrato_propiedad_pagos_context(fin, cli, ven, request=None, tpl=None
         claus_b = (
             f"QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, "
             f"QUE ACREDITA CON EL CONTRATO PRIVADO DE COMPRAVENTA, CONSTANCIA DE POSESIÓN Y APEO Y DESLINDE DE FECHA {fecha_posesion} "
-            f"EXPEDIDOS POR LOS INTEGRANTES {autoridad}"
+            f"EXPEDIDOS POR {autoridad}"
         )
     
     elif ven.ine == prop.ine and prop.tipo == 'propietario':
         claus_b = (
             f"QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, "
             f"QUE ACREDITA CON EL CONTRATO PRIVADO DE COMPRAVENTA, CONSTANCIA DE POSESIÓN Y APEO Y DESLINDE DE FECHA {fecha_posesion} "
-            f"EXPEDIDA POR LOS INTEGRANTES {autoridad}"
+            f"EXPEDIDA POR {autoridad}"
         )
     # — Si ven es apoderado:
     elif ven.ine == prop.ine and prop.tipo == 'apoderado':
@@ -1680,14 +1680,14 @@ def build_contrato_propiedad_pagos_varios_context(fin, cli, ven, cliente2=None,r
         claus_b = (
             f"QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, "
             f"QUE ACREDITA CON EL CONTRATO PRIVADO DE COMPRAVENTA, CONSTANCIA DE POSESIÓN Y APEO Y DESLINDE DE FECHA {fecha_posesion} "
-            f"EXPEDIDOS POR LOS INTEGRANTES {autoridad}"
+            f"EXPEDIDOS POR {autoridad}"
         )
     
     elif ven.ine == prop.ine and prop.tipo == 'propietario':
         claus_b = (
             f"QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, "
             f"QUE ACREDITA CON EL CONTRATO PRIVADO DE COMPRAVENTA, CONSTANCIA DE POSESIÓN Y APEO Y DESLINDE DE FECHA {fecha_posesion} "
-            f"EXPEDIDA POR LOS INTEGRANTES {autoridad}"
+            f"EXPEDIDA POR {autoridad}"
         )
     elif ven.ine == prop.ine and prop.tipo == 'apoderado':
         claus_b = (
@@ -4043,6 +4043,7 @@ def build_contrato_canario_pagos_varios_context(fin, cli, ven, cliente2=None,req
     })
 
     return context
+
 
 
 
