@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0013_beneficiario'),
+        ('core', '0011_beneficiario'),
         ('workflow', '0005_tramite_usuario_creador'),
     ]
 
@@ -111,3 +111,4 @@ class Migration(migrations.Migration):
             field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='tramites_beneficiario2', to='core.beneficiario', verbose_name='Beneficiario 2'),
         ),
     ]
+
