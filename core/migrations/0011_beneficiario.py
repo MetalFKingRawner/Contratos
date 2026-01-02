@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0012_vendedor_contraseña_temporal'),
+        ('core', '0010_vendedor_activo_vendedor_contraseña_temporal_and_more'),
     ]
 
     operations = [
@@ -24,3 +24,4 @@ class Migration(migrations.Migration):
             ],
         ),
     ]
+
