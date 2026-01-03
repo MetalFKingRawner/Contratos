@@ -117,6 +117,51 @@
                 </div>
               </div>
             </div>
+            <!-- NUEVA SECCIÓN: DOCUMENTOS ESPECIALES -->
+            <div class="detail-row">
+              <div class="detail-item">
+                <div class="detail-icon special-docs">
+                  <i class="fas fa-folder-open"></i>
+                </div>
+                <div class="detail-content">
+                  <span class="detail-label">Cesión de Derechos</span>
+                  <span class="detail-value {% if p.incluir_cesion_derechos %}doc-included{% else %}doc-not-included{% endif %}">
+                    <i class="fas fa-{% if p.incluir_cesion_derechos %}check-circle{% else %}times-circle{% endif %}"></i>
+                    {{ p.incluir_cesion_derechos|yesno:"Incluido,No incluido" }}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="detail-row">
+              <div class="detail-item">
+                <div class="detail-icon special-docs-2">
+                  <i class="fas fa-file-contract"></i>
+                </div>
+                <div class="detail-content">
+                  <span class="detail-label">Constancia de Cesión</span>
+                  <span class="detail-value {% if p.incluir_constancia_cesion %}doc-included{% else %}doc-not-included{% endif %}">
+                    <i class="fas fa-{% if p.incluir_constancia_cesion %}check-circle{% else %}times-circle{% endif %}"></i>
+                    {{ p.incluir_constancia_cesion|yesno:"Incluido,No incluido" }}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="detail-row">
+              <div class="detail-item">
+                <div class="detail-icon special-docs-3">
+                  <i class="fas fa-home"></i>
+                </div>
+                <div class="detail-content">
+                  <span class="detail-label">Constancia de Posesión</span>
+                  <span class="detail-value {% if p.incluir_constancia_posesion %}doc-included{% else %}doc-not-included{% endif %}">
+                    <i class="fas fa-{% if p.incluir_constancia_posesion %}check-circle{% else %}times-circle{% endif %}"></i>
+                    {{ p.incluir_constancia_posesion|yesno:"Incluido,No incluido" }}
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
           
           <div class="project-card-footer">
@@ -1142,6 +1187,45 @@ function highlightSearchTerms(searchTerm) {
     transform: scale(1.05);
   }
 }
-</style>
+/* ==== ICONOS DE DOCUMENTOS ESPECIALES ==== */
+.detail-icon.special-docs {
+  background: linear-gradient(135deg, #EC4899 0%, #DB2777 100%);
+}
 
+.detail-icon.special-docs-2 {
+  background: linear-gradient(135deg, #06B6D4 0%, #0891B2 100%);
+}
+
+.detail-icon.special-docs-3 {
+  background: linear-gradient(135deg, #84CC16 0%, #65A30D 100%);
+}
+
+/* ==== ESTADOS DE DOCUMENTOS ==== */
+.detail-value.doc-included {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: #10B981;
+  font-weight: 600;
+}
+
+.detail-value.doc-not-included {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: #6B7280;
+  font-weight: 500;
+}
+
+.detail-value.doc-included i {
+  font-size: 0.85rem;
+  color: #10B981;
+}
+
+.detail-value.doc-not-included i {
+  font-size: 0.85rem;
+  color: #6B7280;
+}
+</style>
 {% endblock %}
+
