@@ -842,6 +842,7 @@ def build_contrato_propiedad_contado_context(fin, cli, ven, request=None, tpl=No
         # Fecha de generación
         'DIA': numero_a_letras(float(dia_actual.day),apocopado=False),
         'MES': meses[dia_actual.month - 1].upper(),
+        'ANIO': numero_a_letras(float(dia_actual.year),apocopado=False),
 
         # Vendedor
         'NOMBRE_VENDEDOR': ven.nombre_completo.upper(),
@@ -1127,6 +1128,7 @@ def build_contrato_propiedad_contado_varios_context(fin, cli, ven, cliente2=None
         # Fecha de generación
         'DIA': numero_a_letras(float(pago.day),apocopado=False),
         'MES': meses[pago.month - 1].upper(),
+        'ANIO': numero_a_letras(float(pago.year),apocopado=False),
 
         # Vendedor
         'NOMBRE_VENDEDOR': ven.nombre_completo.upper(),
@@ -1310,6 +1312,7 @@ def build_contrato_propiedad_pagos_context(fin, cli, ven, request=None, tpl=None
     meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio",
              "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]
     DIA, MES = numero_a_letras(float(hoy.day),apocopado=False), meses[hoy.month-1].upper()
+    ANIO = numero_a_letras(float(hoy.year),apocopado=False)
 
     coords = {}
     for lado in ('norte','sur','este','oeste'):
@@ -1410,7 +1413,7 @@ def build_contrato_propiedad_pagos_context(fin, cli, ven, request=None, tpl=None
         'SEXO_16': SEXO_16,'SEXO_17': SEXO_17, 'SEXO_18': SEXO_18, 'SEXO_19': SEXO_19,
 
         # Fecha
-        'DIA': DIA, 'MES': MES,
+        'DIA': DIA, 'MES': MES, 'ANIO': ANIO,
 
         # Vendedor
         'NOMBRE_VENDEDOR': ven.nombre_completo.upper(),
@@ -1614,6 +1617,7 @@ def build_contrato_propiedad_pagos_varios_context(fin, cli, ven, cliente2=None,r
     meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio",
              "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]
     DIA, MES = numero_a_letras(float(hoy.day),apocopado=False), meses[hoy.month-1].upper()
+    ANIO = numero_a_letras(float(hoy.year),apocopado=False)
 
     email1 = (cli.email or '')        # convierte None -> ''
     email1 = email1.strip()            # quita espacios en blanco
@@ -1739,7 +1743,7 @@ def build_contrato_propiedad_pagos_varios_context(fin, cli, ven, cliente2=None,r
         'SEXO_17': SEXO_17,
 
         # Fecha
-        'DIA': DIA, 'MES': MES,
+        'DIA': DIA, 'MES': MES, 'ANIO': ANIO,
 
         # Vendedor
         'NOMBRE_VENDEDOR': ven.nombre_completo.upper(),
@@ -1926,6 +1930,7 @@ def build_contrato_ejidal_contado_context(fin, cli, ven, request=None, tpl=None,
     pago = fin.fecha_pago_completo
     meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio",
              "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]
+    ANIO_CESION = numero_a_letras(float(cesion.year),apocopado=False)
 
     email1 = (cli.email or '')        # convierte None -> ''
     email1 = email1.strip()            # quita espacios en blanco
@@ -1964,12 +1969,24 @@ def build_contrato_ejidal_contado_context(fin, cli, ven, request=None, tpl=None,
     fecha_contrato = fin.lote.proyecto.fecha_emision_contrato
     autoridad = fin.lote.proyecto.autoridad
 
+    # NUEVO: Obtener información del proyecto para determinar tipo de documento
+    proyecto = fin.lote.proyecto
+    
+    # Determinar el texto según el documento disponible
+    if proyecto.incluir_cesion_derechos:
+        tipo_documento_texto = "CESIÓN DE DERECHOS"
+    elif proyecto.incluir_constancia_cesion:
+        tipo_documento_texto = "CONSTANCIA DE CESIÓN DE DERECHOS"
+    else:
+        # Por defecto, aunque en ejido debería tener al menos uno
+        tipo_documento_texto = "CONSTANCIA DE POSESIÓN"
+
     # 3) Miembro B dinámico según relación:
     # — Si ven es propietario:
     if ven.ine == prop.ine and prop.tipo == 'propietario':
         claus_b = (
             f"QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, "
-            f"QUE ACREDITA CON LA CESIÓN DE DERECHOS DE FECHA {fecha_posesion}"
+            f"QUE ACREDITA CON LA {tipo_documento_texto} DE FECHA {fecha_posesion}"
             f", EXPEDIDA POR LOS INTEGRANTES {autoridad}"
         )
     # — Si ven es apoderado:
@@ -2013,6 +2030,7 @@ def build_contrato_ejidal_contado_context(fin, cli, ven, request=None, tpl=None,
         'FECHA_DOCUMENTO': fecha_posesion,
         'DIA_CESION': numero_a_letras(float(cesion.day),apocopado=False),
         'MES_CESION': meses[cesion.month-1].upper(),
+        'ANIO_CESION': ANIO_CESION,
 
         'ID_INE':            ven.ine,
         'INSTRUMENTO_PUBLICO': prop.instrumento_publico or '',
@@ -2046,6 +2064,9 @@ def build_contrato_ejidal_contado_context(fin, cli, ven, request=None, tpl=None,
         'CLAUSULA_B': claus_b,
         'NOMBRE_TESTIGO2': test2,
         'NOMBRE_TESTIGO1': test1,
+
+        # NUEVO: También puedes incluir el tipo de documento como variable separada si lo necesitas
+        'TIPO_DOCUMENTO_EJIDAL': tipo_documento_texto,
     }
 
     # 6) Firma
@@ -2172,6 +2193,7 @@ def build_contrato_ejidal_contado_varios_context(fin, cli, ven, cliente2=None,re
     pago = fin.fecha_pago_completo
     meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio",
              "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]
+    ANIO_CESION = numero_a_letras(float(cesion.year),apocopado=False)
 
     email1 = (cli.email or '')        # convierte None -> ''
     email1 = email1.strip()            # quita espacios en blanco
@@ -2217,12 +2239,25 @@ def build_contrato_ejidal_contado_varios_context(fin, cli, ven, cliente2=None,re
     fecha_contrato = fin.lote.proyecto.fecha_emision_contrato
     autoridad = fin.lote.proyecto.autoridad
 
+    # NUEVO: Obtener información del proyecto para determinar tipo de documento
+    proyecto = fin.lote.proyecto
+    
+    # Determinar el texto según el documento disponible
+    if proyecto.incluir_cesion_derechos:
+        tipo_documento_texto = "CESIÓN DE DERECHOS"
+    elif proyecto.incluir_constancia_cesion:
+        tipo_documento_texto = "CONSTANCIA DE CESIÓN DE DERECHOS"
+    else:
+        # Por defecto, aunque en ejido debería tener al menos uno
+        tipo_documento_texto = "CONSTANCIA DE POSESIÓN"
+
+    
     # 3) Miembro B dinámico según relación:
     # — Si ven es propietario:
     if ven.ine == prop.ine and prop.tipo == 'propietario':
         claus_b = (
             f"QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, "
-            f"QUE ACREDITA CON LA CESIÓN DE DERECHOS DE FECHA {fecha_posesion}"
+            f"QUE ACREDITA CON LA {tipo_documento_texto} DE FECHA {fecha_posesion}"
             f", EXPEDIDA POR LOS INTEGRANTES {autoridad}"
         )
     # — Si ven es apoderado:
@@ -2266,6 +2301,7 @@ def build_contrato_ejidal_contado_varios_context(fin, cli, ven, cliente2=None,re
         'FECHA_DOCUMENTO': fecha_posesion,
         'DIA_CESION': numero_a_letras(float(cesion.day),apocopado=False),
         'MES_CESION': meses[cesion.month-1].upper(),
+        'ANIO_CESION': ANIO_CESION,
 
         'ID_INE':            ven.ine,
         'INSTRUMENTO_PUBLICO': prop.instrumento_publico or '',
@@ -2309,6 +2345,9 @@ def build_contrato_ejidal_contado_varios_context(fin, cli, ven, cliente2=None,re
         'CLAUSULA_B': claus_b,
         'NOMBRE_TESTIGO2': test2,
         'NOMBRE_TESTIGO1': test1,
+
+        # NUEVO: También puedes incluir el tipo de documento como variable separada si lo necesitas
+        'TIPO_DOCUMENTO_EJIDAL': tipo_documento_texto,
     }
 
     # 6) Firma
@@ -2425,6 +2464,7 @@ def build_contrato_ejidal_pagos_context(fin, cli, ven, request=None, tpl=None, f
              "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]
     DIA_CESION = numero_a_letras(float(cesion.day),apocopado=False)
     MES_CESION = meses[cesion.month-1].upper()
+    ANIO_CESION = numero_a_letras(float(cesion.year),apocopado=False)
 
     # 3) Coordenadas (igual)
     def _parse_coord(text):
@@ -2481,12 +2521,24 @@ def build_contrato_ejidal_pagos_context(fin, cli, ven, request=None, tpl=None, f
     else:
         test2 = testigo2
 
+    # NUEVO: Obtener información del proyecto para determinar tipo de documento
+    proyecto = fin.lote.proyecto
+    
+    # Determinar el texto según el documento disponible
+    if proyecto.incluir_cesion_derechos:
+        tipo_documento_texto = "CESIÓN DE DERECHOS"
+    elif proyecto.incluir_constancia_cesion:
+        tipo_documento_texto = "CONSTANCIA DE CESIÓN DE DERECHOS"
+    else:
+        # Por defecto, aunque en ejido debería tener al menos uno
+        tipo_documento_texto = "CONSTANCIA DE POSESIÓN"
+        
     # 3) Miembro B dinámico según relación:
     # — Si ven es propietario:
     if ven.ine == prop.ine and prop.tipo == 'propietario':
         claus_b = (
             f"QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, "
-            f"QUE ACREDITA CON LA CESIÓN DE DERECHOS DE FECHA {fecha_posesion}"
+            f"QUE ACREDITA CON LA {tipo_documento_texto} DE FECHA {fecha_posesion}"
             f", EXPEDIDA POR LOS INTEGRANTES {autoridad}"
         )
     # — Si ven es apoderado:
@@ -2522,6 +2574,7 @@ def build_contrato_ejidal_pagos_context(fin, cli, ven, request=None, tpl=None, f
     context = {
         'DIA' : DIA_CESION,
         'MES' : MES_CESION,
+        'ANIO': ANIO_CESION,
         'SEXO_1': SEXO_1,
         'SEXO_2': SEXO_2,
         'SEXO_3': SEXO_3,
@@ -2544,6 +2597,7 @@ def build_contrato_ejidal_pagos_context(fin, cli, ven, request=None, tpl=None, f
 
         'DIA_CESION':  DIA_CESION,
         'MES_CESION':  MES_CESION,
+        'ANIO_CESION': ANIO_CESION,
 
         'FECHA_DOCUMENTO': fecha_posesion,
         'NOMBRE_CESION': autoridad,
@@ -2594,6 +2648,9 @@ def build_contrato_ejidal_pagos_context(fin, cli, ven, request=None, tpl=None, f
         'ID_BENE': tramite.beneficiario_1.numero_id,
         'NUMERO_BENE': tramite.beneficiario_1.telefono,
         'CORREO_BENE': bene_correo1,
+
+        # NUEVO: También puedes incluir el tipo de documento como variable separada si lo necesitas
+        'TIPO_DOCUMENTO_EJIDAL': tipo_documento_texto,
     }
 
     # 6) Firma
@@ -2699,6 +2756,7 @@ def build_contrato_ejidal_pagos_varios_context(fin, cli, ven, cliente2=None,requ
              "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]
     DIA_CESION = numero_a_letras(float(cesion.day), apocopado=False)
     MES_CESION = meses[cesion.month-1].upper()
+    ANIO_CESION = numero_a_letras(float(cesion.year),apocopado=False)
 
     # 2) Pronombres PLURALES para DOS COMPRADORES
     # Determinar género predominante para plurales
@@ -2808,12 +2866,24 @@ def build_contrato_ejidal_pagos_varios_context(fin, cli, ven, cliente2=None,requ
         bene_correo1 = bene_correo
     bene_id = (tramite.beneficiario_1.numero_id or '')
 
+    # NUEVO: Obtener información del proyecto para determinar tipo de documento
+    proyecto = fin.lote.proyecto
+    
+    # Determinar el texto según el documento disponible
+    if proyecto.incluir_cesion_derechos:
+        tipo_documento_texto = "CESIÓN DE DERECHOS"
+    elif proyecto.incluir_constancia_cesion:
+        tipo_documento_texto = "CONSTANCIA DE CESIÓN DE DERECHOS"
+    else:
+        # Por defecto, aunque en ejido debería tener al menos uno
+        tipo_documento_texto = "CONSTANCIA DE POSESIÓN"
+
     # 3) Miembro B dinámico según relación:
     # — Si ven es propietario:
     if ven.ine == prop.ine and prop.tipo == 'propietario':
         claus_b = (
             f"QUE CUENTA CON CAPACIDAD LEGAL PARA CELEBRAR EL PRESENTE CONTRATO, "
-            f"QUE ACREDITA CON LA CESIÓN DE DERECHOS DE FECHA {fecha_posesion}"
+            f"QUE ACREDITA CON LA {tipo_documento_texto} DE FECHA {fecha_posesion}"
             f", EXPEDIDA POR LOS INTEGRANTES {autoridad}"
         )
     # — Si ven es apoderado:
@@ -2837,6 +2907,7 @@ def build_contrato_ejidal_pagos_varios_context(fin, cli, ven, cliente2=None,requ
     context = {
         'DIA' : DIA_CESION,
         'MES' : MES_CESION,
+        'ANIO': ANIO_CESION,
         'SEXO_1': SEXO_1,
         'SEXO_2': SEXO_2,
         'SEXO_3': SEXO_3,
@@ -2858,6 +2929,7 @@ def build_contrato_ejidal_pagos_varios_context(fin, cli, ven, cliente2=None,requ
 
         'DIA_CESION':  DIA_CESION,
         'MES_CESION':  MES_CESION,
+        'ANIO_CESION': ANIO_CESION,
 
         'FECHA_DOCUMENTO': fecha_posesion,
         'NOMBRE_CESION': autoridad,
@@ -2919,6 +2991,8 @@ def build_contrato_ejidal_pagos_varios_context(fin, cli, ven, cliente2=None,requ
         'ID_BENE': bene_id,
         'NUMERO_BENE': bene_telefono,
         'CORREO_BENE':bene_correo1,
+        # NUEVO: También puedes incluir el tipo de documento como variable separada si lo necesitas
+        'TIPO_DOCUMENTO_EJIDAL': tipo_documento_texto,
     }
 
     # 6) Firma
@@ -3111,6 +3185,7 @@ def build_contrato_canario_contado_context(fin, cli, ven, request=None, tpl=None
         # Fecha de generación
         'DIA': numero_a_letras(float(dia_actual.day),apocopado=False),
         'MES': meses[dia_actual.month - 1].upper(),
+        'ANIO': numero_a_letras(float(dia_actual.year),apocopado=False),
 
         # Vendedor
         'NOMBRE_VENDEDOR': ven.nombre_completo.upper(),
@@ -3364,6 +3439,7 @@ def build_contrato_canario_contado_varios_context(fin, cli, ven, cliente2=None,r
         # Fecha de generación
         'DIA': numero_a_letras(float(pago.day), apocopado=False),
         'MES': meses[pago.month - 1].upper(),
+        'ANIO': numero_a_letras(float(pago.year),apocopado=False),
 
         # Vendedor
         'NOMBRE_VENDEDOR': ven.nombre_completo.upper(),
@@ -3530,6 +3606,7 @@ def build_contrato_canario_pagos_context(fin, cli, ven, request=None, tpl=None, 
     meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio",
              "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]
     DIA, MES = numero_a_letras(float(hoy.day),apocopado=False), meses[hoy.month-1].upper()
+    ANIO = numero_a_letras(float(hoy.year),apocopado=False)
 
     coords = {}
     for lado in ('norte','sur','este','oeste'):
@@ -3608,7 +3685,7 @@ def build_contrato_canario_pagos_context(fin, cli, ven, request=None, tpl=None, 
         'SEXO_16': SEXO_16,'SEXO_17': SEXO_17, 'SEXO_18': SEXO_18, 'SEXO_19': SEXO_19,
 
         # Fecha
-        'DIA': DIA, 'MES': MES,
+        'DIA': DIA, 'MES': MES, 'ANIO':ANIO,
 
         # Vendedor
         'NOMBRE_VENDEDOR': ven.nombre_completo.upper(),
@@ -3799,6 +3876,7 @@ def build_contrato_canario_pagos_varios_context(fin, cli, ven, cliente2=None,req
     meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio",
              "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]
     DIA, MES = numero_a_letras(float(hoy.day),apocopado=False), meses[hoy.month-1].upper()
+    ANIO = numero_a_letras(float(hoy.year),apocopado=False)
 
     email1 = (cli.email or '')        # convierte None -> ''
     email1 = email1.strip()            # quita espacios en blanco
@@ -3903,7 +3981,7 @@ def build_contrato_canario_pagos_varios_context(fin, cli, ven, cliente2=None,req
         'SEXO_17': SEXO_17,
 
         # Fecha
-        'DIA': DIA, 'MES': MES,
+        'DIA': DIA, 'MES': MES, 'ANIO': ANIO,
 
         # Vendedor
         'NOMBRE_VENDEDOR': ven.nombre_completo.upper(),
@@ -4043,6 +4121,7 @@ def build_contrato_canario_pagos_varios_context(fin, cli, ven, cliente2=None,req
     })
 
     return context
+
 
 
 
