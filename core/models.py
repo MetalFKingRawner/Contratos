@@ -11,6 +11,25 @@ class Proyecto(models.Model):
     autoridad = models.TextField(default='')
     fecha_emision_contrato = models.TextField(default='')
 
+    # NUEVOS CAMPOS PARA DOCUMENTOS ESPECIALES
+    incluir_cesion_derechos = models.BooleanField(
+        default=False,
+        verbose_name="Incluir Cesión de Derechos",
+        help_text="Indica si el proyecto cuenta con documento de Cesión de Derechos"
+    )
+    
+    incluir_constancia_cesion = models.BooleanField(
+        default=False,
+        verbose_name="Incluir Constancia de Cesión",
+        help_text="Indica si el proyecto cuenta con Constancia de Cesión de Derechos"
+    )
+    
+    incluir_constancia_posesion = models.BooleanField(  # Nota: corregí "possession" a "posesion"
+        default=False,
+        verbose_name="Incluir Constancia de Posesión",
+        help_text="Indica si el proyecto cuenta con Constancia de Posesión"
+    )
+
     def __str__(self):
         return self.nombre
 
@@ -134,3 +153,4 @@ class Beneficiario(models.Model):
 
     def __str__(self):
         return self.nombre_completo
+
