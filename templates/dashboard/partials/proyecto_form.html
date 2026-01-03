@@ -186,6 +186,92 @@
           {% endfor %}
         </div>
       </div>
+      <!-- NUEVA SECCIÓN: Documentos Especiales -->
+      <div class="form-section">
+        <div class="section-header">
+          <div class="section-icon tertiary">
+            <i class="fas fa-file-contract"></i>
+          </div>
+          <h3 class="section-title">Documentos Especiales del Proyecto</h3>
+        </div>
+        
+        <div class="special-docs-container">
+          <!-- Campo: Cesión de Derechos -->
+          <div class="toggle-card">
+            <div class="toggle-card-icon pink">
+              <i class="fas fa-file-signature"></i>
+            </div>
+            <div class="toggle-card-content">
+              <h4 class="toggle-card-title">Cesión de Derechos</h4>
+              <p class="toggle-card-description">
+                Documento emitido por autoridades que permite la compraventa
+              </p>
+            </div>
+            <label class="toggle-switch">
+              {{ form.incluir_cesion_derechos }}
+              <span class="toggle-slider">
+                <span class="toggle-icon-off"><i class="fas fa-times"></i></span>
+                <span class="toggle-icon-on"><i class="fas fa-check"></i></span>
+              </span>
+            </label>
+          </div>
+
+          <!-- Campo: Constancia de Cesión -->
+          <div class="toggle-card">
+            <div class="toggle-card-icon cyan">
+              <i class="fas fa-file-contract"></i>
+            </div>
+            <div class="toggle-card-content">
+              <h4 class="toggle-card-title">Constancia de Cesión</h4>
+              <p class="toggle-card-description">
+                Constancia oficial de cesión de derechos
+              </p>
+            </div>
+            <label class="toggle-switch">
+              {{ form.incluir_constancia_cesion }}
+              <span class="toggle-slider">
+                <span class="toggle-icon-off"><i class="fas fa-times"></i></span>
+                <span class="toggle-icon-on"><i class="fas fa-check"></i></span>
+              </span>
+            </label>
+          </div>
+
+          <!-- Campo: Constancia de Posesión -->
+          <div class="toggle-card">
+            <div class="toggle-card-icon green">
+              <i class="fas fa-home"></i>
+            </div>
+            <div class="toggle-card-content">
+              <h4 class="toggle-card-title">Constancia de Posesión</h4>
+              <p class="toggle-card-description">
+                Documento que acredita la posesión del terreno
+              </p>
+            </div>
+            <label class="toggle-switch">
+              {{ form.incluir_constancia_posesion }}
+              <span class="toggle-slider">
+                <span class="toggle-icon-off"><i class="fas fa-times"></i></span>
+                <span class="toggle-icon-on"><i class="fas fa-check"></i></span>
+              </span>
+            </label>
+          </div>
+
+          <!-- Nota informativa mejorada -->
+          <div class="info-banner">
+            <div class="info-banner-icon">
+              <i class="fas fa-lightbulb"></i>
+            </div>
+            <div class="info-banner-content">
+              <h5 class="info-banner-title">Información importante</h5>
+              <p class="info-banner-text">
+                Estos documentos son emitidos por autoridades externas y permiten la compraventa de los lotes.
+                Activa solo los documentos con los que cuenta este proyecto.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- FIN DE NUEVA SECCIÓN -->
     </div>
 
     <!-- Botones de acción actualizados -->
@@ -767,6 +853,316 @@
 .panel-card.form-enhanced::-webkit-scrollbar-thumb:hover {
   background: #1e6fa8;
 }
+
+/* ==== CONTENEDOR DE DOCUMENTOS ESPECIALES ==== */
+.special-docs-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* ==== TARJETAS TOGGLE MODERNAS ==== */
+.toggle-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  padding: 1.25rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.toggle-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(180deg, transparent, var(--accent-color), transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.toggle-card:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateX(4px);
+}
+
+.toggle-card:has(input:checked) {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%);
+  border-color: rgba(16, 185, 129, 0.4);
+  box-shadow: 0 4px 20px rgba(16, 185, 129, 0.15);
+}
+
+.toggle-card:has(input:checked)::before {
+  opacity: 1;
+  --accent-color: #10B981;
+}
+
+/* ==== ICONOS DE TARJETA ==== */
+.toggle-card-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  color: white;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.toggle-card-icon.pink {
+  background: linear-gradient(135deg, #EC4899 0%, #DB2777 100%);
+}
+
+.toggle-card-icon.cyan {
+  background: linear-gradient(135deg, #06B6D4 0%, #0891B2 100%);
+}
+
+.toggle-card-icon.green {
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+}
+
+.toggle-card:hover .toggle-card-icon {
+  transform: scale(1.1) rotate(5deg);
+}
+
+.toggle-card:has(input:checked) .toggle-card-icon {
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.3);
+}
+
+/* ==== CONTENIDO DE TARJETA ==== */
+.toggle-card-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.toggle-card-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 0.35rem 0;
+  line-height: 1.3;
+}
+
+.toggle-card-description {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.toggle-card:has(input:checked) .toggle-card-title {
+  color: #10B981;
+}
+
+/* ==== TOGGLE SWITCH MODERNO ==== */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 32px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.toggle-switch input[type="checkbox"] {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+
+.toggle-slider {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, #6B7280 0%, #4B5563 100%);
+  border-radius: 34px;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  padding: 0 4px;
+}
+
+.toggle-slider::before {
+  content: '';
+  position: absolute;
+  height: 24px;
+  width: 24px;
+  left: 4px;
+  background: white;
+  border-radius: 50%;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.toggle-icon-off,
+.toggle-icon-on {
+  position: absolute;
+  font-size: 0.75rem;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.toggle-icon-off {
+  right: 8px;
+  color: rgba(255, 255, 255, 0.8);
+  opacity: 1;
+}
+
+.toggle-icon-on {
+  left: 8px;
+  color: white;
+  opacity: 0;
+}
+
+.toggle-switch input:checked + .toggle-slider {
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+}
+
+.toggle-switch input:checked + .toggle-slider::before {
+  transform: translateX(28px);
+  box-shadow: 0 2px 12px rgba(16, 185, 129, 0.4);
+}
+
+.toggle-switch input:checked + .toggle-slider .toggle-icon-off {
+  opacity: 0;
+}
+
+.toggle-switch input:checked + .toggle-slider .toggle-icon-on {
+  opacity: 1;
+}
+
+.toggle-switch:hover .toggle-slider {
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+}
+
+.toggle-switch input:checked:hover + .toggle-slider {
+  box-shadow: 0 0 25px rgba(16, 185, 129, 0.5);
+}
+
+/* ==== BANNER INFORMATIVO MEJORADO ==== */
+.info-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(37, 99, 235, 0.05) 100%);
+  border: 2px solid rgba(59, 130, 246, 0.3);
+  border-radius: 14px;
+  padding: 1.25rem;
+  margin-top: 0.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.info-banner::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at 20% 20%, rgba(59, 130, 246, 0.1) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.info-banner-icon {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  animation: pulse 2s infinite;
+}
+
+.info-banner-content {
+  flex: 1;
+  position: relative;
+}
+
+.info-banner-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #3B82F6;
+  margin: 0 0 0.5rem 0;
+}
+
+.info-banner-text {
+  font-size: 0.85rem;
+  color: var(--text-primary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ==== ANIMACIONES ==== */
+@keyframes toggleBounce {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.toggle-card:has(input:checked) {
+  animation: toggleBounce 0.5s ease;
+}
+
+/* ==== RESPONSIVE ==== */
+@media (max-width: 768px) {
+  .toggle-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+  
+  .toggle-switch {
+    align-self: flex-end;
+  }
+  
+  .toggle-card-icon {
+    width: 45px;
+    height: 45px;
+    font-size: 1.1rem;
+  }
+  
+  .info-banner {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .toggle-card {
+    padding: 1rem;
+  }
+  
+  .toggle-card-title {
+    font-size: 0.95rem;
+  }
+  
+  .toggle-card-description {
+    font-size: 0.8rem;
+  }
+}
 </style>
 
 <script>
@@ -837,6 +1233,22 @@ function initProjectFormEnhancements() {
     });
   });
 
+  // Mejorar UX de checkboxes
+  const checkboxes = form.querySelectorAll('input[type="checkbox"]');
+  checkboxes.forEach(checkbox => {
+    checkbox.addEventListener('change', function() {
+      const container = this.closest('.checkbox-container');
+      if (container) {
+        if (this.checked) {
+          container.style.transform = 'scale(1.02)';
+          setTimeout(() => {
+            container.style.transform = 'scale(1)';
+          }, 200);
+        }
+      }
+    });
+  });
+
   // Formateo automático para fechas
   const dateInputs = form.querySelectorAll('input[type="date"]');
   dateInputs.forEach(dateInput => {
@@ -846,5 +1258,30 @@ function initProjectFormEnhancements() {
       }
     });
   });
+
+  // Mejorar animación de toggle switches
+  const toggles = form.querySelectorAll('.toggle-switch input[type="checkbox"]');
+  toggles.forEach(toggle => {
+    toggle.addEventListener('change', function() {
+      const card = this.closest('.toggle-card');
+      if (card) {
+        // Animación de confirmación
+        card.style.transform = 'scale(1.02)';
+        setTimeout(() => {
+          card.style.transform = 'translateX(4px)';
+        }, 150);
+        
+        // Efecto de sonido visual
+        if (this.checked) {
+          const icon = card.querySelector('.toggle-card-icon');
+          icon.style.transform = 'scale(1.15) rotate(360deg)';
+          setTimeout(() => {
+            icon.style.transform = 'scale(1.05)';
+          }, 300);
+        }
+      }
+    });
+  });
 }
+
 </script>
