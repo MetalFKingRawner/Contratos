@@ -24,12 +24,27 @@ class PropietarioForm(forms.ModelForm):
 class ProyectoForm(forms.ModelForm):
     class Meta:
         model = Proyecto
-        fields = ['nombre', 'tipo_contrato', 'ubicacion', 'fecha_emision_documento', 'autoridad', 'fecha_emision_contrato']
+        fields = [
+            'nombre', 
+            'tipo_contrato', 
+            'ubicacion', 
+            'fecha_emision_documento', 
+            'autoridad', 
+            'fecha_emision_contrato',
+            # NUEVOS CAMPOS
+            'incluir_cesion_derechos',
+            'incluir_constancia_cesion',
+            'incluir_constancia_posesion',
+        ]
         widgets = {
             'ubicacion': forms.Textarea(attrs={'rows': 2}),
             'fecha_emision_documento': forms.TextInput(attrs={'placeholder': 'Fecha en texto sin abreviaturas (opcional)'}),
             'fecha_emision_contrato': forms.TextInput(attrs={'placeholder': 'Fecha en texto sin abreviaturas (opcional)'}),
             'autoridad': forms.Textarea(attrs={'rows': 2, 'placeholder': 'Autoridad competente (opcional)'}),
+            # NUEVOS: Widgets para checkboxes
+            'incluir_cesion_derechos': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'incluir_constancia_cesion': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'incluir_constancia_posesion': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -43,6 +58,21 @@ class ProyectoForm(forms.ModelForm):
         self.fields['autoridad'].label = "Autoridad"
         self.fields['fecha_emision_documento'].label = "Fecha Emisión Documento"
         self.fields['fecha_emision_contrato'].label = "Fecha Emisión Contrato"
+
+        # NUEVOS: Etiquetas para los campos booleanos
+        self.fields['incluir_cesion_derechos'].label = "¿Cuenta con Cesión de Derechos?"
+        self.fields['incluir_constancia_cesion'].label = "¿Cuenta con Constancia de Cesión?"
+        self.fields['incluir_constancia_posesion'].label = "¿Cuenta con Constancia de Posesión?"
+
+        # Agregar clases CSS a los campos
+        for field_name, field in self.fields.items():
+            if field_name in ['incluir_cesion_derechos', 'incluir_constancia_cesion', 'incluir_constancia_posesion']:
+                # Para checkboxes, ya tienen clase en el widget
+                continue
+            elif isinstance(field.widget, forms.Textarea):
+                field.widget.attrs['class'] = 'form-control'
+            elif isinstance(field.widget, forms.TextInput):
+                field.widget.attrs['class'] = 'form-control'
 
 class LoteForm(forms.ModelForm):
     class Meta:
@@ -294,3 +324,4 @@ class TramiteForm(forms.ModelForm):
             clausulas.save()
             
         return tramite
+
