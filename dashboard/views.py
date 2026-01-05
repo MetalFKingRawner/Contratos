@@ -156,8 +156,13 @@ class DownloadDocumentView(View):
                     fecha=fecha
                 )
             except TypeError:
-                # Versión mínima
-                context = builder(fin, cli, ven,request=request, tpl=tpl,firma_data=tramite.firma_cliente)
+                        try:
+                            # Versión mínima con Trámite (Ej. Solicitud de contrato)
+                            context = builder(fin, cli, ven,request=self.request, tpl=tpl,firma_data=tramite.firma_cliente, tramite=tramite)
+                        except TypeError:
+                            #Versión sin Trámite
+                            context = builder(fin, cli, ven,request=self.request, tpl=tpl,firma_data=tramite.firma_cliente)
+
         
         # 7. Generar el documento Word
         output = io.BytesIO()
@@ -1842,4 +1847,5 @@ def health_check(request):
         "message": "Application is alive",
         "app": "dashboard"
     })
+
 
