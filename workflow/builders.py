@@ -185,7 +185,7 @@ def build_financiamiento_context(fin, cli, ven, request=None, tpl=None, firma_da
 
     return context
 
-def build_carta_intencion_context(fin, cli, ven,request=None, tpl=None, firma_data=None):
+def build_carta_intencion_context(fin, cli, ven,request=None, tpl=None, firma_data=None, tramite=None):
     # Aquí generaremos el dict con todos los placeholders de la carta
     # Ejemplo mínimo:
     print("BUILDER recibe request:", type(request), hasattr(request, 'session'))
@@ -245,25 +245,44 @@ def build_carta_intencion_context(fin, cli, ven,request=None, tpl=None, firma_da
     # Firma del cliente (imagen)
     data_url = firma_data or (request.session.get('firma_cliente_data') if request else None)
     print("FIRMA LEÍDA EN BUILDER:", bool(data_url), (data_url[:50] + '...') if data_url else '')
-    if data_url and tpl:
-        # Decodifica y guarda en un temp file
-        header, encoded = data_url.split(',', 1)
-        data = base64.b64decode(encoded)
-        fd, tmp_path = tempfile.mkstemp(suffix='.png')
-        with os.fdopen(fd, 'wb') as f:
-            f.write(data)
-        # Crea InlineImage de docxtpl
-        # Ajusta ancho en mm según tu diseño
-        context['FIRMA_CLIENTE'] = InlineImage(
-            tpl,  # placeholder, luego se ignora
-            tmp_path,
-            width=Mm(70)
-        )
+    if request and tpl:
+        # Tamaño consistente para TODAS las firmas
+        FIRMA_ANCHO = 40  # 40mm de ancho
+        FIRMA_ALTO = 15   # 15mm de alto
+        
+        # Función reutilizable para procesar firmas
+        def crear_firma_unificada(data_url):
+            if not data_url:
+                return ''
+            
+            try:
+                # Decodificar base64
+                header, b64 = data_url.split(',', 1)
+                img_data = base64.b64decode(b64)
+                
+                # Crear archivo temporal
+                fd, temp_path = tempfile.mkstemp(suffix='.png')
+                with os.fdopen(fd, 'wb') as f:
+                    f.write(img_data)
+                
+                # ✅ MISMO TAMAÑO para todas las firmas
+                return InlineImage(tpl, temp_path, width=Mm(FIRMA_ANCHO), height=Mm(FIRMA_ALTO))
+                
+            except Exception as e:
+                print(f"Error al procesar firma: {e}")
+                return ''
+        
+        # Procesar cada firma con el mismo tamaño
+        context['FIRMA_CLIENTE'] = crear_firma_unificada(firma_data)
+        context['FIRMA_VENDEDOR'] = crear_firma_unificada(tramite.firma_vendedor)
+        
     else:
+        # Valores por defecto si no hay template
         context['FIRMA_CLIENTE'] = ''
+        context['FIRMA_VENDEDOR'] = ''
 
     return context
-
+    
 def build_solicitud_contrato_context(fin, cli, ven, request=None, tpl=None, firma_data=None, tramite=None):
     """
     Context para Solicitud de Contratos.
@@ -4162,6 +4181,7 @@ def build_contrato_canario_pagos_varios_context(fin, cli, ven, cliente2=None,req
     })
 
     return context
+
 
 
 
