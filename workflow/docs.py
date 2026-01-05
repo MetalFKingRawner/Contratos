@@ -40,7 +40,7 @@ DOCUMENTOS = {
     "solicitud_contrato": {
         "titulo":     "Solicitud de Contrato",
         "descripcion":"Información previa para tu contrato.",
-        "plantilla":  "pdfs/templates/pdfs/solicitud_contrato.docx",
+        "plantilla":  "pdfs/templates/pdfs/SolicitudContrato.docx",
         "builder":    build_solicitud_contrato_context,
     },
     # Tabla de financiamiento
@@ -152,3 +152,4 @@ DOCUMENTOS = {
         "builder":    build_contrato_canario_pagos_varios_context,
     },
 }
+
