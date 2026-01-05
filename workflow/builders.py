@@ -264,7 +264,7 @@ def build_carta_intencion_context(fin, cli, ven,request=None, tpl=None, firma_da
 
     return context
 
-def build_solicitud_contrato_context(fin, cli, ven, request=None, tpl=None, firma_data=None):
+def build_solicitud_contrato_context(fin, cli, ven, request=None, tpl=None, firma_data=None, tramite=None):
     """
     Context para Solicitud de Contratos.
     Campos comunes + ramificación contado/financiado.
@@ -289,7 +289,23 @@ def build_solicitud_contrato_context(fin, cli, ven, request=None, tpl=None, firm
     else:
         rfc_comprador = 'NO PROPORCIONADO'
 
+    nombre_bene =''
+    clave_bene = ''
+    telefono_bene = ''
+    correo_bene = ''
 
+    if tramite.beneficiario_1:
+        nombre_bene = tramite.beneficiario_1.nombre_completo
+        clave_bene = tramite.beneficiario_1.numero_id
+        telefono_bene = tramite.beneficiario_1.telefono
+        correo_bene = tramite.beneficiario_1.email
+
+    coords = {}
+    for lado in ('norte','sur','este','oeste'):
+        raw = getattr(fin.lote, lado, '')
+        m, c = _parse_coord(raw)
+        coords[f'LOTE_{lado.upper()}'] = m
+        coords[f'COLINDA_{lado.upper()}'] = c
 
     # 2) Datos básicos del cliente
     context = {
@@ -302,13 +318,20 @@ def build_solicitud_contrato_context(fin, cli, ven, request=None, tpl=None, firm
         'OCUPACION_CLIENTE':  cli.ocupacion.upper(),
         'ESTADO_CIVIL':       cli.estado_civil.upper(),
         'ORIGINARIO_CLIENTE': cli.originario.upper(),
-        'NACIONALIDAD':       cli.nacionalidad,
-        'DIRECCION_CLIENTE':  cli.domicilio,
+        'NACIONALIDAD':       cli.nacionalidad.upper(),
+        'DIRECCION_CLIENTE':  cli.domicilio.upper(),
         'RFC_CLIENTE':        rfc_comprador,  # asume tienes campo rfc en Cliente
+        'CLAVE_CLIENTE':      cli.numero_id,
+        # Beneficiario
+        'NOMBRE_BENE': nombre_bene.upper(),
+        'CLAVE_BENE': clave_bene.upper(),
+        'TELEFONO_BENE': telefono_bene,
+        'CORREO_BENE': correo_bene.upper(),
         # Lote y financiamiento
         'NOMBRE_LOTE':        str(fin.lote.proyecto.nombre).upper(),
         'NUMERO_LOTE':        fin.lote.identificador,
-        'PRECIO_LOTE':        f"{fin.precio_lote:.2f}",
+        **coords,
+        'METROS_CUAD': calcular_superficie(fin.lote.norte, fin.lote.sur, fin.lote.este, fin.lote.oeste),
         # Vendedor
         'NOMBRE_VENDEDOR':    ven.nombre_completo.upper(),
     }
@@ -316,40 +339,58 @@ def build_solicitud_contrato_context(fin, cli, ven, request=None, tpl=None, firm
     # 3) Campos según tipo_pago
     if fin.tipo_pago == 'contado':
         context.update({
-            'CANTIDAD_APARTADO':      f"{fin.apartado:.2f}",
-            'FECHA_PAGO_COMPLETO':    fin.fecha_pago_completo.strftime("%d/%m/%Y"),
-            # los demás vacíos
-            'CANTIDAD_ENGANCHE':      '',
-            'FECHA_ENGANCHE':         '',
-            'NUM_MENSUALIDAD':        '',
-            'DIA_PAGO':               '',
+            'PRECIO_LOTE_CONT':        f"${fin.precio_lote:,.2f}",
+            'CANTIDAD_APARTADO_CONT':  f"${fin.apartado:,.2f}",
+            'FECHA_PAGO_COMPLETO':     fin.fecha_pago_completo.strftime("%d/%m/%Y"),
+            'CANTIDAD_PAGO_TOTAL':     f"${(fin.precio_lote - fin.apartado):,.2f}",
         })
     else:
         # financiado
         context.update({
-            'CANTIDAD_APARTADO':      f"{fin.apartado:.2f}",
-            'FECHA_PAGO_COMPLETO':    '',
-            'CANTIDAD_ENGANCHE':      f"{fin.enganche:.2f}",
+            'PRECIO_LOTE_FIN':        f"${fin.precio_lote:,.2f}",
+            'CANTIDAD_APARTADO_FIN':  f"${fin.apartado:,.2f}",
+            'CANTIDAD_ENGANCHE':      f"${fin.enganche:,.2f}",
             'FECHA_ENGANCHE':         fin.fecha_enganche.strftime("%d/%m/%Y") if fin.fecha_enganche else '',
             'NUM_MENSUALIDAD':        fin.num_mensualidades,
             'DIA_PAGO':               fin.fecha_primer_pago.day if fin.fecha_primer_pago else '',
         })
 
-    # 4) Firma del cliente
+    # 6) Firma
     if request and tpl:
-        data_url = firma_data or (request.session.get('firma_cliente_data') if request else None)
-        if data_url:
-            header, b64 = data_url.split(',', 1)
-            img_data = base64.b64decode(b64)
-            fd, tmp = tempfile.mkstemp(suffix='.png')
-            with os.fdopen(fd, 'wb') as f:
-                f.write(img_data)
-            # Inserta la imagen de firma
-            context['FIRMA_CLIENTE'] = InlineImage(tpl, tmp, width=Mm(40))
-        else:
-            context['FIRMA_CLIENTE'] = ''
+        # Tamaño consistente para TODAS las firmas
+        FIRMA_ANCHO = 40  # 40mm de ancho
+        FIRMA_ALTO = 15   # 15mm de alto
+        
+        # Función reutilizable para procesar firmas
+        def crear_firma_unificada(data_url):
+            if not data_url:
+                return ''
+            
+            try:
+                # Decodificar base64
+                header, b64 = data_url.split(',', 1)
+                img_data = base64.b64decode(b64)
+                
+                # Crear archivo temporal
+                fd, temp_path = tempfile.mkstemp(suffix='.png')
+                with os.fdopen(fd, 'wb') as f:
+                    f.write(img_data)
+                
+                # ✅ MISMO TAMAÑO para todas las firmas
+                return InlineImage(tpl, temp_path, width=Mm(FIRMA_ANCHO), height=Mm(FIRMA_ALTO))
+                
+            except Exception as e:
+                print(f"Error al procesar firma: {e}")
+                return ''
+        
+        # Procesar cada firma con el mismo tamaño
+        context['FIRMA_CLIENTE'] = crear_firma_unificada(firma_data)
+        context['FIRMA_VENDEDOR'] = crear_firma_unificada(tramite.firma_vendedor)
+        
     else:
+        # Valores por defecto si no hay template
         context['FIRMA_CLIENTE'] = ''
+        context['FIRMA_VENDEDOR'] = ''
 
     return context
 
@@ -4121,6 +4162,7 @@ def build_contrato_canario_pagos_varios_context(fin, cli, ven, cliente2=None,req
     })
 
     return context
+
 
 
 
