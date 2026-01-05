@@ -736,8 +736,12 @@ class SeleccionDocumentosView(FormView):
                             tramite = tramite
                         )
                     except TypeError:
-                        # Versión mínima
-                        context = doc_info['builder'](fin, cli, ven,request=self.request, tpl=tpl,firma_data=tramite.firma_cliente, tramite = tramite)
+                        try:
+                            # Versión mínima con Trámite (Ej. Solicitud de contrato)
+                            context = doc_info['builder'](fin, cli, ven,request=self.request, tpl=tpl,firma_data=tramite.firma_cliente, tramite=tramite)
+                        except TypeError:
+                            #Versión sin Trámite
+                            context = doc_info['builder'](fin, cli, ven,request=self.request, tpl=tpl,firma_data=tramite.firma_cliente)
 
                 # 2) rellenar plantilla Word
                 tmp_docx = os.path.join(settings.MEDIA_ROOT, 'temp', f"{slug}.docx")
@@ -1109,6 +1113,7 @@ class FirmaTestigo2View(FirmaBaseView):
 # Vista de éxito después de firmar
 class FirmaExitosaView(TemplateView):
     template_name = 'workflow/firma_exitosa.html'
+
 
 
 
