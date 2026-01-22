@@ -117,51 +117,53 @@
                 </div>
               </div>
             </div>
-            <!-- NUEVA SECCIÓN: DOCUMENTOS ESPECIALES -->
-            <div class="detail-row">
-              <div class="detail-item">
-                <div class="detail-icon special-docs">
-                  <i class="fas fa-folder-open"></i>
-                </div>
-                <div class="detail-content">
-                  <span class="detail-label">Cesión de Derechos</span>
-                  <span class="detail-value {% if p.incluir_cesion_derechos %}doc-included{% else %}doc-not-included{% endif %}">
-                    <i class="fas fa-{% if p.incluir_cesion_derechos %}check-circle{% else %}times-circle{% endif %}"></i>
-                    {{ p.incluir_cesion_derechos|yesno:"Incluido,No incluido" }}
-                  </span>
+            <!-- NUEVA SECCIÓN: DOCUMENTOS ESPECIALES - Solo para EJIDO -->
+            {% if p.es_ejido %}
+              <div class="detail-row">
+                <div class="detail-item">
+                  <div class="detail-icon special-docs">
+                    <i class="fas fa-folder-open"></i>
+                  </div>
+                  <div class="detail-content">
+                    <span class="detail-label">Cesión de Derechos</span>
+                    <span class="detail-value {% if p.incluir_cesion_derechos %}doc-included{% else %}doc-not-included{% endif %}">
+                      <i class="fas fa-{% if p.incluir_cesion_derechos %}check-circle{% else %}times-circle{% endif %}"></i>
+                      {{ p.incluir_cesion_derechos|yesno:"Incluido,No incluido" }}
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div class="detail-row">
-              <div class="detail-item">
-                <div class="detail-icon special-docs-2">
-                  <i class="fas fa-file-contract"></i>
-                </div>
-                <div class="detail-content">
-                  <span class="detail-label">Constancia de Cesión</span>
-                  <span class="detail-value {% if p.incluir_constancia_cesion %}doc-included{% else %}doc-not-included{% endif %}">
-                    <i class="fas fa-{% if p.incluir_constancia_cesion %}check-circle{% else %}times-circle{% endif %}"></i>
-                    {{ p.incluir_constancia_cesion|yesno:"Incluido,No incluido" }}
-                  </span>
+              <div class="detail-row">
+                <div class="detail-item">
+                  <div class="detail-icon special-docs-2">
+                    <i class="fas fa-file-contract"></i>
+                  </div>
+                  <div class="detail-content">
+                    <span class="detail-label">Constancia de Cesión</span>
+                    <span class="detail-value {% if p.incluir_constancia_cesion %}doc-included{% else %}doc-not-included{% endif %}">
+                      <i class="fas fa-{% if p.incluir_constancia_cesion %}check-circle{% else %}times-circle{% endif %}"></i>
+                      {{ p.incluir_constancia_cesion|yesno:"Incluido,No incluido" }}
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div class="detail-row">
-              <div class="detail-item">
-                <div class="detail-icon special-docs-3">
-                  <i class="fas fa-home"></i>
-                </div>
-                <div class="detail-content">
-                  <span class="detail-label">Constancia de Posesión</span>
-                  <span class="detail-value {% if p.incluir_constancia_posesion %}doc-included{% else %}doc-not-included{% endif %}">
-                    <i class="fas fa-{% if p.incluir_constancia_posesion %}check-circle{% else %}times-circle{% endif %}"></i>
-                    {{ p.incluir_constancia_posesion|yesno:"Incluido,No incluido" }}
-                  </span>
+              <div class="detail-row">
+                <div class="detail-item">
+                  <div class="detail-icon special-docs-3">
+                    <i class="fas fa-home"></i>
+                  </div>
+                  <div class="detail-content">
+                    <span class="detail-label">Constancia de Posesión</span>
+                    <span class="detail-value {% if p.incluir_constancia_posesion %}doc-included{% else %}doc-not-included{% endif %}">
+                      <i class="fas fa-{% if p.incluir_constancia_posesion %}check-circle{% else %}times-circle{% endif %}"></i>
+                      {{ p.incluir_constancia_posesion|yesno:"Incluido,No incluido" }}
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
+            {% endif %}
           </div>
           
           <div class="project-card-footer">
@@ -1228,4 +1230,5 @@ function highlightSearchTerms(searchTerm) {
 }
 </style>
 {% endblock %}
+
 
