@@ -74,6 +74,19 @@ class ProyectoForm(forms.ModelForm):
             elif isinstance(field.widget, forms.TextInput):
                 field.widget.attrs['class'] = 'form-control'
 
+    def clean(self):
+        cleaned_data = super().clean()
+        tipo_contrato = cleaned_data.get('tipo_contrato', '')
+        es_ejido = tipo_contrato.upper() == "EJIDO"
+        
+        # Si no es ejido, forzar los campos a False
+        if not es_ejido:
+            cleaned_data['incluir_cesion_derechos'] = False
+            cleaned_data['incluir_constancia_cesion'] = False
+            cleaned_data['incluir_constancia_posesion'] = False
+        
+        return cleaned_data
+
 class LoteForm(forms.ModelForm):
     class Meta:
         model = Lote
@@ -324,4 +337,5 @@ class TramiteForm(forms.ModelForm):
             clausulas.save()
             
         return tramite
+
 
