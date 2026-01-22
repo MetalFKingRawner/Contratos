@@ -186,13 +186,14 @@
           {% endfor %}
         </div>
       </div>
-      <!-- NUEVA SECCIÓN: Documentos Especiales -->
-      <div class="form-section">
+      <!-- NUEVA SECCIÓN: Documentos Especiales - Solo para EJIDO -->
+      <div class="form-section" id="special-docs-section">
         <div class="section-header">
           <div class="section-icon tertiary">
             <i class="fas fa-file-contract"></i>
           </div>
           <h3 class="section-title">Documentos Especiales del Proyecto</h3>
+          <span class="badge-ejido-only">Solo para EJIDO</span>
         </div>
         
         <div class="special-docs-container">
@@ -264,7 +265,7 @@
             <div class="info-banner-content">
               <h5 class="info-banner-title">Información importante</h5>
               <p class="info-banner-text">
-                Estos documentos son emitidos por autoridades externas y permiten la compraventa de los lotes.
+                Estos documentos solo aplican para proyectos tipo <strong>EJIDO</strong>. 
                 Activa solo los documentos con los que cuenta este proyecto.
               </p>
             </div>
@@ -322,6 +323,11 @@
   --shadow-primary: 0 6px 20px rgba(46, 143, 204, 0.25);
   --shadow-hover: 0 12px 35px rgba(46, 143, 204, 0.3);
   --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Estado inicial antes de que JavaScript actúe */
+.form-section#special-docs-section {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* ==== PANEL CARD MEJORADO ==== */
@@ -1163,18 +1169,72 @@
     font-size: 0.8rem;
   }
 }
+/* ==== BADGE EJIDO ONLY ==== */
+.badge-ejido-only {
+  background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+  color: white;
+  padding: 0.35rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+}
+
+/* ==== SECCIÓN OCULTA - MEJORADO ==== */
+.form-section.hidden-section {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+}
+
+.form-section.visible-section {
+  max-height: 1000px; /* Ajusta según necesites */
+  opacity: 1;
+  overflow: visible;
+  margin-bottom: 2rem;
+  animation: fadeInUp 0.6s ease;
+  pointer-events: auto;
+}
+
+/* ==== DESHABILITADO VISUAL - MEJORADO ==== */
+.toggle-card.disabled {
+  opacity: 0.4;
+  pointer-events: none;
+  filter: grayscale(0.7);
+  cursor: not-allowed;
+}
+
+.toggle-card.disabled .toggle-switch {
+  cursor: not-allowed;
+}
 </style>
 
 <script>
 // Mejorar UX del formulario de proyectos
 document.addEventListener('DOMContentLoaded', function() {
   initProjectFormEnhancements();
+  initSpecialDocsControl();  // <--- añadir
 });
 
-// Reinicializar cuando HTMX carga contenido
+// reiniciar cuando HTMX inserte el formulario
 document.body.addEventListener('htmx:afterSwap', function(evt) {
-  if (evt.detail.target.id === 'side-panel') {
-    setTimeout(initProjectFormEnhancements, 50);
+  // si el contenido nuevo contiene el formulario, reiniciamos
+  const target = evt.detail && evt.detail.target;
+  if (target && typeof target.querySelector === 'function') {
+    if (target.querySelector('.project-form')) {
+      setTimeout(() => {
+        initProjectFormEnhancements();
+        initSpecialDocsControl();
+      }, 50);
+    }
   }
 });
 
@@ -1283,5 +1343,47 @@ function initProjectFormEnhancements() {
     });
   });
 }
+// Control dinámico de documentos especiales según tipo de contrato
+function initSpecialDocsControl() {
+  const tipoElem = document.querySelector('[name="tipo_contrato"]'); // acepta input o select
+  const specialDocsSection = document.getElementById('special-docs-section');
+  if (!specialDocsSection) return;
+
+  const checkboxes = specialDocsSection.querySelectorAll('input[type="checkbox"]');
+  const toggleCards = specialDocsSection.querySelectorAll('.toggle-card');
+
+  function getTipoValue() {
+    if (!tipoElem) return '';
+    return (typeof tipoElem.value === 'string') ? tipoElem.value : '';
+  }
+
+  function updateSpecialDocsVisibility() {
+    const raw = getTipoValue();
+    const val = (raw || '').toString().toUpperCase().trim();
+    const isEjido = val === 'EJIDO';
+
+    if (isEjido) {
+      specialDocsSection.classList.remove('hidden-section');
+      specialDocsSection.classList.add('visible-section');
+      checkboxes.forEach(cb => cb.disabled = false);
+      toggleCards.forEach(c => c.classList.remove('disabled'));
+    } else {
+      specialDocsSection.classList.add('hidden-section');
+      specialDocsSection.classList.remove('visible-section');
+      checkboxes.forEach(cb => { cb.checked = false; cb.disabled = true; });
+      toggleCards.forEach(c => c.classList.add('disabled'));
+    }
+  }
+
+  // inicializar
+  updateSpecialDocsVisibility();
+
+  // escuchar cambios (soporta select y text input)
+  if (tipoElem) {
+    tipoElem.addEventListener('change', updateSpecialDocsVisibility);
+    tipoElem.addEventListener('input', updateSpecialDocsVisibility);
+  }
+}
 
 </script>
+
