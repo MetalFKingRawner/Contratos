@@ -127,6 +127,7 @@
   </div>
 
   <!-- Documentos Especiales del Proyecto -->
+  {% if proyecto.tipo_contrato == "EJIDO" or proyecto.tipo_contrato == "ejido" or proyecto.tipo_contrato == "Ejido" %}
   <div class="special-docs-section">
     <div class="special-docs-header">
       <div class="special-docs-icon-wrapper">
@@ -263,6 +264,7 @@
       </div>
     </div>
   </div>
+  {% endif %}
 
   <!-- Botones de acción -->
   <div class="project-actions-section">
@@ -1268,3 +1270,4 @@
   }
 }
 </style>
+
