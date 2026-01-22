@@ -33,6 +33,17 @@ class Proyecto(models.Model):
     def __str__(self):
         return self.nombre
 
+    # NUEVO MÉTODO
+    def es_ejido(self):
+        """Verifica si el proyecto es de tipo EJIDO"""
+        return self.tipo_contrato.upper() == "EJIDO"
+    
+    # NUEVA PROPIEDAD
+    @property
+    def documentos_especiales_habilitados(self):
+        """Devuelve True si el proyecto puede tener documentos especiales"""
+        return self.es_ejido()
+
 class Lote(models.Model):
     proyecto = models.ForeignKey(Proyecto, on_delete=models.CASCADE, related_name='lotes')
     identificador = models.CharField(max_length=20)
@@ -153,4 +164,5 @@ class Beneficiario(models.Model):
 
     def __str__(self):
         return self.nombre_completo
+
 
