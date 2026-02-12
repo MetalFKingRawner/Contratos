@@ -1,0 +1,1348 @@
+<div class="container-fluid py-4">
+  <!-- Header de la sección con estadísticas - ESTILO COMMETA -->
+  <div class="financiamiento-header-section commeta-header">
+    <div class="financiamiento-header-content">
+      <div class="financiamiento-title-area">
+        <div class="financiamiento-icon-wrapper commeta-icon">
+          <i class="fas fa-crown financiamiento-main-icon"></i>
+        </div>
+        <div class="financiamiento-title-text">
+          <h2 class="financiamiento-title">Financiamientos Commeta Community</h2>
+          <p class="financiamiento-subtitle">Gestión especializada para planes de financiamiento Commeta</p>
+        </div>
+      </div>
+      <div class="financiamiento-stats">
+        <div class="stat-item commeta-stat">
+          <span class="stat-number">{{ total_financiamientos }}</span>
+          <span class="stat-label">Total Commeta</span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Barra de acciones -->
+    <div class="financiamiento-actions">
+      <div class="search-container">
+        <i class="fas fa-search search-icon"></i>
+        <input type="text" placeholder="Buscar financiamiento Commeta..." class="search-input" id="financiamientoCommetaSearch">
+      </div>
+      <div class="filter-container">
+        <i class="fas fa-filter filter-icon"></i>
+        <select class="filter-select" id="zonaCommetaFilter">
+          <option value="">Todas las zonas</option>
+          <option value="ambar">Ámbar</option>
+          <option value="aqua">Aqua</option>
+          <option value="magnetita">Magnetita</option>
+          <option value="platino">Platino</option>
+        </select>
+      </div>
+      <button class="btn-add-financiamiento btn-commeta" 
+              hx-get="{% url 'commeta:commeta_financiamiento_create' %}" 
+              hx-target="#content" 
+              hx-swap="innerHTML"
+              hx-push-url="true">
+        <i class="fas fa-plus"></i>
+        <span>Nuevo Financiamiento Commeta</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="financiamiento-grid-container">
+    {% if planes %}
+      <!-- Grid de financiamientos Commeta -->
+      <div class="financiamiento-grid" id="financiamientosCommetaGrid">
+        {% for p in planes %}
+          {% with financiamiento=p.financiamiento config=p.configuracion_original %}
+          <div class="financiamiento-card commeta-card" 
+               data-financiamiento-name="{{ financiamiento.nombre_cliente|lower }}" 
+               data-tipo-financiamiento="{{ financiamiento.tipo_pago|lower }}"
+               data-zona-commeta="{{ config.zona|default:''|lower }}"
+               data-proyecto-commeta="{{ financiamiento.lote.proyecto.id|default:'' }}">
+            <div class="financiamiento-card-header">
+              <div class="financiamiento-avatar commeta-avatar">
+                <span class="avatar-initials">{{ financiamiento.nombre_cliente|slice:":2"|upper }}</span>
+                <div class="commeta-badge" title="Financiamiento Commeta">
+                  <i class="fas fa-crown"></i>
+                </div>
+              </div>
+              <div class="financiamiento-status {% if financiamiento.activo %}active{% else %}inactive{% endif %} commeta-status">
+                <div class="status-dot"></div>
+                <span class="status-text">{% if financiamiento.activo %}Activo{% else %}Inactivo{% endif %}</span>
+              </div>
+            </div>
+            
+            <div class="financiamiento-card-body">
+              <h4 class="financiamiento-name">
+                <i class="fas fa-crown me-1 text-warning"></i>
+                #{{ forloop.counter }} — {{ financiamiento.nombre_cliente }}
+                <span class="badge bg-warning text-dark ms-2">Commeta</span>
+              </h4>
+              
+              <div class="financiamiento-info">
+                <!-- Información del Lote -->
+                <div class="info-item">
+                  <div class="info-icon location">
+                    <i class="fas fa-map-marker-alt"></i>
+                  </div>
+                  <div class="info-content">
+                    <span class="info-label">Lote</span>
+                    <span class="info-value">{{ financiamiento.lote.identificador }}</span>
+                  </div>
+                </div>
+                
+                <!-- Zona Commeta -->
+                <div class="info-item">
+                  <div class="info-icon zone">
+                    <i class="fas fa-map"></i>
+                  </div>
+                  <div class="info-content">
+                    <span class="info-label">Zona</span>
+                    <span class="info-value">{{ config.get_zona_display|default:"No asignada" }}</span>
+                  </div>
+                </div>
+                
+                <!-- Precio del Lote -->
+                <div class="info-item">
+                  <div class="info-icon price">
+                    <i class="fas fa-tag"></i>
+                  </div>
+                  <div class="info-content">
+                    <span class="info-label">Precio Lote</span>
+                    <span class="info-value">${{ financiamiento.precio_lote|floatformat:2 }}</span>
+                  </div>
+                </div>
+                
+                <!-- Apartado -->
+                <div class="info-item">
+                  <div class="info-icon payment">
+                    <i class="fas fa-hand-holding-usd"></i>
+                  </div>
+                  <div class="info-content">
+                    <span class="info-label">Apartado</span>
+                    <span class="info-value">${{ financiamiento.apartado|floatformat:2 }}</span>
+                  </div>
+                </div>
+                
+                <!-- Tipo de Esquema Commeta -->
+                <div class="info-item">
+                  <div class="info-icon scheme">
+                    <i class="fas fa-calendar-alt"></i>
+                  </div>
+                  <div class="info-content">
+                    <span class="info-label">Esquema</span>
+                    <span class="info-value">{{ p.get_tipo_esquema_display }}</span>
+                  </div>
+                </div>
+                
+                <!-- Información específica del esquema -->
+                {% if p.tipo_esquema == 'meses_fuertes' %}
+                  <div class="info-item">
+                    <div class="info-icon strong-month">
+                      <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <div class="info-content">
+                      <span class="info-label">Meses Fuertes</span>
+                      <span class="info-value">{{ p.cantidad_meses_fuertes|default:"0" }}</span>
+                    </div>
+                  </div>
+                  
+                  <div class="info-item">
+                    <div class="info-icon amount">
+                      <i class="fas fa-money-bill-wave"></i>
+                    </div>
+                    <div class="info-content">
+                      <span class="info-label">Mes Fuerte</span>
+                      <span class="info-value">${{ p.monto_mes_fuerte|floatformat:2|default:"0.00" }}</span>
+                    </div>
+                  </div>
+                {% else %}
+                  <div class="info-item">
+                    <div class="info-icon monthly">
+                      <i class="fas fa-calendar-day"></i>
+                    </div>
+                    <div class="info-content">
+                      <span class="info-label">Mensualidad</span>
+                      <span class="info-value">${{ financiamiento.monto_mensualidad|floatformat:2|default:"0.00" }}</span>
+                    </div>
+                  </div>
+                {% endif %}
+                
+                <!-- Tipo de Pago -->
+                <div class="info-item">
+                  <div class="info-icon type">
+                    <i class="fas fa-{{ financiamiento.tipo_pago|yesno:'money-bill-wave,credit-card' }}"></i>
+                  </div>
+                  <div class="info-content">
+                    <span class="info-label">Tipo de Pago</span>
+                    <span class="info-value">{{ financiamiento.get_tipo_pago_display }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="financiamiento-card-footer">
+              <div class="financiamiento-actions">
+                <button class="action-btn view" 
+                        hx-get="{% url 'commeta:commeta_financiamiento_detail' p.pk %}"
+                        hx-target="#content" 
+                        hx-swap="innerHTML"
+                        title="Ver detalles">
+                  <i class="fas fa-eye"></i>
+                </button>
+                <button class="action-btn edit"
+                        hx-get="{% url 'commeta:commeta_financiamiento_update' p.pk %}"
+                        hx-target="#content" 
+                        hx-swap="innerHTML"
+                        title="Editar">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button class="action-btn delete"
+                        hx-get="{% url 'commeta:commeta_financiamiento_delete' p.pk %}"
+                        hx-target="#content" 
+                        hx-swap="innerHTML"
+                        title="Eliminar">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+          {% endwith %}
+        {% endfor %}
+      </div>
+
+      <!-- Paginación mejorada -->
+      {% if is_paginated %}
+      <div class="pagination-container">
+        <nav class="pagination-nav">
+          <div class="pagination-info">
+            <span>Mostrando {{ page_obj.start_index }}-{{ page_obj.end_index }} de {{ paginator.count }} planes Commeta</span>
+          </div>
+          <ul class="pagination-list">
+            {% if page_obj.has_previous %}
+              <li class="pagination-item">
+                <button class="pagination-btn prev"
+                        hx-get="{% url 'dashboard:commeta_financiamiento_list' %}?page={{ page_obj.previous_page_number }}"
+                        hx-target="#content" 
+                        hx-swap="innerHTML"
+                        hx-push-url="true">
+                  <i class="fas fa-chevron-left"></i>
+                </button>
+              </li>
+            {% endif %}
+            
+            {% for num in paginator.page_range %}
+              <li class="pagination-item">
+                <button class="pagination-btn {% if page_obj.number == num %}active{% endif %}"
+                        hx-get="{% url 'dashboard:commeta_financiamiento_list' %}?page={{ num }}"
+                        hx-target="#content" 
+                        hx-swap="innerHTML"
+                        hx-push-url="true">
+                  {{ num }}
+                </button>
+              </li>
+            {% endfor %}
+            
+            {% if page_obj.has_next %}
+              <li class="pagination-item">
+                <button class="pagination-btn next"
+                        hx-get="{% url 'dashboard:commeta_financiamiento_list' %}?page={{ page_obj.next_page_number }}"
+                        hx-target="#content" 
+                        hx-swap="innerHTML"
+                        hx-push-url="true">
+                  <i class="fas fa-chevron-right"></i>
+                </button>
+              </li>
+            {% endif %}
+          </ul>
+        </nav>
+      </div>
+      {% endif %}
+
+    {% else %}
+      <div class="empty-state commeta-empty">
+        <div class="empty-icon">
+          <i class="fas fa-crown"></i>
+        </div>
+        <h3 class="empty-title">No hay financiamientos Commeta registrados</h3>
+        <p class="empty-subtitle">Comienza creando tu primer financiamiento Commeta para gestionar proyectos especializados</p>
+        <button class="btn-empty-action btn-commeta" 
+                hx-get="{% url 'dashboard:commeta_financiamiento_create' %}" 
+                hx-target="#content" 
+                hx-swap="innerHTML">
+          <i class="fas fa-plus"></i>
+          Crear Primer Financiamiento Commeta
+        </button>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<style>
+/* ==== VARIABLES COMMETA ==== */
+:root {
+  /* Colores Commeta - Verde Esmeralda Premium */
+  --commeta-primary: #10B981;
+  --commeta-secondary: #059669;
+  --commeta-dark: #047857;
+  --commeta-light: #D1FAE5;
+  --commeta-shadow: rgba(16, 185, 129, 0.3);
+  --commeta-glow: rgba(16, 185, 129, 0.4);
+  
+  /* Colores del dashboard para referencia */
+  --primary-gradient: linear-gradient(135deg, #2E8FCC 0%, #1B5F8C 100%);
+  --secondary-gradient: linear-gradient(135deg, #87CEEB 0%, #4A90C2 100%);
+}
+
+/* ==== HEADER DE FINANCIAMIENTOS COMMETA ==== */
+.financiamiento-header-section.commeta-header {
+  background: linear-gradient(135deg, 
+    rgba(16, 185, 129, 0.04) 0%, 
+    rgba(5, 150, 105, 0.06) 50%,
+    rgba(16, 185, 129, 0.04) 100%
+  );
+  backdrop-filter: blur(20px);
+  border-radius: var(--border-radius, 15px);
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 8px 32px rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  position: relative;
+  overflow: hidden;
+  animation: fadeInUp 0.6s ease;
+}
+
+.commeta-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(
+    circle at 80% 20%, 
+    rgba(16, 185, 129, 0.12) 0%, 
+    transparent 50%
+  );
+  pointer-events: none;
+}
+
+.commeta-header::after {
+  content: '';
+  position: absolute;
+  bottom: -50%;
+  right: -10%;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(
+    circle, 
+    rgba(5, 150, 105, 0.08) 0%, 
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+.financiamiento-header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+  position: relative;
+  z-index: 1;
+}
+
+.financiamiento-title-area {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.financiamiento-icon-wrapper.commeta-icon {
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  border-radius: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 30px var(--commeta-shadow),
+              0 0 20px var(--commeta-glow);
+  animation: commetaPulse 2s infinite;
+  position: relative;
+}
+
+.financiamiento-icon-wrapper.commeta-icon::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(135deg, #10B981, #059669);
+  border-radius: 16px;
+  opacity: 0.3;
+  z-index: -1;
+  filter: blur(8px);
+}
+
+@keyframes commetaPulse {
+  0%, 100% { 
+    transform: scale(1);
+    box-shadow: 0 10px 30px var(--commeta-shadow),
+                0 0 20px var(--commeta-glow);
+  }
+  50% { 
+    transform: scale(1.05);
+    box-shadow: 0 15px 40px var(--commeta-shadow),
+                0 0 30px var(--commeta-glow);
+  }
+}
+
+.financiamiento-main-icon {
+  font-size: 1.8rem;
+  color: #1a1a1a;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.financiamiento-title {
+  font-size: 2.2rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #059669 0%, #10B981 50%, #047857 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0;
+  text-shadow: 0 2px 10px rgba(16, 185, 129, 0.1);
+}
+
+.financiamiento-subtitle {
+  color: var(--text-secondary, #94a3b8);
+  margin: 0.5rem 0 0 0;
+  font-size: 1rem;
+}
+
+.financiamiento-stats {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.stat-item.commeta-stat {
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  color: #ffffff;
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px var(--commeta-shadow);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-item.commeta-stat::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  transition: left 0.5s;
+}
+
+.stat-item.commeta-stat:hover::before {
+  left: 100%;
+}
+
+.stat-item.commeta-stat .stat-number {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1;
+}
+
+.stat-item.commeta-stat .stat-label {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 600;
+  margin-top: 0.25rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ==== BARRA DE ACCIONES COMMETA ==== */
+.financiamiento-actions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+  position: relative;
+  z-index: 1;
+}
+
+.search-container {
+  position: relative;
+  flex: 1;
+  max-width: 350px;
+  min-width: 200px;
+}
+
+.search-icon {
+  position: absolute;
+  left: 1.2rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #10B981;
+  font-size: 1rem;
+  pointer-events: none;
+  z-index: 2;
+  transition: all 0.3s ease;
+}
+
+.search-container:focus-within .search-icon {
+  color: #059669;
+  transform: translateY(-50%) scale(1.1);
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.9rem 1.2rem 0.9rem 3rem;
+  border: 2px solid rgba(16, 185, 129, 0.2);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  color: var(--text-primary, #1e293b);
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.05);
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #10B981;
+  background: rgba(16, 185, 129, 0.05);
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1),
+              0 4px 12px rgba(5, 150, 105, 0.15);
+  transform: translateY(-1px);
+}
+
+.search-input::placeholder {
+  color: rgba(100, 116, 139, 0.6);
+  font-weight: 400;
+}
+
+.filter-container {
+  position: relative;
+  min-width: 180px;
+}
+
+.filter-icon {
+  position: absolute;
+  left: 1.2rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #10B981;
+  font-size: 0.95rem;
+  pointer-events: none;
+  z-index: 2;
+  transition: all 0.3s ease;
+}
+
+.filter-container:focus-within .filter-icon {
+  color: #059669;
+  transform: translateY(-50%) scale(1.1);
+}
+
+.filter-select {
+  width: 100%;
+  padding: 0.9rem 1.2rem 0.9rem 3rem;
+  border: 2px solid rgba(16, 185, 129, 0.2);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  color: var(--text-primary, #1e293b);
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.05);
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2310B981' d='M10.293 3.293L6 7.586 1.707 3.293A1 1 0 00.293 4.707l5 5a1 1 0 001.414 0l5-5a1 1 0 10-1.414-1.414z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  padding-right: 3rem;
+}
+
+.filter-select:hover {
+  border-color: #10B981;
+  background-color: rgba(16, 185, 129, 0.03);
+}
+
+.filter-select:focus {
+  outline: none;
+  border-color: #10B981;
+  background: rgba(16, 185, 129, 0.05);
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1),
+              0 4px 12px rgba(5, 150, 105, 0.15);
+  transform: translateY(-1px);
+}
+
+.filter-select option {
+  background: #ffffff;
+  color: #1e293b;
+  padding: 0.75rem;
+  font-weight: 500;
+}
+
+.filter-select option:hover {
+  background: rgba(16, 185, 129, 0.1);
+}
+
+.btn-add-financiamiento.btn-commeta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.9rem 1.8rem;
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  box-shadow: 0 8px 20px var(--commeta-shadow);
+  text-decoration: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-commeta::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.btn-commeta:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+.btn-commeta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(5, 150, 105, 0.4);
+  background: linear-gradient(135deg, #059669 0%, #10B981 100%);
+}
+
+.btn-commeta:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 12px var(--commeta-shadow);
+}
+
+.btn-commeta span,
+.btn-commeta i {
+  position: relative;
+  z-index: 1;
+}
+
+/* ==== GRID DE FINANCIAMIENTOS COMMETA ==== */
+.financiamiento-grid-container {
+  position: relative;
+}
+
+.financiamiento-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1.5rem;
+}
+
+.financiamiento-card.commeta-card {
+  background: linear-gradient(135deg, 
+    rgba(16, 185, 129, 0.03) 0%, 
+    rgba(5, 150, 105, 0.04) 100%
+  );
+  backdrop-filter: blur(15px);
+  border-radius: var(--border-radius, 15px);
+  border: 2px solid rgba(16, 185, 129, 0.25);
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.08);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  animation: fadeInUp 0.6s ease;
+  animation-fill-mode: both;
+}
+
+.commeta-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(90deg, #10B981 0%, #059669 50%, #10B981 100%);
+  background-size: 200% 100%;
+  animation: shimmer 3s linear infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.commeta-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 15px 40px rgba(5, 150, 105, 0.2),
+              0 0 30px rgba(16, 185, 129, 0.15);
+  border-color: #10B981;
+  background: linear-gradient(135deg, 
+    rgba(16, 185, 129, 0.05) 0%, 
+    rgba(5, 150, 105, 0.07) 100%
+  );
+}
+
+/* ==== HEADER DE CARD COMMETA ==== */
+.financiamiento-card-header {
+  padding: 1.5rem 1.5rem 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.financiamiento-avatar.commeta-avatar {
+  width: 50px;
+  height: 50px;
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 15px var(--commeta-shadow);
+  position: relative;
+}
+
+.commeta-avatar .avatar-initials {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #ffffff;
+  text-transform: uppercase;
+  z-index: 2;
+  position: relative;
+}
+
+.commeta-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: linear-gradient(135deg, #10B981, #059669);
+  color: #ffffff;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  box-shadow: 0 2px 8px var(--commeta-shadow);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  animation: badgePulse 2s infinite;
+}
+
+@keyframes badgePulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); box-shadow: 0 4px 12px var(--commeta-shadow); }
+}
+
+.financiamiento-status.commeta-status.active .status-dot {
+  background: #10B981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.3);
+  animation: commetaStatusPulse 2s infinite;
+}
+
+@keyframes commetaStatusPulse {
+  0%, 100% { 
+    transform: scale(1);
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.3);
+  }
+  50% { 
+    transform: scale(1.1);
+    box-shadow: 0 0 0 5px rgba(16, 185, 129, 0.2);
+  }
+}
+
+.financiamiento-status.inactive .status-dot {
+  background: #6c757d;
+  box-shadow: 0 0 0 3px rgba(108, 117, 125, 0.2);
+}
+
+.financiamiento-status .status-text {
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-left: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ==== BODY DE CARD COMMETA ==== */
+.financiamiento-card-body {
+  padding: 0 1.5rem 1.5rem;
+}
+
+.financiamiento-name {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--text-primary, #1e293b);
+  margin: 0 0 1rem 0;
+  line-height: 1.3;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.financiamiento-name .fa-crown {
+  color: #10B981;
+  filter: drop-shadow(0 2px 4px rgba(16, 185, 129, 0.3));
+  animation: crownFloat 3s ease-in-out infinite;
+}
+
+@keyframes crownFloat {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-3px); }
+}
+
+.financiamiento-name .badge {
+  font-size: 0.7rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 8px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.financiamiento-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  transition: transform 0.2s ease;
+}
+
+.info-item:hover {
+  transform: translateX(5px);
+}
+
+.info-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  color: white;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Iconos específicos de Commeta con gradientes mejorados */
+.info-icon.zone {
+  background: linear-gradient(135deg, #8B4513 0%, #A0522D 100%);
+  box-shadow: 0 4px 12px rgba(139, 69, 19, 0.3);
+}
+
+.info-icon.scheme {
+  background: linear-gradient(135deg, #4169E1 0%, #6495ED 100%);
+  box-shadow: 0 4px 12px rgba(65, 105, 225, 0.3);
+}
+
+.info-icon.strong-month {
+  background: linear-gradient(135deg, #32CD32 0%, #90EE90 100%);
+  box-shadow: 0 4px 12px rgba(50, 205, 50, 0.3);
+}
+
+.info-icon.monthly {
+  background: linear-gradient(135deg, #9333EA 0%, #A855F7 100%);
+  box-shadow: 0 4px 12px rgba(147, 51, 234, 0.3);
+}
+
+.info-icon.location {
+  background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+}
+
+.info-icon.price {
+  background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+}
+
+.info-icon.payment {
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+}
+
+.info-icon.amount {
+  background: linear-gradient(135deg, #06B6D4 0%, #0891B2 100%);
+  box-shadow: 0 4px 12px rgba(6, 182, 212, 0.3);
+}
+
+.info-icon.type {
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  box-shadow: 0 4px 12px var(--commeta-shadow);
+  color: #ffffff;
+}
+
+.info-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  flex: 1;
+}
+
+.info-label {
+  font-size: 0.75rem;
+  color: var(--text-secondary, #94a3b8);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.info-value {
+  font-size: 0.9rem;
+  color: var(--text-primary, #1e293b);
+  font-weight: 600;
+}
+
+/* ==== FOOTER DE CARD COMMETA ==== */
+.financiamiento-card-footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid rgba(16, 185, 129, 0.15);
+  background: linear-gradient(to bottom,
+    transparent,
+    rgba(16, 185, 129, 0.03)
+  );
+}
+
+.financiamiento-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.action-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  font-size: 0.85rem;
+}
+
+.action-btn.view {
+  background: rgba(59, 130, 246, 0.1);
+  color: #3B82F6;
+}
+
+.action-btn.view:hover {
+  background: rgba(59, 130, 246, 0.2);
+  transform: scale(1.1) rotate(5deg);
+}
+
+.action-btn.edit {
+  background: rgba(245, 158, 11, 0.1);
+  color: #F59E0B;
+}
+
+.action-btn.edit:hover {
+  background: rgba(245, 158, 11, 0.2);
+  transform: scale(1.1) rotate(-5deg);
+}
+
+.action-btn.pdf {
+  background: rgba(239, 68, 68, 0.1);
+  color: #EF4444;
+}
+
+.action-btn.pdf:hover {
+  background: rgba(239, 68, 68, 0.2);
+  transform: scale(1.1);
+}
+
+.action-btn.delete {
+  background: rgba(107, 114, 128, 0.1);
+  color: #6B7280;
+}
+
+.action-btn.delete:hover {
+  background: rgba(239, 68, 68, 0.15);
+  color: #EF4444;
+  transform: scale(1.1);
+}
+
+/* ==== ESTADO VACÍO COMMETA ==== */
+.empty-state.commeta-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+  animation: fadeInUp 0.6s ease;
+}
+
+.commeta-empty .empty-icon {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 15px 40px var(--commeta-shadow);
+  animation: commetaPulse 2s infinite;
+}
+
+.commeta-empty .empty-icon i {
+  font-size: 2rem;
+  color: #ffffff;
+}
+
+.empty-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-primary, #1e293b);
+  margin-bottom: 0.5rem;
+}
+
+.empty-subtitle {
+  color: var(--text-secondary, #94a3b8);
+  margin-bottom: 2rem;
+  max-width: 400px;
+  line-height: 1.5;
+}
+
+.btn-empty-action.btn-commeta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 2rem;
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 10px 25px var(--commeta-shadow);
+}
+
+.btn-empty-action.btn-commeta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 15px 35px rgba(5, 150, 105, 0.4);
+}
+
+/* ==== PAGINACIÓN COMMETA ==== */
+.pagination-container {
+  margin-top: 3rem;
+  animation: fadeInUp 0.6s ease 0.3s both;
+}
+
+.pagination-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(135deg, 
+    rgba(16, 185, 129, 0.03) 0%, 
+    rgba(5, 150, 105, 0.04) 100%
+  );
+  backdrop-filter: blur(15px);
+  border-radius: 15px;
+  padding: 1.5rem 2rem;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.06);
+}
+
+.pagination-info {
+  color: var(--text-secondary, #94a3b8);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.pagination-list {
+  display: flex;
+  gap: 0.5rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.pagination-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary, #94a3b8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+.pagination-btn:hover {
+  background: rgba(16, 185, 129, 0.12);
+  color: #059669;
+  transform: translateY(-2px);
+}
+
+.pagination-btn.active {
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 12px var(--commeta-shadow);
+  font-weight: 600;
+}
+
+.pagination-btn.prev,
+.pagination-btn.next {
+  width: 45px;
+}
+
+/* ==== ANIMACIONES GENERALES ==== */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ==== RESPONSIVE ==== */
+@media (max-width: 768px) {
+  .financiamiento-header-content {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .financiamiento-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .search-container,
+  .filter-container {
+    max-width: none;
+    width: 100%;
+  }
+  
+  .financiamiento-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .pagination-nav {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .pagination-info {
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .financiamiento-header-section.commeta-header {
+    padding: 1.5rem;
+  }
+  
+  .financiamiento-card.commeta-card {
+    margin: 0 -0.5rem;
+  }
+  
+  .financiamiento-title {
+    font-size: 1.8rem;
+  }
+  
+  .financiamiento-name {
+    font-size: 1.1rem;
+  }
+}
+
+/* ==== EFECTOS ADICIONALES ==== */
+.commeta-card:nth-child(odd) {
+  animation-delay: 0.1s;
+}
+
+.commeta-card:nth-child(even) {
+  animation-delay: 0.2s;
+}
+
+/* Efecto de brillo en hover para elementos dorados */
+.btn-commeta,
+.stat-item.commeta-stat,
+.financiamiento-icon-wrapper.commeta-icon {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-commeta::after,
+.stat-item.commeta-stat::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.3) 50%,
+    transparent 70%
+  );
+  transform: rotate(45deg);
+  animation: shine 3s infinite;
+}
+
+@keyframes shine {
+  0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+  100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+}
+</style>
+
+<script>
+// Funcionalidad del buscador para financiamientos Commeta
+function initCommetaFinanciamientoSearch() {
+  const searchInput = document.getElementById('financiamientoCommetaSearch');
+  const zonaFilter = document.getElementById('zonaCommetaFilter');
+  const financiamientoCards = document.querySelectorAll('.commeta-card[data-financiamiento-name]');
+  
+  function financiamientoSearchHandler() {
+    const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
+    const selectedZona = zonaFilter ? zonaFilter.value.toLowerCase() : '';
+    
+    let visibleCount = 0;
+    
+    financiamientoCards.forEach(card => {
+      const financiamientoName = card.getAttribute('data-financiamiento-name');
+      const financiamientoZona = card.getAttribute('data-zona-commeta');
+      
+      const matchesSearch = searchTerm === '' || financiamientoName.includes(searchTerm);
+      const matchesZona = selectedZona === '' || financiamientoZona.includes(selectedZona);
+      
+      if (matchesSearch && matchesZona) {
+        card.style.display = 'block';
+        card.style.animation = 'fadeInUp 0.3s ease';
+        visibleCount++;
+      } else {
+        card.style.display = 'none';
+      }
+    });
+    
+    // Mostrar mensaje si no hay resultados
+    let noResultsMsg = document.querySelector('.no-results-message');
+    if (visibleCount === 0 && (searchTerm !== '' || selectedZona !== '')) {
+      if (!noResultsMsg) {
+        noResultsMsg = document.createElement('div');
+        noResultsMsg.className = 'no-results-message empty-state';
+        noResultsMsg.innerHTML = `
+          <div class="empty-icon">
+            <i class="fas fa-search"></i>
+          </div>
+          <h3 class="empty-title">No se encontraron financiamientos Commeta</h3>
+          <p class="empty-subtitle">Intenta con otros filtros o términos de búsqueda</p>
+        `;
+        document.querySelector('.financiamiento-grid-container').appendChild(noResultsMsg);
+      }
+      noResultsMsg.style.display = 'flex';
+    } else if (noResultsMsg) {
+      noResultsMsg.style.display = 'none';
+    }
+  }
+  
+  if (searchInput) {
+    searchInput.removeEventListener('input', financiamientoSearchHandler);
+    searchInput.removeEventListener('keyup', financiamientoSearchHandler);
+    
+    searchInput.addEventListener('input', financiamientoSearchHandler);
+    searchInput.addEventListener('keyup', financiamientoSearchHandler);
+    searchInput.addEventListener('paste', function() {
+      setTimeout(financiamientoSearchHandler, 10);
+    });
+  }
+  
+  if (zonaFilter) {
+    zonaFilter.removeEventListener('change', financiamientoSearchHandler);
+    zonaFilter.addEventListener('change', financiamientoSearchHandler);
+  }
+}
+
+// Función para generar PDF Commeta (puedes implementarla después)
+function generateCommetaPDF(financiamientoId) {
+  alert(`Generando PDF para financiamiento Commeta ID: ${financiamientoId}`);
+  // Aquí implementarás la generación de PDF específica para Commeta
+  // window.open(`/dashboard/commeta/financiamientos/${financiamientoId}/pdf/`, '_blank');
+}
+
+// Animaciones escalonadas para las tarjetas de financiamientos Commeta
+function initCommetaFinanciamientoAnimations() {
+  const cards = document.querySelectorAll('.commeta-card');
+  cards.forEach((card, index) => {
+    card.style.animationDelay = `${index * 0.1}s`;
+  });
+}
+
+// Efecto de hover mejorado para financiamientos Commeta
+function initCommetaFinanciamientoHover() {
+  document.querySelectorAll('.commeta-card').forEach(card => {
+    card.addEventListener('mouseenter', function() {
+      this.style.transform = 'translateY(-8px) scale(1.02)';
+      this.style.boxShadow = '0 15px 35px rgba(255, 215, 0, 0.2)';
+    });
+    
+    card.addEventListener('mouseleave', function() {
+      this.style.transform = 'translateY(0) scale(1)';
+      this.style.boxShadow = 'none';
+    });
+  });
+}
+
+// Inicializar todas las funcionalidades
+document.addEventListener('DOMContentLoaded', function() {
+  initCommetaFinanciamientoSearch();
+  initCommetaFinanciamientoAnimations();
+  initCommetaFinanciamientoHover();
+});
+
+// Reinicializar cuando HTMX carga contenido
+document.body.addEventListener('htmx:afterSwap', function(evt) {
+  if (evt.detail.target.id === 'content') {
+    setTimeout(function() {
+      initCommetaFinanciamientoSearch();
+      initCommetaFinanciamientoAnimations();
+      initCommetaFinanciamientoHover();
+    }, 50);
+  }
+});
+</script>

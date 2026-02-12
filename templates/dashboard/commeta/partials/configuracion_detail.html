@@ -1,0 +1,723 @@
+<div class="container-fluid py-4">
+  <!-- Header con información principal de la configuración -->
+  <div class="config-detail-header">
+    <div class="config-header-content">
+      <div class="config-avatar-section">
+        <div class="config-main-avatar">
+          <span class="avatar-initials-large">{{ configuracion.zona|slice:":1"|upper }}</span>
+          <div class="config-badge" title="Configuración Commeta">
+            <i class="fas fa-cog"></i>
+          </div>
+        </div>
+        <div class="config-status {% if configuracion.activo %}completed{% else %}pending{% endif %}">
+          <div class="status-dot"></div>
+          <span class="status-label">{% if configuracion.activo %}Activo{% else %}Inactivo{% endif %}</span>
+        </div>
+      </div>
+      
+      <div class="config-title-section">
+        <h1 class="config-detail-title">
+          <i class="fas fa-cog text-config"></i>
+          Configuración Commeta - {{ configuracion.get_zona_display }}
+        </h1>
+        <p class="config-detail-subtitle">Lote {{ configuracion.lote.identificador }}</p>
+        
+        <div class="config-quick-actions">
+          <div class="quick-action-btn project">
+            <i class="fas fa-building"></i>
+            <span>{{ configuracion.lote.proyecto.nombre }}</span>
+          </div>
+          <div class="quick-action-btn zone">
+            <i class="fas fa-map-marked-alt"></i>
+            <span>Zona {{ configuracion.get_zona_display }}</span>
+          </div>
+          <div class="quick-action-btn price">
+            <i class="fas fa-dollar-sign"></i>
+            <span class="currency-format" data-value="{{ configuracion.precio_base }}">${{ configuracion.precio_base|floatformat:2 }}</span>
+          </div>
+          <div class="quick-action-btn scheme">
+            <i class="fas fa-calendar-alt"></i>
+            <span>{{ configuracion.get_tipo_esquema_display }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Información detallada de la configuración -->
+  <div class="config-info-grid">
+    <!-- Información General -->
+    <div class="info-card general-data">
+      <div class="info-card-header">
+        <div class="info-card-icon general">
+          <i class="fas fa-info-circle"></i>
+        </div>
+        <h3 class="info-card-title">Información General</h3>
+      </div>
+      
+      <div class="info-card-body">
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-label">Lote</span>
+            <span class="info-value">{{ configuracion.lote.identificador }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Proyecto</span>
+            <span class="info-value">{{ configuracion.lote.proyecto.nombre }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Zona Commeta</span>
+            <span class="info-value status-badge zone-badge">{{ configuracion.get_zona_display }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Tipo de Esquema</span>
+            <span class="info-value status-badge scheme-badge">{{ configuracion.get_tipo_esquema_display }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Estado</span>
+            <span class="info-value status-badge {% if configuracion.activo %}completed{% else %}pending{% endif %}">
+              {% if configuracion.activo %}Activo{% else %}Inactivo{% endif %}
+            </span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Total de Meses</span>
+            <span class="info-value highlight">{{ configuracion.total_meses }} meses</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Montos Base -->
+    <div class="info-card financial-data">
+      <div class="info-card-header">
+        <div class="info-card-icon financial">
+          <i class="fas fa-dollar-sign"></i>
+        </div>
+        <h3 class="info-card-title">Montos Base</h3>
+      </div>
+      
+      <div class="info-card-body">
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-label">Precio Base</span>
+            <span class="info-value price currency-format" data-value="{{ configuracion.precio_base }}">${{ configuracion.precio_base|floatformat:2 }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Apartado Sugerido</span>
+            <span class="info-value price currency-format" data-value="{{ configuracion.apartado_sugerido }}">${{ configuracion.apartado_sugerido|floatformat:2 }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Enganche Sugerido</span>
+            <span class="info-value price currency-format" data-value="{{ configuracion.enganche_sugerido }}">${{ configuracion.enganche_sugerido|floatformat:2 }}</span>
+          </div>
+          {% if configuracion.monto_pago_final %}
+          <div class="info-item">
+            <span class="info-label">Monto Pago Final</span>
+            <span class="info-value price currency-format" data-value="{{ configuracion.monto_pago_final }}">${{ configuracion.monto_pago_final|floatformat:2 }}</span>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Detalles del Esquema de Pagos -->
+    {% if configuracion.tipo_esquema == 'mensualidades_fijas' %}
+    <div class="info-card scheme-details mensualidades-fijas">
+      <div class="info-card-header">
+        <div class="info-card-icon scheme-fixed">
+          <i class="fas fa-calendar-alt"></i>
+        </div>
+        <h3 class="info-card-title">Detalles de Mensualidades Fijas</h3>
+      </div>
+      
+      <div class="info-card-body">
+        <div class="scheme-highlight">
+          <div class="scheme-highlight-item">
+            <span class="scheme-label">Mensualidad Sugerida</span>
+            <h3 class="scheme-value currency-format" data-value="{{ configuracion.mensualidad_sugerida }}">${{ configuracion.mensualidad_sugerida|floatformat:2 }}</h3>
+            <p class="scheme-description">Pago mensual constante durante todo el financiamiento</p>
+          </div>
+          {% if configuracion.monto_pago_final %}
+          <div class="scheme-highlight-item">
+            <span class="scheme-label">Monto Pago Final</span>
+            <h3 class="scheme-value currency-format" data-value="{{ configuracion.monto_pago_final }}">${{ configuracion.monto_pago_final|floatformat:2 }}</h3>
+            <p class="scheme-description">Último pago del plan</p>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% elif configuracion.tipo_esquema == 'meses_fuertes' %}
+    <div class="info-card scheme-details meses-fuertes">
+      <div class="info-card-header">
+        <div class="info-card-icon scheme-strong">
+          <i class="fas fa-chart-line"></i>
+        </div>
+        <h3 class="info-card-title">Detalles de Meses Fuertes</h3>
+      </div>
+      
+      <div class="info-card-body">
+        <div class="scheme-highlight">
+          <div class="scheme-highlight-item">
+            <span class="scheme-label">Mensualidad Normal</span>
+            <h3 class="scheme-value currency-format" data-value="{{ configuracion.monto_mensualidad_normal }}">${{ configuracion.monto_mensualidad_normal|floatformat:2 }}</h3>
+            <p class="scheme-description">Pago mensual regular</p>
+          </div>
+          <div class="scheme-highlight-item highlight-strong">
+            <span class="scheme-label">Mes Fuerte</span>
+            <h3 class="scheme-value currency-format" data-value="{{ configuracion.monto_mes_fuerte }}">${{ configuracion.monto_mes_fuerte|floatformat:2 }}</h3>
+            <p class="scheme-description">Pago en meses especiales</p>
+          </div>
+          {% if configuracion.monto_pago_final %}
+          <div class="scheme-highlight-item">
+            <span class="scheme-label">Pago Final</span>
+            <h3 class="scheme-value currency-format" data-value="{{ configuracion.monto_pago_final }}">${{ configuracion.monto_pago_final|floatformat:2 }}</h3>
+            <p class="scheme-description">Último pago del plan</p>
+          </div>
+          {% endif %}
+        </div>
+        
+        <div class="info-grid mt-3">
+          {% if configuracion.frecuencia_meses_fuertes %}
+          <div class="info-item">
+            <span class="info-label">Distribución</span>
+            <span class="info-value">Cada {{ configuracion.frecuencia_meses_fuertes }} meses</span>
+          </div>
+          {% endif %}
+          {% if configuracion.cantidad_meses_fuertes_sugerida %}
+          <div class="info-item">
+            <span class="info-label">Meses Fuertes Sugeridos</span>
+            <span class="info-value highlight">{{ configuracion.cantidad_meses_fuertes_sugerida }}</span>
+          </div>
+          {% endif %}
+          {% if configuracion.meses_fuertes_especificos %}
+          <div class="info-item full-width">
+            <span class="info-label">Meses Específicos</span>
+            <span class="info-value">{{ configuracion.meses_fuertes_especificos|join:", " }}</span>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Esquema Personalizado (si existe) -->
+    {% if configuracion.esquema_personalizado %}
+    <div class="info-card custom-scheme-data">
+      <div class="info-card-header">
+        <div class="info-card-icon custom">
+          <i class="fas fa-cogs"></i>
+        </div>
+        <h3 class="info-card-title">Esquema Personalizado</h3>
+      </div>
+      
+      <div class="info-card-body">
+        <div class="custom-scheme-content">
+          <pre class="custom-scheme-json">{{ configuracion.esquema_personalizado|pprint }}</pre>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Botones de acción -->
+  <div class="config-actions-section">
+    <div class="actions-container">
+      <button class="action-btn primary" 
+              hx-get="{% url 'commeta:commeta_configuracion_update' configuracion.id %}" 
+              hx-target="#content" 
+              hx-swap="innerHTML">
+        <i class="fas fa-edit"></i>
+        <span>Editar Configuración</span>
+      </button>
+      
+      <button class="action-btn secondary"
+              hx-get="{% url 'commeta:commeta_configuracion_list' %}" 
+              hx-target="#content" 
+              hx-swap="innerHTML">
+        <i class="fas fa-arrow-left"></i>
+        <span>Volver</span>
+      </button>
+      
+      <button class="action-btn danger"
+              hx-get="{% url 'commeta:commeta_configuracion_delete' configuracion.id %}" 
+              hx-target="#content" 
+              hx-swap="innerHTML">
+        <i class="fas fa-trash"></i>
+        <span>Eliminar Configuración</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<style>
+/* Variables CSS - Colores Configuraciones Azul Profundo Premium */
+:root {
+  --config-primary: #3B82F6;
+  --config-secondary: #2563EB;
+  --config-dark: #1E40AF;
+  --config-light: #DBEAFE;
+  --config-shadow: rgba(59, 130, 246, 0.3);
+  --config-glow: rgba(59, 130, 246, 0.4);
+  --config-success: #10B981;
+  --glass-bg: rgba(255, 255, 255, 0.1);
+  --glass-border: rgba(255, 255, 255, 0.2);
+  --glass-hover: rgba(255, 255, 255, 0.15);
+  --config-gradient: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+  --secondary-gradient: linear-gradient(135deg, #87CEEB 0%, #4A90C2 100%);
+  --accent-gradient: linear-gradient(135deg, #F59E0B 0%, #FBBF24 100%);
+  --danger-gradient: linear-gradient(135deg, #EF4444 0%, #F87171 100%);
+  --success-gradient: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  --text-primary: #333;
+  --text-secondary: #666;
+  --border-radius: 16px;
+  --shadow-sm: 0 4px 15px rgba(59, 130, 246, 0.1);
+  --shadow-md: 0 8px 25px rgba(59, 130, 246, 0.15);
+  --shadow-config: 0 6px 20px rgba(59, 130, 246, 0.25);
+  --shadow-hover: 0 12px 35px rgba(59, 130, 246, 0.3);
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Header */
+.config-detail-header {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  border-radius: var(--border-radius);
+  padding: 2.5rem;
+  margin-bottom: 2rem;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--glass-border);
+  position: relative;
+  overflow: hidden;
+  animation: fadeInUp 0.6s ease;
+}
+
+.config-detail-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at 30% 20%, rgba(59, 130, 246, 0.12) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.config-header-content {
+  display: flex;
+  gap: 2rem;
+  align-items: flex-start;
+  position: relative;
+}
+
+.config-avatar-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.config-main-avatar {
+  width: 100px;
+  height: 100px;
+  background: var(--config-gradient);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-config);
+  animation: pulse 3s infinite;
+  position: relative;
+}
+
+.config-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  width: 30px;
+  height: 30px;
+  background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 0.75rem;
+  box-shadow: 0 4px 10px rgba(99, 102, 241, 0.4);
+  animation: rotateBadge 3s infinite;
+}
+
+.avatar-initials-large {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: white;
+}
+
+.config-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  border: 1px solid transparent;
+}
+
+.config-status.completed {
+  background: rgba(16, 185, 129, 0.1);
+  border-color: rgba(16, 185, 129, 0.2);
+}
+
+.config-status.completed .status-dot { background: var(--config-success); }
+.config-status.completed .status-label { color: var(--config-success); }
+.config-status.pending { background: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.2); }
+.config-status.pending .status-dot { background: #F59E0B; }
+.config-status.pending .status-label { color: #F59E0B; }
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  animation: statusPulse 2s infinite;
+}
+
+.config-title-section { flex: 1; }
+
+.config-detail-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  background: var(--config-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0 0 0.5rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.text-config { color: var(--config-primary) !important; }
+.config-detail-subtitle { color: var(--text-secondary); font-size: 1.1rem; margin: 0 0 2rem 0; }
+.config-quick-actions { display: flex; gap: 1rem; flex-wrap: wrap; }
+
+.quick-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  font-weight: 500;
+  border: 1px solid transparent;
+  transition: var(--transition);
+}
+
+.quick-action-btn:hover { transform: translateY(-2px); }
+.quick-action-btn.project { background: rgba(139, 69, 19, 0.1); color: #8B4513; border-color: rgba(139, 69, 19, 0.2); }
+.quick-action-btn.zone { background: rgba(139, 92, 246, 0.1); color: #8B5CF6; border-color: rgba(139, 92, 246, 0.2); }
+.quick-action-btn.price { background: rgba(59, 130, 246, 0.1); color: var(--config-primary); border-color: rgba(59, 130, 246, 0.2); }
+.quick-action-btn.scheme { background: var(--config-light); color: var(--config-dark); border-color: rgba(59, 130, 246, 0.3); }
+
+/* Grid de Información */
+.config-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.info-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(15px);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  animation: fadeInUp 0.6s ease;
+  animation-fill-mode: both;
+}
+
+.info-card.general-data { animation-delay: 0.1s; }
+.info-card.financial-data { animation-delay: 0.2s; }
+.info-card.scheme-details { animation-delay: 0.3s; }
+.info-card.custom-scheme-data { animation-delay: 0.4s; }
+
+.info-card-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.info-card-icon {
+  width: 45px;
+  height: 45px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.2rem;
+}
+
+.info-card-icon.general { background: var(--config-gradient); }
+.info-card-icon.financial { background: var(--config-gradient); }
+.info-card-icon.scheme-fixed { background: var(--secondary-gradient); }
+.info-card-icon.scheme-strong { background: var(--accent-gradient); }
+.info-card-icon.custom { background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%); }
+
+.info-card-title { font-size: 1.3rem; font-weight: 600; color: var(--text-primary); margin: 0; }
+.info-card-body { padding: 1.5rem; }
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.25rem;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: var(--transition);
+}
+
+.info-item.full-width { grid-column: 1 / -1; }
+
+.info-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+  transform: translateY(-2px);
+}
+
+.info-label {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.info-value { font-size: 1rem; color: var(--text-primary); font-weight: 500; }
+.info-value.price { font-size: 1.1rem; font-weight: 600; color: var(--config-primary); }
+.info-value.highlight { color: var(--config-primary); font-weight: 600; }
+
+.status-badge {
+  display: inline-flex;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.status-badge.completed { background: rgba(16, 185, 129, 0.1); color: var(--config-success); border: 1px solid rgba(16, 185, 129, 0.2); }
+.status-badge.pending { background: rgba(245, 158, 11, 0.1); color: #F59E0B; border: 1px solid rgba(245, 158, 11, 0.2); }
+.status-badge.zone-badge { background: rgba(139, 92, 246, 0.1); color: #8B5CF6; border: 1px solid rgba(139, 92, 246, 0.2); }
+.status-badge.scheme-badge { background: rgba(59, 130, 246, 0.1); color: var(--config-primary); border: 1px solid rgba(59, 130, 246, 0.2); }
+
+/* Detalles del Esquema */
+.scheme-highlight {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.scheme-highlight-item {
+  padding: 1.5rem;
+  background: rgba(59, 130, 246, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(59, 130, 246, 0.15);
+  transition: var(--transition);
+}
+
+.scheme-highlight-item.highlight-strong {
+  background: rgba(245, 158, 11, 0.08);
+  border-color: rgba(245, 158, 11, 0.2);
+}
+
+.scheme-highlight-item:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+
+.scheme-label {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.scheme-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--config-primary);
+  margin: 0.5rem 0;
+}
+
+.scheme-highlight-item.highlight-strong .scheme-value { color: #F59E0B; }
+
+.scheme-description {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* Esquema Personalizado */
+.custom-scheme-content {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 10px;
+  padding: 1rem;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.custom-scheme-json {
+  background: transparent;
+  color: var(--text-primary);
+  font-family: 'Courier New', monospace;
+  font-size: 0.9rem;
+  margin: 0;
+  overflow-x: auto;
+}
+
+/* Botones de Acción */
+.config-actions-section { animation: fadeInUp 0.6s ease 0.5s both; }
+.actions-container { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 2rem;
+  border: none;
+  border-radius: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+  font-size: 0.95rem;
+  border: 1px solid transparent;
+  position: relative;
+  overflow: hidden;
+}
+
+.action-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.5s;
+}
+
+.action-btn:hover::before { left: 100%; }
+
+.action-btn.primary {
+  background: var(--config-gradient);
+  color: white;
+  box-shadow: var(--shadow-config);
+}
+
+.action-btn.primary:hover { transform: translateY(-3px); box-shadow: var(--shadow-hover); }
+
+.action-btn.secondary {
+  background: rgba(108, 117, 125, 0.1);
+  color: #6C757D;
+  border-color: rgba(108, 117, 125, 0.2);
+}
+
+.action-btn.secondary:hover { background: rgba(108, 117, 125, 0.2); transform: translateY(-2px); }
+
+.action-btn.success {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--config-success);
+  border-color: rgba(16, 185, 129, 0.2);
+}
+
+.action-btn.success:hover { background: rgba(16, 185, 129, 0.2); transform: translateY(-2px); }
+
+.action-btn.warning {
+  background: rgba(245, 158, 11, 0.1);
+  color: #F59E0B;
+  border-color: rgba(245, 158, 11, 0.2);
+}
+
+.action-btn.warning:hover { background: rgba(245, 158, 11, 0.2); transform: translateY(-2px); }
+
+.action-btn.danger {
+  background: rgba(239, 68, 68, 0.1);
+  color: #EF4444;
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+.action-btn.danger:hover { background: rgba(239, 68, 68, 0.2); transform: translateY(-2px); }
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .config-info-grid { grid-template-columns: 1fr; }
+  .config-header-content { flex-direction: column; align-items: center; text-align: center; }
+}
+
+@media (max-width: 768px) {
+  .config-detail-header { padding: 2rem; }
+  .config-detail-title { font-size: 2rem; }
+  .info-grid { grid-template-columns: 1fr; }
+  .scheme-highlight { grid-template-columns: 1fr; }
+  .actions-container { flex-direction: column; }
+}
+
+@media (max-width: 480px) {
+  .config-main-avatar { width: 80px; height: 80px; }
+  .config-quick-actions { flex-direction: column; }
+}
+
+/* Animaciones */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+@keyframes statusPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.1); }
+}
+
+@keyframes rotateBadge {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(180deg) scale(1.1); }
+}
+</style>
+
+<script>
+function formatCurrency(value) {
+    if (!value && value !== 0) return "$0.00";
+    const num = typeof value === 'string' ? parseFloat(value.replace(/[$,]/g, '')) : Number(value);
+    if (isNaN(num)) return "$0.00";
+    return "$" + num.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function applyCurrencyFormatting() {
+    document.querySelectorAll('.currency-format').forEach(element => {
+        const rawValue = element.getAttribute('data-value');
+        const currentText = element.textContent.trim();
+        if (currentText && !currentText.includes(',') && currentText.includes(')) {
+            element.textContent = formatCurrency(rawValue || currentText.replace(', ''));
+        } else if (rawValue) {
+            element.textContent = formatCurrency(rawValue);
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', applyCurrencyFormatting);
+document.body.addEventListener('htmx:afterSwap', function(event) {
+    if (event.detail.target.id === 'content') {
+        setTimeout(applyCurrencyFormatting, 50);
+    }
+});
+</script>

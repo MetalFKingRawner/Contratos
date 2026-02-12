@@ -1,0 +1,883 @@
+<div class="container-fluid py-4">
+  <!-- Header con información principal del financiamiento -->
+  <div class="tramite-detail-header commeta-header">
+    <div class="tramite-header-content">
+      <div class="tramite-avatar-section">
+        <div class="tramite-main-avatar commeta-avatar">
+          <span class="avatar-initials-large">C{{ plan.financiamiento.id }}</span>
+          <div class="commeta-badge" title="Financiamiento Commeta">
+            <i class="fas fa-crown"></i>
+          </div>
+        </div>
+        <div class="tramite-status {% if plan.financiamiento.tipo_pago == 'contado' %}completed{% elif plan.financiamiento.tipo_pago == 'financiado' %}in-process{% else %}pending{% endif %}">
+          <div class="status-dot"></div>
+          <span class="status-label">{{ plan.financiamiento.get_tipo_pago_display }}</span>
+        </div>
+      </div>
+      
+      <div class="tramite-title-section">
+        <h1 class="tramite-detail-title">
+          <i class="fas fa-crown text-commeta"></i>
+          Financiamiento Commeta #{{ plan.financiamiento.id }}
+        </h1>
+        <p class="tramite-detail-subtitle">{{ plan.financiamiento.nombre_cliente }}</p>
+        
+        <div class="tramite-quick-actions">
+          <div class="quick-action-btn client">
+            <i class="fas fa-map-marker-alt"></i>
+            <span>Lote {{ plan.financiamiento.lote.identificador }}</span>
+          </div>
+          <div class="quick-action-btn date">
+            <i class="fas fa-calendar"></i>
+            <span>{{ plan.financiamiento.creado_en|date:"d/m/Y" }}</span>
+          </div>
+          <div class="quick-action-btn price">
+            <i class="fas fa-dollar-sign"></i>
+            <span class="currency-format" data-value="{{ plan.financiamiento.precio_lote }}">${{ plan.financiamiento.precio_lote|floatformat:2 }}</span>
+          </div>
+          <div class="quick-action-btn commeta">
+            <i class="fas fa-crown"></i>
+            <span>{{ plan.get_tipo_esquema_display }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Información detallada del financiamiento -->
+  <div class="tramite-info-grid">
+    <!-- Información General -->
+    <div class="info-card general-data">
+      <div class="info-card-header">
+        <div class="info-card-icon general">
+          <i class="fas fa-info-circle"></i>
+        </div>
+        <h3 class="info-card-title">Información General</h3>
+      </div>
+      
+      <div class="info-card-body">
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-label">Tipo de Pago</span>
+            <span class="info-value status-badge {% if plan.financiamiento.tipo_pago == 'contado' %}completed{% elif plan.financiamiento.tipo_pago == 'financiado' %}in-process{% else %}pending{% endif %}">
+              {{ plan.financiamiento.get_tipo_pago_display }}
+            </span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Tipo de Esquema Commeta</span>
+            <span class="info-value">{{ plan.get_tipo_esquema_display }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Estado</span>
+            <span class="info-value status-badge {% if plan.financiamiento.activo %}completed{% else %}pending{% endif %}">
+              {% if plan.financiamiento.activo %}Activo{% else %}Inactivo{% endif %}
+            </span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Fecha de Creación</span>
+            <span class="info-value">{{ plan.financiamiento.creado_en|date:"d/m/Y H:i" }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Última Actualización</span>
+            <span class="info-value">{{ plan.financiamiento.actualizado_en|date:"d/m/Y H:i" }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Información del Cliente y Lote -->
+    <div class="info-card client-data">
+      <div class="info-card-header">
+        <div class="info-card-icon client">
+          <i class="fas fa-user"></i>
+        </div>
+        <h3 class="info-card-title">Información del Cliente y Lote</h3>
+      </div>
+      
+      <div class="info-card-body">
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-label">Nombre del Cliente</span>
+            <span class="info-value">{{ plan.financiamiento.nombre_cliente }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Lote</span>
+            <span class="info-value">{{ plan.financiamiento.lote.identificador }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Proyecto</span>
+            <span class="info-value">{{ plan.financiamiento.lote.proyecto.nombre }}</span>
+          </div>
+          {% if plan.configuracion_original %}
+          <div class="info-item">
+            <span class="info-label">Zona Commeta</span>
+            <span class="info-value">{{ plan.configuracion_original.get_zona_display }}</span>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Información Financiera -->
+    <div class="info-card financing-data">
+      <div class="info-card-header">
+        <div class="info-card-icon financing">
+          <i class="fas fa-dollar-sign"></i>
+        </div>
+        <h3 class="info-card-title">Información Financiera</h3>
+      </div>
+      
+      <div class="info-card-body">
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-label">Precio del Lote</span>
+            <span class="info-value price currency-format" data-value="{{ plan.financiamiento.precio_lote }}">${{ plan.financiamiento.precio_lote|floatformat:2 }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Apartado</span>
+            <span class="info-value price currency-format" data-value="{{ plan.financiamiento.apartado }}">${{ plan.financiamiento.apartado|floatformat:2 }}</span>
+          </div>
+          {% if plan.financiamiento.enganche %}
+          <div class="info-item">
+            <span class="info-label">Enganche</span>
+            <span class="info-value price currency-format" data-value="{{ plan.financiamiento.enganche }}">${{ plan.financiamiento.enganche|floatformat:2 }}</span>
+          </div>
+          {% endif %}
+          {% if plan.financiamiento.monto_mensualidad and plan.tipo_esquema == 'mensualidades_fijas' %}
+          <div class="info-item">
+            <span class="info-label">Mensualidad</span>
+            <span class="info-value price currency-format" data-value="{{ plan.financiamiento.monto_mensualidad }}">${{ plan.financiamiento.monto_mensualidad|floatformat:2 }}</span>
+          </div>
+          {% endif %}
+          {% if plan.monto_mensualidad_normal and plan.tipo_esquema == 'meses_fuertes' %}
+          <div class="info-item">
+            <span class="info-label">Mensualidad Normal</span>
+            <span class="info-value price currency-format" data-value="{{ plan.monto_mensualidad_normal }}">${{ plan.monto_mensualidad_normal|floatformat:2 }}</span>
+          </div>
+          {% endif %}
+          {% if plan.monto_mes_fuerte and plan.tipo_esquema == 'meses_fuertes' %}
+          <div class="info-item">
+            <span class="info-label">Monto Mes Fuerte</span>
+            <span class="info-value price currency-format" data-value="{{ plan.monto_mes_fuerte }}">${{ plan.monto_mes_fuerte|floatformat:2 }}</span>
+          </div>
+          {% endif %}
+          {% if plan.monto_pago_final %}
+          <div class="info-item">
+            <span class="info-label">Monto Pago Final</span>
+            <span class="info-value price currency-format" data-value="{{ plan.monto_pago_final }}">${{ plan.monto_pago_final|floatformat:2 }}</span>
+          </div>
+          {% endif %}
+          {% if plan.financiamiento.es_cotizacion %}
+          <div class="info-item">
+            <span class="info-label">Tipo</span>
+            <span class="info-value status-badge info">Cotización</span>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Configuración Commeta -->
+    <div class="info-card commeta-config-data">
+      <div class="info-card-header">
+        <div class="info-card-icon commeta">
+          <i class="fas fa-crown"></i>
+        </div>
+        <h3 class="info-card-title">Configuración Commeta</h3>
+      </div>
+      
+      <div class="info-card-body">
+        <div class="info-grid">
+          {% if plan.configuracion_original %}
+          <div class="info-item">
+            <span class="info-label">Configuración Original</span>
+            <span class="info-value">{{ plan.configuracion_original.zona }} - <span class="currency-format" data-value="{{ plan.configuracion_original.precio_base }}">${{ plan.configuracion_original.precio_base|floatformat:2 }}</span></span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Apartado Sugerido</span>
+            <span class="info-value currency-format" data-value="{{ plan.configuracion_original.apartado_sugerido }}">${{ plan.configuracion_original.apartado_sugerido|floatformat:2 }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Enganche Sugerido</span>
+            <span class="info-value currency-format" data-value="{{ plan.configuracion_original.enganche_sugerido }}">${{ plan.configuracion_original.enganche_sugerido|floatformat:2 }}</span>
+          </div>
+          {% if plan.configuracion_original.mensualidad_sugerida and plan.tipo_esquema == 'mensualidades_fijas' %}
+          <div class="info-item">
+            <span class="info-label">Mensualidad Sugerida</span>
+            <span class="info-value currency-format" data-value="{{ plan.configuracion_original.mensualidad_sugerida }}">${{ plan.configuracion_original.mensualidad_sugerida|floatformat:2 }}</span>
+          </div>
+          {% endif %}
+          {% if plan.configuracion_original.total_meses %}
+          <div class="info-item">
+            <span class="info-label">Total de Meses Sugeridos</span>
+            <span class="info-value">{{ plan.configuracion_original.total_meses }}</span>
+          </div>
+          {% endif %}
+          {% if plan.tipo_esquema == 'meses_fuertes' %}
+            {% if plan.configuracion_original.cantidad_meses_fuertes_sugerida %}
+            <div class="info-item">
+              <span class="info-label">Meses Fuertes Sugeridos</span>
+              <span class="info-value">{{ plan.configuracion_original.cantidad_meses_fuertes_sugerida }}</span>
+            </div>
+            {% endif %}
+            {% if plan.configuracion_original.frecuencia_meses_fuertes %}
+            <div class="info-item">
+              <span class="info-label">Frecuencia Meses Fuertes</span>
+              <span class="info-value">Cada {{ plan.configuracion_original.frecuencia_meses_fuertes }} meses</span>
+            </div>
+            {% endif %}
+          {% endif %}
+          {% else %}
+          <div class="info-item">
+            <span class="info-label">Configuración Original</span>
+            <span class="info-value">No disponible</span>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Timeline -->
+    <div class="info-card timeline-data">
+      <div class="info-card-header">
+        <div class="info-card-icon timeline">
+          <i class="fas fa-history"></i>
+        </div>
+        <h3 class="info-card-title">Timeline del Financiamiento</h3>
+      </div>
+      
+      <div class="info-card-body">
+        <div class="timeline-list">
+          <div class="timeline-item">
+            <div class="timeline-icon">
+              <i class="fas fa-plus-circle"></i>
+            </div>
+            <div class="timeline-content">
+              <span class="timeline-title">Financiamiento Creado</span>
+              <span class="timeline-date">{{ plan.financiamiento.creado_en|date:"d/m/Y H:i" }}</span>
+            </div>
+            <div class="timeline-status completed">
+              <i class="fas fa-check"></i>
+            </div>
+          </div>
+          
+          {% if plan.financiamiento.apartado %}
+          <div class="timeline-item">
+            <div class="timeline-icon">
+              <i class="fas fa-hand-holding-usd"></i>
+            </div>
+            <div class="timeline-content">
+              <span class="timeline-title">Apartado Registrado</span>
+              <span class="timeline-date currency-format" data-value="{{ plan.financiamiento.apartado }}">${{ plan.financiamiento.apartado|floatformat:2 }}</span>
+            </div>
+            <div class="timeline-status completed">
+              <i class="fas fa-check"></i>
+            </div>
+          </div>
+          {% endif %}
+          
+          {% if plan.financiamiento.tipo_pago == 'contado' and plan.financiamiento.fecha_pago_completo %}
+          <div class="timeline-item">
+            <div class="timeline-icon">
+              <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="timeline-content">
+              <span class="timeline-title">Pago Completo</span>
+              <span class="timeline-date">{{ plan.financiamiento.fecha_pago_completo|date:"d/m/Y" }}</span>
+            </div>
+            <div class="timeline-status completed">
+              <i class="fas fa-check"></i>
+            </div>
+          </div>
+          {% endif %}
+          
+          {% if plan.financiamiento.tipo_pago == 'financiado' and plan.financiamiento.fecha_enganche %}
+          <div class="timeline-item">
+            <div class="timeline-icon">
+              <i class="fas fa-coins"></i>
+            </div>
+            <div class="timeline-content">
+              <span class="timeline-title">Enganche Pagado</span>
+              <span class="timeline-date">{{ plan.financiamiento.fecha_enganche|date:"d/m/Y" }}</span>
+            </div>
+            <div class="timeline-status completed">
+              <i class="fas fa-check"></i>
+            </div>
+          </div>
+          {% endif %}
+          
+          {% if plan.financiamiento.tipo_pago == 'financiado' and plan.financiamiento.fecha_primer_pago %}
+          <div class="timeline-item">
+            <div class="timeline-icon">
+              <i class="fas fa-calendar-check"></i>
+            </div>
+            <div class="timeline-content">
+              <span class="timeline-title">Inicio de Mensualidades</span>
+              <span class="timeline-date">{{ plan.financiamiento.fecha_primer_pago|date:"d/m/Y" }}</span>
+            </div>
+            <div class="timeline-status {% if plan.financiamiento.fecha_ultimo_pago %}completed{% else %}active{% endif %}">
+              <i class="fas {% if plan.financiamiento.fecha_ultimo_pago %}fa-check{% else %}fa-clock{% endif %}"></i>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Detalles del Plan de Pagos -->
+    <div class="info-card payment-plan-data">
+      <div class="info-card-header">
+        <div class="info-card-icon payment-plan">
+          <i class="fas fa-file-invoice-dollar"></i>
+        </div>
+        <h3 class="info-card-title">Detalles del Plan de Pagos</h3>
+      </div>
+      
+      <div class="info-card-body">
+        {% if plan.financiamiento.tipo_pago == 'financiado' %}
+        <div class="document-section">
+          <h4 class="section-title">Detalles de Financiamiento</h4>
+          <div class="document-content">
+            {% if plan.financiamiento.num_mensualidades %}
+            <p><strong>Número de Mensualidades:</strong> {{ plan.financiamiento.num_mensualidades }}</p>
+            {% endif %}
+            {% if plan.financiamiento.fecha_enganche %}
+            <p><strong>Fecha de Enganche:</strong> {{ plan.financiamiento.fecha_enganche|date:"d/m/Y" }}</p>
+            {% endif %}
+            {% if plan.financiamiento.fecha_primer_pago %}
+            <p><strong>Fecha Primer Pago:</strong> {{ plan.financiamiento.fecha_primer_pago|date:"d/m/Y" }}</p>
+            {% endif %}
+            {% if plan.financiamiento.fecha_ultimo_pago %}
+            <p><strong>Fecha Último Pago:</strong> {{ plan.financiamiento.fecha_ultimo_pago|date:"d/m/Y" }}</p>
+            {% endif %}
+            {% if plan.tipo_esquema == 'meses_fuertes' and plan.cantidad_meses_fuertes %}
+            <p><strong>Cantidad de Meses Fuertes:</strong> {{ plan.cantidad_meses_fuertes }}</p>
+            {% endif %}
+            {% if plan.tipo_esquema == 'meses_fuertes' and plan.frecuencia_meses_fuertes %}
+            <p><strong>Frecuencia de Meses Fuertes:</strong> Cada {{ plan.frecuencia_meses_fuertes }} meses</p>
+            {% endif %}
+            {% if plan.tipo_esquema == 'meses_fuertes' and plan.meses_fuertes_calculados %}
+            <p><strong>Meses Fuertes Calculados:</strong> Meses {{ plan.meses_fuertes_calculados|join:", " }}</p>
+            {% endif %}
+          </div>
+        </div>
+        {% elif plan.financiamiento.tipo_pago == 'contado' %}
+        <div class="document-section">
+          <h4 class="section-title">Pago de Contado</h4>
+          <div class="document-content">
+            {% if plan.financiamiento.fecha_pago_completo %}
+            <p><strong>Fecha de Pago Completo:</strong> {{ plan.financiamiento.fecha_pago_completo|date:"d/m/Y" }}</p>
+            {% endif %}
+            {% if plan.financiamiento.monto_pago_completo %}
+            <p><strong>Monto de Pago Completo:</strong> <span class="currency-format" data-value="{{ plan.financiamiento.monto_pago_completo }}">${{ plan.financiamiento.monto_pago_completo|floatformat:2 }}</span></p>
+            {% endif %}
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Botones de acción -->
+  <div class="tramite-actions-section">
+    <div class="actions-container">
+      <button class="action-btn primary" 
+              hx-get="{% url 'commeta:commeta_financiamiento_update' plan.id %}" 
+              hx-target="#content" 
+              hx-swap="innerHTML">
+        <i class="fas fa-edit"></i>
+        <span>Editar Financiamiento</span>
+      </button>
+      
+      <button class="action-btn secondary"
+              hx-get="{% url 'commeta:commeta_financiamiento_list' %}" 
+              hx-target="#content" 
+              hx-swap="innerHTML">
+        <i class="fas fa-arrow-left"></i>
+        <span>Volver</span>
+      </button>
+      
+      <button class="action-btn danger"
+              hx-get="{% url 'commeta:commeta_financiamiento_delete' plan.id %}" 
+              hx-target="#content" 
+              hx-swap="innerHTML">
+        <i class="fas fa-trash"></i>
+        <span>Eliminar Financiamiento</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- El HTML se mantiene igual, solo agregar esta sección de estilos al final -->
+
+<style>
+/* Variables CSS - Colores Commeta Verde Esmeralda */
+:root {
+  --commeta-primary: #10B981;
+  --commeta-secondary: #059669;
+  --commeta-dark: #047857;
+  --commeta-light: #D1FAE5;
+  --commeta-shadow: rgba(16, 185, 129, 0.3);
+  --commeta-glow: rgba(16, 185, 129, 0.4);
+  --glass-bg: rgba(255, 255, 255, 0.1);
+  --glass-border: rgba(255, 255, 255, 0.2);
+  --glass-hover: rgba(255, 255, 255, 0.15);
+  --commeta-gradient: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  --secondary-gradient: linear-gradient(135deg, #87CEEB 0%, #4A90C2 100%);
+  --accent-gradient: linear-gradient(135deg, #F59E0B 0%, #FBBF24 100%);
+  --danger-gradient: linear-gradient(135deg, #EF4444 0%, #F87171 100%);
+  --text-primary: #333;
+  --text-secondary: #666;
+  --border-radius: 16px;
+  --shadow-sm: 0 4px 15px rgba(16, 185, 129, 0.1);
+  --shadow-md: 0 8px 25px rgba(16, 185, 129, 0.15);
+  --shadow-commeta: 0 6px 20px rgba(16, 185, 129, 0.25);
+  --shadow-hover: 0 12px 35px rgba(16, 185, 129, 0.3);
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Header */
+.tramite-detail-header.commeta-header {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  border-radius: var(--border-radius);
+  padding: 2.5rem;
+  margin-bottom: 2rem;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--glass-border);
+  position: relative;
+  overflow: hidden;
+  animation: fadeInUp 0.6s ease;
+}
+
+.tramite-detail-header.commeta-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at 30% 20%, rgba(16, 185, 129, 0.12) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.tramite-header-content {
+  display: flex;
+  gap: 2rem;
+  align-items: flex-start;
+  position: relative;
+}
+
+.tramite-avatar-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.tramite-main-avatar.commeta-avatar {
+  width: 100px;
+  height: 100px;
+  background: var(--commeta-gradient);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-commeta);
+  animation: pulse 3s infinite;
+  position: relative;
+}
+
+.commeta-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  width: 30px;
+  height: 30px;
+  background: linear-gradient(135deg, #F59E0B 0%, #FBBF24 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 0.75rem;
+  box-shadow: 0 4px 10px rgba(245, 158, 11, 0.4);
+  animation: rotateBadge 3s infinite;
+}
+
+.avatar-initials-large {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: white;
+}
+
+.tramite-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  border: 1px solid transparent;
+}
+
+.tramite-status.completed {
+  background: rgba(16, 185, 129, 0.1);
+  border-color: rgba(16, 185, 129, 0.2);
+}
+
+.tramite-status.completed .status-dot { background: var(--commeta-primary); }
+.tramite-status.completed .status-label { color: var(--commeta-primary); }
+.tramite-status.in-process { background: rgba(59, 130, 246, 0.1); border-color: rgba(59, 130, 246, 0.2); }
+.tramite-status.in-process .status-dot { background: #3B82F6; }
+.tramite-status.in-process .status-label { color: #3B82F6; }
+.tramite-status.pending { background: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.2); }
+.tramite-status.pending .status-dot { background: #F59E0B; }
+.tramite-status.pending .status-label { color: #F59E0B; }
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  animation: statusPulse 2s infinite;
+}
+
+.tramite-title-section { flex: 1; }
+
+.tramite-detail-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  background: var(--commeta-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0 0 0.5rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.text-commeta { color: var(--commeta-primary) !important; }
+.tramite-detail-subtitle { color: var(--text-secondary); font-size: 1.1rem; margin: 0 0 2rem 0; }
+.tramite-quick-actions { display: flex; gap: 1rem; flex-wrap: wrap; }
+
+.quick-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  font-weight: 500;
+  border: 1px solid transparent;
+  transition: var(--transition);
+}
+
+.quick-action-btn:hover { transform: translateY(-2px); }
+.quick-action-btn.client { background: rgba(239, 68, 68, 0.1); color: #EF4444; border-color: rgba(239, 68, 68, 0.2); }
+.quick-action-btn.date { background: rgba(59, 130, 246, 0.1); color: #3B82F6; border-color: rgba(59, 130, 246, 0.2); }
+.quick-action-btn.price { background: rgba(16, 185, 129, 0.1); color: var(--commeta-primary); border-color: rgba(16, 185, 129, 0.2); }
+.quick-action-btn.commeta { background: var(--commeta-light); color: var(--commeta-dark); border-color: rgba(16, 185, 129, 0.3); }
+
+/* Grid de Información */
+.tramite-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.info-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(15px);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  animation: fadeInUp 0.6s ease;
+  animation-fill-mode: both;
+}
+
+.info-card.general-data { animation-delay: 0.1s; }
+.info-card.client-data { animation-delay: 0.2s; }
+.info-card.financing-data { animation-delay: 0.3s; }
+.info-card.commeta-config-data { animation-delay: 0.4s; }
+.info-card.timeline-data { animation-delay: 0.5s; }
+.info-card.payment-plan-data { animation-delay: 0.6s; }
+
+.info-card-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.info-card-icon {
+  width: 45px;
+  height: 45px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.2rem;
+}
+
+.info-card-icon.general { background: var(--commeta-gradient); }
+.info-card-icon.client { background: linear-gradient(135deg, #8B4513 0%, #A0522D 100%); }
+.info-card-icon.financing { background: var(--commeta-gradient); }
+.info-card-icon.commeta { background: linear-gradient(135deg, #F59E0B 0%, #FBBF24 100%); }
+.info-card-icon.timeline { background: var(--secondary-gradient); }
+.info-card-icon.payment-plan { background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%); }
+
+.info-card-title { font-size: 1.3rem; font-weight: 600; color: var(--text-primary); margin: 0; }
+.info-card-body { padding: 1.5rem; }
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.25rem;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: var(--transition);
+}
+
+.info-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+  transform: translateY(-2px);
+}
+
+.info-label {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.info-value { font-size: 1rem; color: var(--text-primary); font-weight: 500; }
+.info-value.price { font-size: 1.1rem; font-weight: 600; color: var(--commeta-primary); }
+
+.status-badge {
+  display: inline-flex;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.status-badge.completed { background: rgba(16, 185, 129, 0.1); color: var(--commeta-primary); border: 1px solid rgba(16, 185, 129, 0.2); }
+.status-badge.in-process { background: rgba(59, 130, 246, 0.1); color: #3B82F6; border: 1px solid rgba(59, 130, 246, 0.2); }
+.status-badge.pending { background: rgba(245, 158, 11, 0.1); color: #F59E0B; border: 1px solid rgba(245, 158, 11, 0.2); }
+.status-badge.info { background: rgba(99, 102, 241, 0.1); color: #6366F1; border: 1px solid rgba(99, 102, 241, 0.2); }
+
+/* Timeline */
+.timeline-list { display: flex; flex-direction: column; gap: 1rem; }
+
+.timeline-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: var(--transition);
+  position: relative;
+}
+
+.timeline-item:hover { background: rgba(255, 255, 255, 0.06); transform: translateX(5px); }
+
+.timeline-item:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  left: 22px;
+  bottom: -16px;
+  width: 2px;
+  height: 16px;
+  background: linear-gradient(to bottom, var(--commeta-primary), transparent);
+}
+
+.timeline-icon {
+  width: 35px;
+  height: 35px;
+  background: var(--commeta-gradient);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.timeline-content { flex: 1; display: flex; flex-direction: column; gap: 0.25rem; }
+.timeline-title { font-weight: 500; color: var(--text-primary); }
+.timeline-date { font-size: 0.8rem; color: var(--text-secondary); }
+
+.timeline-status {
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.timeline-status.completed { background: rgba(16, 185, 129, 0.2); color: var(--commeta-primary); }
+.timeline-status.active { background: rgba(59, 130, 246, 0.2); color: #3B82F6; animation: pulse 2s infinite; }
+
+/* Documentos */
+.document-section {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 1.5rem;
+  transition: var(--transition);
+}
+
+.document-section:hover { background: rgba(255, 255, 255, 0.06); transform: translateY(-2px); }
+
+.section-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 1rem 0;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.document-content p { color: var(--text-secondary); line-height: 1.6; margin: 0 0 0.5rem 0; }
+
+/* Botones de Acción */
+.tramite-actions-section { animation: fadeInUp 0.6s ease 0.7s both; }
+.actions-container { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 2rem;
+  border: none;
+  border-radius: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+  font-size: 0.95rem;
+  border: 1px solid transparent;
+  position: relative;
+  overflow: hidden;
+}
+
+.action-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.5s;
+}
+
+.action-btn:hover::before { left: 100%; }
+
+.action-btn.primary {
+  background: var(--commeta-gradient);
+  color: white;
+  box-shadow: var(--shadow-commeta);
+}
+
+.action-btn.primary:hover { transform: translateY(-3px); box-shadow: var(--shadow-hover); }
+
+.action-btn.secondary {
+  background: rgba(108, 117, 125, 0.1);
+  color: #6C757D;
+  border-color: rgba(108, 117, 125, 0.2);
+}
+
+.action-btn.secondary:hover { background: rgba(108, 117, 125, 0.2); transform: translateY(-2px); }
+
+.action-btn.danger {
+  background: rgba(239, 68, 68, 0.1);
+  color: #EF4444;
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+.action-btn.danger:hover { background: rgba(239, 68, 68, 0.2); transform: translateY(-2px); }
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .tramite-info-grid { grid-template-columns: 1fr; }
+  .tramite-header-content { flex-direction: column; align-items: center; text-align: center; }
+}
+
+@media (max-width: 768px) {
+  .tramite-detail-header { padding: 2rem; }
+  .tramite-detail-title { font-size: 2rem; }
+  .info-grid { grid-template-columns: 1fr; }
+  .actions-container { flex-direction: column; }
+}
+
+@media (max-width: 480px) {
+  .tramite-main-avatar { width: 80px; height: 80px; }
+  .tramite-quick-actions { flex-direction: column; }
+}
+
+/* Animaciones */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+@keyframes statusPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.1); }
+}
+
+@keyframes rotateBadge {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(180deg) scale(1.1); }
+}
+</style>
+
+<script>
+function formatCurrency(value) {
+    if (!value && value !== 0) return "$0.00";
+    const num = typeof value === 'string' ? parseFloat(value.replace(/[$,]/g, '')) : Number(value);
+    if (isNaN(num)) return "$0.00";
+    return "$" + num.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function applyCurrencyFormatting() {
+    document.querySelectorAll('.currency-format').forEach(element => {
+        const rawValue = element.getAttribute('data-value');
+        const currentText = element.textContent.trim();
+        if (currentText && !currentText.includes(',') && currentText.includes('$')) {
+            element.textContent = formatCurrency(rawValue || currentText.replace('$', ''));
+        } else if (rawValue) {
+            element.textContent = formatCurrency(rawValue);
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', applyCurrencyFormatting);
+document.body.addEventListener('htmx:afterSwap', function(event) {
+    if (event.detail.target.id === 'content') {
+        setTimeout(applyCurrencyFormatting, 50);
+    }
+});
+</script>
