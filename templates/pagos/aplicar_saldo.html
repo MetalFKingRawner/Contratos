@@ -1,0 +1,236 @@
+<!-- templates/pagos/aplicar_saldo.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Aplicar Saldo a Favor - Trámite #{{ tramite.id }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Encabezado -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h6 class="m-0 font-weight-bold text-primary">
+                            <i class="fas fa-piggy-bank me-2"></i>Aplicar Saldo a Favor
+                        </h6>
+                        <a href="{% url 'pagos:detalle_tramite' tramite.id %}" class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-1"></i>Volver
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Información del trámite -->
+                    <div class="alert alert-info">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <strong>Trámite:</strong> #{{ tramite.id }}<br>
+                                <strong>Cliente:</strong> {{ tramite.cliente.nombre }}<br>
+                                <strong>Proyecto:</strong> {{ tramite.financiamiento.lote.proyecto.nombre }}
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Saldo disponible:</strong> 
+                                <span class="fw-bold text-success">${{ saldo_disponible|floatformat:2 }}</span><br>
+                                <strong>Cuotas pendientes:</strong> {{ pagos_pendientes.count }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if saldo_disponible <= 0 %}
+                    <div class="alert alert-warning text-center py-4">
+                        <i class="fas fa-exclamation-triangle fa-2x mb-3"></i><br>
+                        <h5>No hay saldo a favor disponible</h5>
+                        <p>Este trámite no tiene saldo a favor para aplicar.</p>
+                        <a href="{% url 'pagos:detalle_tramite' tramite.id %}" class="btn btn-primary">
+                            Volver al detalle
+                        </a>
+                    </div>
+                    {% else %}
+                    <!-- Formulario para aplicar saldo -->
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Cuota</th>
+                                        <th>Fecha Vencimiento</th>
+                                        <th>Monto Cuota</th>
+                                        <th>Pagado</th>
+                                        <th>Pendiente</th>
+                                        <th>Monto a Aplicar</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for pago in pagos_pendientes %}
+                                    <tr>
+                                        <td>
+                                            <strong>#{{ pago.numero_cuota }}</strong>
+                                            {% if pago.estado.codigo == 'parcial' %}
+                                            <br><span class="badge bg-warning">Parcial</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ pago.fecha_vencimiento|date:"d/m/Y" }}</td>
+                                        <td>${{ pago.monto|floatformat:2 }}</td>
+                                        <td>${{ pago.monto_pagado|floatformat:2 }}</td>
+                                        <td class="fw-bold text-danger">
+                                            ${{ pago.monto|add:pago.monto_pagado|floatformat:2 }}
+                                        </td>
+                                        <td style="width: 200px;">
+                                            <div class="input-group input-group-sm">
+                                                <span class="input-group-text">$</span>
+                                                <input type="number" 
+                                                       name="pago_{{ pago.id }}"
+                                                       class="form-control aplicar-saldo-input"
+                                                       placeholder="0.00"
+                                                       min="0"
+                                                       max="{{ pago.monto|add:pago.monto_pagado }}"
+                                                       step="0.01"
+                                                       data-pago-id="{{ pago.id }}"
+                                                       data-monto-max="{{ pago.monto|add:pago.monto_pagado }}">
+                                            </div>
+                                            <small class="text-muted">Máx: ${{ pago.monto|add:pago.monto_pagado|floatformat:2 }}</small>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="6" class="text-center py-4">
+                                            <div class="text-muted">
+                                                <i class="fas fa-check-circle fa-2x mb-3"></i><br>
+                                                No hay cuotas pendientes para aplicar saldo.
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Resumen de aplicación -->
+                        <div class="card border-primary mt-4">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h6 class="mb-3">Resumen de aplicación</h6>
+                                        <div class="mb-2">
+                                            <strong>Saldo disponible:</strong> 
+                                            <span id="saldoDisponible" class="text-success">
+                                                ${{ saldo_disponible|floatformat:2 }}
+                                            </span>
+                                        </div>
+                                        <div class="mb-2">
+                                            <strong>Total a aplicar:</strong> 
+                                            <span id="totalAplicar" class="text-primary">$0.00</span>
+                                        </div>
+                                        <div>
+                                            <strong>Saldo restante:</strong> 
+                                            <span id="saldoRestante" class="text-warning">${{ saldo_disponible|floatformat:2 }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="alert alert-warning">
+                                            <small>
+                                                <i class="fas fa-info-circle me-1"></i>
+                                                <strong>Nota:</strong> El saldo se aplicará a las cuotas en el orden 
+                                                que ingreses los montos. Puedes distribuir el saldo entre múltiples cuotas.
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% url 'pagos:detalle_tramite' tramite.id %}" class="btn btn-secondary">
+                                <i class="fas fa-times me-1"></i>Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary" id="btnAplicar" disabled>
+                                <i class="fas fa-check-circle me-1"></i>Aplicar Saldo
+                            </button>
+                        </div>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const saldoDisponible = parseFloat('{{ saldo_disponible }}') || 0;
+        let totalAplicar = 0;
+        
+        function actualizarResumen() {
+            totalAplicar = 0;
+            
+            // Sumar todos los montos ingresados
+            document.querySelectorAll('.aplicar-saldo-input').forEach(input => {
+                const valor = parseFloat(input.value) || 0;
+                const montoMax = parseFloat(input.dataset.montoMax) || 0;
+                
+                // Validar que no exceda el máximo permitido
+                if (valor > montoMax) {
+                    input.value = montoMax.toFixed(2);
+                    totalAplicar += montoMax;
+                } else {
+                    totalAplicar += valor;
+                }
+            });
+            
+            // Actualizar elementos del resumen
+            document.getElementById('totalAplicar').textContent = '$' + totalAplicar.toFixed(2);
+            
+            const saldoRestante = saldoDisponible - totalAplicar;
+            document.getElementById('saldoRestante').textContent = '$' + saldoRestante.toFixed(2);
+            
+            // Cambiar colores según el saldo
+            if (saldoRestante < 0) {
+                document.getElementById('saldoRestante').classList.remove('text-warning');
+                document.getElementById('saldoRestante').classList.add('text-danger');
+            } else if (saldoRestante === 0) {
+                document.getElementById('saldoRestante').classList.remove('text-warning');
+                document.getElementById('saldoRestante').classList.add('text-success');
+            } else {
+                document.getElementById('saldoRestante').classList.remove('text-danger', 'text-success');
+                document.getElementById('saldoRestante').classList.add('text-warning');
+            }
+            
+            // Habilitar/deshabilitar botón
+            const btnAplicar = document.getElementById('btnAplicar');
+            if (totalAplicar > 0 && totalAplicar <= saldoDisponible) {
+                btnAplicar.disabled = false;
+            } else {
+                btnAplicar.disabled = true;
+            }
+        }
+        
+        // Agregar event listeners a todos los inputs
+        document.querySelectorAll('.aplicar-saldo-input').forEach(input => {
+            input.addEventListener('input', actualizarResumen);
+            input.addEventListener('change', actualizarResumen);
+        });
+        
+        // Inicializar resumen
+        actualizarResumen();
+        
+        // Auto-completar con el máximo posible
+        document.querySelectorAll('.aplicar-saldo-input').forEach(input => {
+            input.addEventListener('dblclick', function() {
+                const montoMax = parseFloat(this.dataset.montoMax) || 0;
+                const saldoRestante = saldoDisponible - totalAplicar + (parseFloat(this.value) || 0);
+                const montoAAplicar = Math.min(montoMax, saldoRestante);
+                
+                if (montoAAplicar > 0) {
+                    this.value = montoAAplicar.toFixed(2);
+                    actualizarResumen();
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

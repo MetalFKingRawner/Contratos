@@ -1,0 +1,1000 @@
+<!-- templates/pagos/registrar_pago.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Registrar Pago - Cuota #{{ pago.numero_cuota }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ============================================
+       ESTILOS PERSONALIZADOS PARA REGISTRO DE PAGO
+       ============================================ */
+    
+    .registro-pago-container {
+        background: linear-gradient(135deg, #f8fbff 0%, #f0f7ff 100%);
+        min-height: 100vh;
+        padding: 2rem 0;
+    }
+    
+    /* Tarjeta principal con elevación suave */
+    .card-registro-pago {
+        border: none;
+        border-radius: 16px;
+        box-shadow: 0 8px 32px rgba(46, 143, 204, 0.12);
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+    
+    .card-registro-pago:hover {
+        box-shadow: 0 12px 48px rgba(46, 143, 204, 0.18);
+        transform: translateY(-2px);
+    }
+    
+    /* Header con gradiente */
+    .header-registro-pago {
+        background: linear-gradient(135deg, #2E8FCC 0%, #1B5F8C 100%);
+        padding: 1.5rem 2rem;
+        border: none;
+    }
+    
+    .header-registro-pago h6 {
+        color: white;
+        font-weight: 600;
+        font-size: 1.1rem;
+        margin: 0;
+    }
+    
+    .header-registro-pago .btn-outline-secondary {
+        background: rgba(255, 255, 255, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        color: white;
+        backdrop-filter: blur(10px);
+        transition: all 0.3s ease;
+    }
+    
+    .header-registro-pago .btn-outline-secondary:hover {
+        background: rgba(255, 255, 255, 0.25);
+        border-color: rgba(255, 255, 255, 0.5);
+        transform: translateX(-4px);
+    }
+    
+    /* Body de la tarjeta */
+    .card-body-registro {
+        padding: 2rem;
+        background: white;
+    }
+    
+    /* Alert mejorado con glassmorphism */
+    .alert-info-cuota {
+        background: linear-gradient(135deg, rgba(46, 143, 204, 0.08) 0%, rgba(74, 144, 194, 0.12) 100%);
+        border: 1px solid rgba(46, 143, 204, 0.2);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        backdrop-filter: blur(10px);
+    }
+    
+    .alert-info-cuota strong {
+        color: #1B5F8C;
+        font-weight: 600;
+    }
+    
+    .alert-info-cuota .text-danger {
+        font-weight: 700;
+        font-size: 1.05em;
+    }
+    
+    /* Alert de saldo a favor */
+    .alert-saldo-favor {
+        background: linear-gradient(135deg, rgba(40, 167, 69, 0.08) 0%, rgba(56, 193, 114, 0.12) 100%);
+        border: 1px solid rgba(40, 167, 69, 0.2);
+        border-radius: 12px;
+        padding: 1.25rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .alert-saldo-favor i {
+        color: #28a745;
+        font-size: 1.2rem;
+    }
+    
+    .alert-saldo-favor strong {
+        color: #1e7e34;
+        font-weight: 600;
+    }
+    
+    /* Inputs mejorados */
+    .form-label {
+        color: #3F4A7A;
+        font-weight: 600;
+        font-size: 0.95rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .form-control {
+        border: 2px solid #e1e8f0;
+        border-radius: 10px;
+        padding: 0.75rem 1rem;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        background: white;
+    }
+    
+    .form-control:focus {
+        border-color: #2E8FCC;
+        box-shadow: 0 0 0 0.2rem rgba(46, 143, 204, 0.15);
+        background: #fafcff;
+    }
+    
+    .form-control::placeholder {
+        color: #8B9DC3;
+        opacity: 0.7;
+    }
+    
+    /* Input groups */
+    .input-group-text {
+        background: linear-gradient(135deg, #f8fbff 0%, #f0f7ff 100%);
+        border: 2px solid #e1e8f0;
+        border-right: none;
+        color: #3F4A7A;
+        font-weight: 600;
+        border-radius: 10px 0 0 10px;
+    }
+    
+    .input-group .form-control {
+        border-left: none;
+        border-radius: 0 10px 10px 0;
+    }
+    
+    .input-group:focus-within .input-group-text {
+        border-color: #2E8FCC;
+        background: linear-gradient(135deg, rgba(46, 143, 204, 0.08) 0%, rgba(74, 144, 194, 0.12) 100%);
+    }
+    
+    /* Select mejorado */
+    select.form-control {
+        cursor: pointer;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%233F4A7A' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 0.75rem center;
+        background-size: 16px 12px;
+        padding-right: 2.5rem;
+    }
+    
+    /* Textarea */
+    textarea.form-control {
+        resize: vertical;
+        min-height: 100px;
+    }
+    
+    /* Small text */
+    .text-muted {
+        color: #5A6B8C !important;
+        font-size: 0.85rem;
+    }
+    
+    /* Cards internos */
+    .card-saldo,
+    .card-excedente {
+        border: 2px solid #e1e8f0;
+        border-radius: 12px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        margin-bottom: 1.5rem;
+    }
+    
+    .card-saldo:hover,
+    .card-excedente:hover {
+        border-color: #2E8FCC;
+        box-shadow: 0 4px 16px rgba(46, 143, 204, 0.1);
+    }
+    
+    .card-header.bg-light {
+        background: linear-gradient(135deg, #f8fbff 0%, #f0f7ff 100%) !important;
+        border-bottom: 2px solid #e1e8f0;
+        padding: 1rem 1.5rem;
+    }
+    
+    .card-header h6 {
+        color: #3F4A7A;
+        font-weight: 600;
+        margin: 0;
+    }
+    
+    .card-header i {
+        color: #2E8FCC;
+    }
+    
+    .card-body {
+        padding: 1.5rem;
+    }
+    
+    /* Alerts dentro de cards */
+    .card-body .alert-info {
+        background: linear-gradient(135deg, rgba(46, 143, 204, 0.05) 0%, rgba(74, 144, 194, 0.08) 100%);
+        border: 1px solid rgba(46, 143, 204, 0.15);
+        border-radius: 8px;
+        color: #1B5F8C;
+    }
+    
+    .card-body .alert-warning {
+        background: linear-gradient(135deg, rgba(255, 193, 7, 0.05) 0%, rgba(255, 193, 7, 0.1) 100%);
+        border: 1px solid rgba(255, 193, 7, 0.2);
+        border-radius: 8px;
+        color: #856404;
+    }
+    
+    /* Checkboxes y radios personalizados */
+    .form-check-input {
+        width: 1.25rem;
+        height: 1.25rem;
+        border: 2px solid #8B9DC3;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .form-check-input:checked {
+        background-color: #2E8FCC;
+        border-color: #2E8FCC;
+    }
+    
+    .form-check-input:focus {
+        border-color: #2E8FCC;
+        box-shadow: 0 0 0 0.2rem rgba(46, 143, 204, 0.15);
+    }
+    
+    .form-check-label {
+        color: #3F4A7A;
+        font-weight: 500;
+        cursor: pointer;
+        margin-left: 0.5rem;
+    }
+    
+    /* Botones principales */
+    .btn-primary {
+        background: linear-gradient(135deg, #2E8FCC 0%, #1B5F8C 100%);
+        border: none;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(46, 143, 204, 0.3);
+    }
+    
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #1B5F8C 0%, #2E8FCC 100%);
+        box-shadow: 0 6px 20px rgba(46, 143, 204, 0.4);
+        transform: translateY(-2px);
+    }
+    
+    .btn-primary:active {
+        transform: translateY(0);
+    }
+    
+    .btn-secondary {
+        background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+        border: none;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-secondary:hover {
+        background: linear-gradient(135deg, #5a6268 0%, #6c757d 100%);
+        transform: translateY(-2px);
+    }
+    
+    /* Iconos */
+    .fas,
+    .far {
+        margin-right: 0.5rem;
+    }
+    
+    /* Mensaje automático */
+    #mensaje-automatico {
+        animation: slideInDown 0.3s ease;
+        border-radius: 10px;
+        border: none;
+        background: linear-gradient(135deg, rgba(40, 167, 69, 0.95) 0%, rgba(56, 193, 114, 0.95) 100%);
+        color: white;
+        box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+    }
+    
+    #mensaje-automatico .fas {
+        color: white;
+    }
+    
+    #mensaje-automatico .btn-close {
+        filter: brightness(0) invert(1);
+    }
+    
+    @keyframes slideInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .card-body-registro {
+            padding: 1.5rem;
+        }
+        
+        .header-registro-pago {
+            padding: 1rem 1.5rem;
+        }
+        
+        .btn-primary,
+        .btn-secondary {
+            width: 100%;
+            margin-bottom: 0.5rem;
+        }
+        
+        .d-flex.justify-content-between {
+            flex-direction: column-reverse;
+        }
+    }
+    
+    /* Estados de error */
+    .text-danger {
+        color: #dc3545 !important;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+        font-weight: 500;
+    }
+    
+    .form-control.is-invalid {
+        border-color: #dc3545;
+    }
+    
+    /* Transiciones suaves para elementos ocultos */
+    .d-none {
+        display: none !important;
+    }
+    
+    [style*="display: none"] {
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    [style*="display: block"] {
+        opacity: 1;
+        transition: opacity 0.3s ease;
+    }
+    
+    /* Mejora visual para campos deshabilitados */
+    .form-control:disabled {
+        background-color: #f0f4f8;
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Encabezado -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h6 class="m-0 font-weight-bold text-primary">
+                            <i class="fas fa-money-bill-wave me-2"></i>Registrar Pago
+                        </h6>
+                        <a href="{% url 'pagos:detalle_tramite' tramite.id %}" class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-1"></i>Volver
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Información de la cuota -->
+                    <div class="alert alert-info">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <strong>Trámite:</strong> #{{ tramite.id }}<br>
+                                <strong>Cliente:</strong> {{ tramite.cliente.nombre_completo }}<br>
+                                <strong>Cuota:</strong> #{{ pago.numero_cuota }}
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Monto Cuota:</strong> ${{ pago.monto|floatformat:2 }}<br>
+                                <strong>Ya Pagado:</strong> ${{ pago.monto_pagado|floatformat:2 }}<br>
+                                <strong>Pendiente:</strong> <span class="text-danger">${{ monto_pendiente|floatformat:2 }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Saldo a favor disponible -->
+                    {% if saldo_disponible > 0 %}
+                    <div class="alert alert-success">
+                        <i class="fas fa-piggy-bank me-2"></i>
+                        <strong>Saldo a favor disponible:</strong> ${{ saldo_disponible|floatformat:2 }}
+                        <small class="text-muted d-block mt-1">
+                            Puedes usar este saldo para reducir el monto a pagar en efectivo.
+                        </small>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Formulario de pago -->
+                    <form method="post" enctype="multipart/form-data" id="form-pago">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">{{ form.fecha_pago.label }}</label>
+                                {{ form.fecha_pago }}
+                                {% if form.fecha_pago.errors %}
+                                <div class="text-danger small">{{ form.fecha_pago.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">{{ form.monto_pagado.label }}</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    {{ form.monto_pagado }}
+                                </div>
+                                <small class="text-muted">Mínimo a pagar: $0.01 (puedes pagar parcialmente)</small>
+                                {% if form.monto_pagado.errors %}
+                                <div class="text-danger small">{{ form.monto_pagado.errors }}</div>
+                                {% endif %}
+                                <!-- Mensaje automático se insertará aquí -->
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="id_metodo_pago" class="form-label">Método de pago *</label>
+                                <select name="metodo_pago" id="id_metodo_pago" class="form-control" required>
+                                    <option value="">Seleccionar método</option>
+                                    <option value="efectivo">Efectivo</option>
+                                    <option value="transferencia">Transferencia</option>
+                                    <option value="cheque">Cheque</option>
+                                    <option value="tarjeta">Tarjeta de crédito/débito</option>
+                                    <option value="deposito">Depósito bancario</option>
+                                    <option value="otros">Otros</option>
+                                </select>
+                                {% if form.metodo_pago.errors %}
+                                <div class="text-danger small">{{ form.metodo_pago.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">{{ form.observaciones.label }}</label>
+                            {{ form.observaciones }}
+                            {% if form.observaciones.errors %}
+                            <div class="text-danger small">{{ form.observaciones.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Sección de Saldo a Favor -->
+                        {% if saldo_disponible > 0 %}
+                        <div class="card mb-3">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0">
+                                    <i class="fas fa-piggy-bank me-2"></i>Saldo a Favor Disponible
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    Tienes <strong>${{ saldo_disponible|floatformat:2 }}</strong> de saldo a favor disponible.
+                                </div>
+                                
+                                <div class="form-check mb-3">
+                                    {{ form.usar_saldo_disponible }}
+                                    <label class="form-check-label" for="{{ form.usar_saldo_disponible.id_for_label }}">
+                                        {{ form.usar_saldo_disponible.label }}
+                                    </label>
+                                </div>
+                                
+                                <div class="mb-3" id="saldo_fields" style="display: none;">
+                                    <label class="form-label">{{ form.monto_saldo_usar.label }}</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        {{ form.monto_saldo_usar }}
+                                    </div>
+                                    <small class="text-muted">
+                                        Máximo a usar: ${{ saldo_disponible|floatformat:2 }}
+                                    </small>
+                                    {% if form.monto_saldo_usar.errors %}
+                                    <div class="text-danger small">{{ form.monto_saldo_usar.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- Manejo de excedente -->
+                        <div class="card mb-3 d-none" id="excedente_card">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0">
+                                    <i class="fas fa-exchange-alt me-2"></i>Manejo de Excedente
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="alert alert-warning" id="excedente_info">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    Estás pagando <strong id="excedente_monto">$0.00</strong> más del monto pendiente.
+                                    ¿Qué deseas hacer con el excedente?
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label d-block">{{ form.manejo_excedente.label }}</label>
+                                    {% for radio in form.manejo_excedente %}
+                                    <div class="form-check">
+                                        {{ radio.tag }}
+                                        <label class="form-check-label" for="{{ radio.id_for_label }}">
+                                            {{ radio.choice_label }}
+                                        </label>
+                                    </div>
+                                    {% endfor %}
+                                    {% if form.manejo_excedente.errors %}
+                                    <div class="text-danger small">{{ form.manejo_excedente.errors }}</div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="mb-3" id="dividir_fields" style="display: none;">
+                                    <label class="form-label">{{ form.monto_aplicar_proxima.label }}</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        {{ form.monto_aplicar_proxima }}
+                                    </div>
+                                    <small class="text-muted">
+                                        El resto se convertirá en saldo a favor
+                                    </small>
+                                    {% if form.monto_aplicar_proxima.errors %}
+                                    <div class="text-danger small">{{ form.monto_aplicar_proxima.errors }}</div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="alert alert-info" id="info_proxima_cuota" style="display: none;">
+                                    <i class="fas fa-calendar-check me-2"></i>
+                                    {% if proxima_cuota %}
+                                    Se aplicará a la cuota #{{ proxima_cuota.numero_cuota }} (Vence: {{ proxima_cuota.fecha_vencimiento|date:"d/m/Y" }})
+                                    {% else %}
+                                    No hay cuotas pendientes después de esta. El excedente se convertirá en saldo a favor.
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'pagos:detalle_tramite' tramite.id %}" class="btn btn-secondary">
+                                <i class="fas fa-times me-1"></i>Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i>Registrar Pago
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+    'use strict';
+    
+    // ============================================
+    // CONFIGURACIÓN Y VARIABLES GLOBALES
+    // ============================================
+    
+    // Constantes del servidor (desde Django)
+    const MONTO_PENDIENTE = parseFloat('{{ monto_pendiente }}') || 0;
+    const SALDO_DISPONIBLE = parseFloat('{{ saldo_disponible }}') || 0;
+    const HAY_PROXIMA_CUOTA = {% if proxima_cuota %}true{% else %}false{% endif %};
+    
+    // Elementos del DOM (declarados una sola vez)
+    let elementos = {};
+    
+    // ============================================
+    // INICIALIZACIÓN
+    // ============================================
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        inicializarElementos();
+        configurarEventListeners();
+        establecerValoresIniciales();
+        actualizarInterfaz();
+    });
+    
+    /**
+     * Obtiene y almacena referencias a todos los elementos del DOM
+     */
+    function inicializarElementos() {
+        elementos = {
+            // Formulario
+            form: document.getElementById('form-pago'),
+            
+            // Inputs principales
+            montoPagadoInput: document.getElementById('monto_pagado_input'),
+            usarSaldoCheckbox: document.getElementById('usar_saldo_checkbox'),
+            montoSaldoInput: document.getElementById('monto_saldo_input'),
+            
+            // Manejo de excedente
+            excedenteCard: document.getElementById('excedente_card'),
+            excedenteInfo: document.getElementById('excedente_info'),
+            excedenteMonto: document.getElementById('excedente_monto'),
+            manejoExcedenteRadios: document.querySelectorAll('input[name="manejo_excedente"]'),
+            dividirFields: document.getElementById('dividir_fields'),
+            montoAplicarInput: document.getElementById('monto_aplicar_input'),
+            infoProximaCuota: document.getElementById('info_proxima_cuota'),
+            
+            // Otros
+            saldoFields: document.getElementById('saldo_fields')
+        };
+    }
+    
+    /**
+     * Configura todos los event listeners
+     */
+    function configurarEventListeners() {
+        // Eventos de input
+        if (elementos.montoPagadoInput) {
+            elementos.montoPagadoInput.addEventListener('input', actualizarInterfaz);
+        }
+        
+        if (elementos.usarSaldoCheckbox) {
+            elementos.usarSaldoCheckbox.addEventListener('change', function() {
+                actualizarInterfaz();
+                if (this.checked) {
+                    calcularYAplicarSaldoAutomatico();
+                }
+            });
+        }
+        
+        if (elementos.montoSaldoInput) {
+            elementos.montoSaldoInput.addEventListener('input', function() {
+                actualizarInterfaz();
+                ajustarMontoPagadoAutomaticamente();
+            });
+        }
+        
+        // Eventos de manejo de excedente
+        elementos.manejoExcedenteRadios.forEach(radio => {
+            radio.addEventListener('change', actualizarInterfaz);
+        });
+        
+        if (elementos.montoAplicarInput) {
+            elementos.montoAplicarInput.addEventListener('input', actualizarInterfaz);
+        }
+        
+        // Validación antes de enviar
+        if (elementos.form) {
+            elementos.form.addEventListener('submit', validarFormulario);
+        }
+    }
+    
+    /**
+     * Establece valores iniciales del formulario
+     */
+    function establecerValoresIniciales() {
+        // Establecer fecha actual si está vacía
+        const fechaPagoInput = document.querySelector('input[name="fecha_pago"]');
+        if (fechaPagoInput && !fechaPagoInput.value) {
+            const hoy = new Date();
+            const año = hoy.getFullYear();
+            const mes = String(hoy.getMonth() + 1).padStart(2, '0');
+            const dia = String(hoy.getDate()).padStart(2, '0');
+            fechaPagoInput.value = `${año}-${mes}-${dia}`;
+        }
+        
+        // Establecer monto pendiente como valor inicial si está vacío
+        if (elementos.montoPagadoInput && !elementos.montoPagadoInput.value) {
+            elementos.montoPagadoInput.value = MONTO_PENDIENTE.toFixed(2);
+        }
+    }
+    
+    // ============================================
+    // FUNCIONES DE CÁLCULO
+    // ============================================
+    
+    /**
+     * Obtiene el monto total que se está pagando (efectivo + saldo)
+     */
+    function obtenerMontoTotal() {
+        const montoPagado = parseFloat(elementos.montoPagadoInput?.value) || 0;
+        const usarSaldo = elementos.usarSaldoCheckbox?.checked || false;
+        const montoSaldo = parseFloat(elementos.montoSaldoInput?.value) || 0;
+        
+        return montoPagado + (usarSaldo ? montoSaldo : 0);
+    }
+    
+    /**
+     * Calcula el excedente actual
+     */
+    function calcularExcedente() {
+        const montoTotal = obtenerMontoTotal();
+        return Math.max(0, montoTotal - MONTO_PENDIENTE);
+    }
+    
+    /**
+     * Calcula el saldo máximo que se puede usar
+     */
+    function calcularSaldoMaximo() {
+        return Math.min(SALDO_DISPONIBLE, MONTO_PENDIENTE);
+    }
+    
+    // ============================================
+    // FUNCIONALIDAD AUTOMÁTICA (Nueva del segundo código)
+    // ============================================
+    
+    /**
+     * Sugiere automáticamente el saldo óptimo a usar
+     */
+    function calcularYAplicarSaldoAutomatico() {
+        if (!elementos.usarSaldoCheckbox?.checked) return;
+        
+        const saldoMaximo = calcularSaldoMaximo();
+        const montoSaldoActual = parseFloat(elementos.montoSaldoInput?.value) || 0;
+        
+        // Si no hay saldo especificado, sugerir el máximo
+        if (montoSaldoActual === 0 && saldoMaximo > 0) {
+            elementos.montoSaldoInput.value = saldoMaximo.toFixed(2);
+            mostrarMensajeAutomatico(`Se sugiere usar $${saldoMaximo.toFixed(2)} de tu saldo`);
+            ajustarMontoPagadoAutomaticamente();
+        }
+    }
+    
+    /**
+     * Ajusta automáticamente el monto a pagar cuando se usa saldo
+     */
+    function ajustarMontoPagadoAutomaticamente() {
+        if (!elementos.usarSaldoCheckbox?.checked) return;
+        
+        const montoPagadoActual = parseFloat(elementos.montoPagadoInput?.value) || 0;
+        const montoSaldo = parseFloat(elementos.montoSaldoInput?.value) || 0;
+        
+        // No ajustar si el usuario está pagando un excedente intencionalmente
+        if (montoPagadoActual > MONTO_PENDIENTE) return;
+        
+        // Calcular el nuevo monto sugerido
+        const nuevoMontoPagado = Math.max(0, MONTO_PENDIENTE - montoSaldo);
+        
+        // Solo actualizar si el cambio es significativo (> $1)
+        if (Math.abs(nuevoMontoPagado - montoPagadoActual) > 1) {
+            elementos.montoPagadoInput.value = nuevoMontoPagado.toFixed(2);
+            mostrarMensajeAutomatico(
+                `Se ajustó el monto a pagar a $${nuevoMontoPagado.toFixed(2)} ` +
+                `(Pendiente $${MONTO_PENDIENTE.toFixed(2)} - Saldo $${montoSaldo.toFixed(2)})`
+            );
+        }
+    }
+    
+    /**
+     * Muestra mensajes informativos temporales
+     */
+    function mostrarMensajeAutomatico(mensaje) {
+        // Buscar o crear el contenedor del mensaje
+        let mensajeDiv = document.getElementById('mensaje-automatico');
+        
+        if (!mensajeDiv) {
+            mensajeDiv = document.createElement('div');
+            mensajeDiv.id = 'mensaje-automatico';
+            mensajeDiv.className = 'alert alert-success alert-dismissible fade show mt-2';
+            mensajeDiv.innerHTML = `
+                <i class="fas fa-robot me-2"></i>
+                <span class="mensaje-texto"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+            
+            // Insertar después del input de monto pagado
+            const contenedor = elementos.montoPagadoInput?.parentElement?.parentElement;
+            if (contenedor) {
+                contenedor.appendChild(mensajeDiv);
+            }
+        }
+        
+        // Actualizar el texto del mensaje
+        const textoSpan = mensajeDiv.querySelector('.mensaje-texto');
+        if (textoSpan) {
+            textoSpan.textContent = mensaje;
+        }
+        
+        // Mostrar el mensaje si estaba oculto
+        mensajeDiv.style.display = 'block';
+        
+        // Auto-ocultar después de 5 segundos
+        setTimeout(() => {
+            if (mensajeDiv && typeof bootstrap !== 'undefined' && bootstrap.Alert) {
+                const bsAlert = new bootstrap.Alert(mensajeDiv);
+                bsAlert.close();
+            } else if (mensajeDiv) {
+                mensajeDiv.style.display = 'none';
+            }
+        }, 5000);
+    }
+    
+    // ============================================
+    // ACTUALIZACIÓN DE INTERFAZ
+    // ============================================
+    
+    /**
+     * Función principal que actualiza toda la interfaz
+     */
+    function actualizarInterfaz() {
+        actualizarSeccionSaldo();
+        actualizarSeccionExcedente();
+        actualizarCamposDivision();
+    }
+    
+    /**
+     * Actualiza la sección de saldo a favor
+     */
+    function actualizarSeccionSaldo() {
+        if (!elementos.saldoFields || !elementos.montoSaldoInput) return;
+        
+        const usarSaldo = elementos.usarSaldoCheckbox?.checked || false;
+        const montoSaldo = parseFloat(elementos.montoSaldoInput.value) || 0;
+        
+        if (usarSaldo) {
+            // Mostrar campos de saldo
+            elementos.saldoFields.style.display = 'block';
+            elementos.montoSaldoInput.disabled = false;
+            
+            // Establecer límites
+            const saldoMaximo = calcularSaldoMaximo();
+            elementos.montoSaldoInput.max = saldoMaximo;
+            
+            // Validar que no exceda el máximo
+            if (montoSaldo > saldoMaximo) {
+                elementos.montoSaldoInput.value = saldoMaximo.toFixed(2);
+            }
+        } else {
+            // Ocultar campos de saldo
+            elementos.saldoFields.style.display = 'none';
+            elementos.montoSaldoInput.disabled = true;
+            elementos.montoSaldoInput.value = '0.00';
+        }
+    }
+    
+    /**
+     * Actualiza la sección de manejo de excedente
+     */
+    function actualizarSeccionExcedente() {
+        if (!elementos.excedenteCard) return;
+        
+        const excedente = calcularExcedente();
+        
+        if (excedente > 0) {
+            // Mostrar card de excedente
+            elementos.excedenteCard.classList.remove('d-none');
+            
+            // Actualizar monto del excedente
+            if (elementos.excedenteMonto) {
+                elementos.excedenteMonto.textContent = `$${excedente.toFixed(2)}`;
+            }
+            
+            // Mostrar info de próxima cuota si se selecciona esa opción
+            const manejoSeleccionado = Array.from(elementos.manejoExcedenteRadios)
+                .find(r => r.checked);
+            
+            if (elementos.infoProximaCuota) {
+                if (manejoSeleccionado && 
+                    (manejoSeleccionado.value === 'aplicar_proxima' || 
+                     manejoSeleccionado.value === 'dividir')) {
+                    elementos.infoProximaCuota.style.display = 'block';
+                } else {
+                    elementos.infoProximaCuota.style.display = 'none';
+                }
+            }
+        } else {
+            // Ocultar card de excedente
+            elementos.excedenteCard.classList.add('d-none');
+            if (elementos.infoProximaCuota) {
+                elementos.infoProximaCuota.style.display = 'none';
+            }
+        }
+    }
+    
+    /**
+     * Actualiza los campos de división de excedente
+     */
+    function actualizarCamposDivision() {
+        if (!elementos.dividirFields || !elementos.montoAplicarInput) return;
+        
+        const manejoSeleccionado = Array.from(elementos.manejoExcedenteRadios)
+            .find(r => r.checked);
+        
+        if (manejoSeleccionado && manejoSeleccionado.value === 'dividir') {
+            // Mostrar campos de división
+            elementos.dividirFields.style.display = 'block';
+            elementos.montoAplicarInput.disabled = false;
+            
+            // Establecer límite máximo
+            const excedente = calcularExcedente();
+            elementos.montoAplicarInput.max = excedente;
+            
+            // Validar que no exceda el excedente
+            const montoAplicar = parseFloat(elementos.montoAplicarInput.value) || 0;
+            if (montoAplicar > excedente) {
+                elementos.montoAplicarInput.value = excedente.toFixed(2);
+            }
+        } else {
+            // Ocultar campos de división
+            elementos.dividirFields.style.display = 'none';
+            elementos.montoAplicarInput.disabled = true;
+            elementos.montoAplicarInput.value = '0.00';
+        }
+    }
+    
+    // ============================================
+    // VALIDACIÓN
+    // ============================================
+    
+    /**
+     * Valida el formulario antes de enviar
+     */
+    function validarFormulario(e) {
+        const montoPagado = parseFloat(elementos.montoPagadoInput?.value) || 0;
+        const usarSaldo = elementos.usarSaldoCheckbox?.checked || false;
+        const montoSaldo = parseFloat(elementos.montoSaldoInput?.value) || 0;
+        const montoTotal = montoPagado + (usarSaldo ? montoSaldo : 0);
+        
+        // Validar que haya un monto total mayor a 0
+        if (montoTotal <= 0) {
+            e.preventDefault();
+            alert('Debes ingresar un monto mayor a $0');
+            elementos.montoPagadoInput?.focus();
+            return false;
+        }
+        
+        // Validar que si se usa saldo, se especifique un monto
+        if (usarSaldo && montoSaldo <= 0) {
+            e.preventDefault();
+            alert('Si seleccionas usar saldo, debes especificar un monto mayor a $0');
+            elementos.montoSaldoInput?.focus();
+            return false;
+        }
+        
+        // Validar manejo de excedente
+        const excedente = calcularExcedente();
+        if (excedente > 0) {
+            const manejoSeleccionado = Array.from(elementos.manejoExcedenteRadios)
+                .find(r => r.checked);
+            
+            if (!manejoSeleccionado) {
+                e.preventDefault();
+                alert('Debes seleccionar una opción para manejar el excedente de $' + 
+                      excedente.toFixed(2));
+                elementos.excedenteCard?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return false;
+            }
+            
+            // Si eligió dividir, validar que haya especificado un monto
+            if (manejoSeleccionado.value === 'dividir') {
+                const montoAplicar = parseFloat(elementos.montoAplicarInput?.value) || 0;
+                if (montoAplicar <= 0) {
+                    e.preventDefault();
+                    alert('Debes especificar un monto a aplicar a la próxima cuota');
+                    elementos.montoAplicarInput?.focus();
+                    return false;
+                }
+                
+                if (montoAplicar > excedente) {
+                    e.preventDefault();
+                    alert(`No puedes aplicar más de $${excedente.toFixed(2)} (el excedente actual)`);
+                    elementos.montoAplicarInput?.focus();
+                    return false;
+                }
+            }
+        }
+        
+        return true;
+    }
+    
+})();
+</script>
+{% endblock %}

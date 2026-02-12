@@ -1,0 +1,1027 @@
+<!-- templates/pagos/detalle_tramite.html -->
+{% extends 'base.html' %}
+{% load static %}
+{% load pagos_filters %}
+
+{% block title %}Detalle de Trámite #{{ tramite.id }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Variables de color basadas en base.html */
+    :root {
+        --primary-color: #2E8FCC;
+        --primary-dark: #1a6ba8;
+        --text-color: #5A6B8C;
+        --success-color: #10b981;
+        --warning-color: #f59e0b;
+        --danger-color: #ef4444;
+        --info-color: #3b82f6;
+        --light-bg: #f8fafc;
+        --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --card-shadow-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+
+    /* Fondo general */
+    .detalle-container {
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        min-height: 100vh;
+        padding: 2rem 0;
+    }
+
+    /* Header mejorado */
+    .detalle-header {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem 2rem;
+        margin-bottom: 2rem;
+        box-shadow: var(--card-shadow);
+        border-left: 5px solid var(--primary-color);
+    }
+
+    .detalle-title {
+        color: var(--text-color);
+        font-weight: 700;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .detalle-title i {
+        color: var(--primary-color);
+        font-size: 1.75rem;
+    }
+
+    /* Breadcrumb mejorado */
+    .breadcrumb {
+        background: transparent;
+        padding: 0.5rem 0 0 0;
+        margin: 0;
+    }
+
+    .breadcrumb-item a {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .breadcrumb-item a:hover {
+        color: var(--primary-dark);
+        transform: translateX(-3px);
+    }
+
+    .breadcrumb-item.active {
+        color: #94a3b8;
+    }
+
+    
+
+    /* Tarjetas de información mejoradas */
+    .info-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: var(--card-shadow);
+        transition: all 0.3s ease;
+        border: 1px solid rgba(0, 0, 0, 0.04);
+        position: relative;
+        overflow: hidden;
+        height: 100%;
+    }
+
+    .info-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        transition: width 0.3s ease;
+    }
+
+    .info-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--card-shadow-hover);
+    }
+
+    .info-card:hover::before {
+        width: 8px;
+    }
+
+    .info-card.primary::before { background: var(--primary-color); }
+    .info-card.info::before { background: var(--info-color); }
+    .info-card.success::before { background: var(--success-color); }
+
+    .info-card-label {
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.75rem;
+    }
+
+    .info-card.primary .info-card-label { color: var(--primary-color); }
+    .info-card.info .info-card-label { color: var(--info-color); }
+    .info-card.success .info-card-label { color: var(--success-color); }
+
+    .info-card-title {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: var(--text-color);
+        margin-bottom: 0.75rem;
+    }
+
+    .info-card-content {
+        color: #64748b;
+        font-size: 0.875rem;
+        line-height: 1.8;
+    }
+
+    .info-card-content i {
+        width: 18px;
+        text-align: center;
+        margin-right: 0.5rem;
+    }
+
+    .info-card-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+
+    .info-card.primary .info-card-icon {
+        background: linear-gradient(135deg, rgba(46, 143, 204, 0.1) 0%, rgba(46, 143, 204, 0.2) 100%);
+        color: var(--primary-color);
+    }
+
+    .info-card.info .info-card-icon {
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(59, 130, 246, 0.2) 100%);
+        color: var(--info-color);
+    }
+
+    .info-card.success .info-card-icon {
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.2) 100%);
+        color: var(--success-color);
+    }
+
+    /* Barra de progreso mejorada */
+    .progress-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem 2rem;
+        box-shadow: var(--card-shadow);
+        border: 1px solid rgba(0, 0, 0, 0.04);
+    }
+
+    .progress-card-header {
+        display: flex;
+        justify-content: between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .progress-card-title {
+        font-weight: 600;
+        color: var(--text-color);
+        margin: 0;
+        font-size: 1rem;
+    }
+
+    .progress-badge {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+        color: white;
+        padding: 0.375rem 0.875rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        box-shadow: 0 2px 8px rgba(46, 143, 204, 0.3);
+    }
+
+    .progress-bar-custom {
+        height: 28px;
+        background: #e2e8f0;
+        border-radius: 14px;
+        overflow: hidden;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+        margin-bottom: 1.5rem;
+    }
+
+    .progress-bar-fill-custom {
+        height: 100%;
+        background: linear-gradient(90deg, var(--success-color) 0%, #059669 100%);
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+        font-size: 0.875rem;
+        transition: width 0.6s ease;
+        box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
+    }
+
+    .progress-stats {
+        display: flex;
+        justify-content: space-around;
+        text-align: center;
+        padding-top: 0.5rem;
+        border-top: 1px solid #f1f5f9;
+    }
+
+    .progress-stat-item {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .progress-stat-label {
+        font-size: 0.75rem;
+        color: #94a3b8;
+        font-weight: 500;
+    }
+
+    .progress-stat-value {
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+
+    .progress-stat-value.total { color: var(--text-color); }
+    .progress-stat-value.pagado { color: var(--success-color); }
+    .progress-stat-value.pendiente { color: var(--danger-color); }
+
+    /* Tabla mejorada */
+    .table-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: var(--card-shadow);
+        overflow: hidden;
+        border: 1px solid rgba(0, 0, 0, 0.04);
+    }
+
+    .table-card-header {
+        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+        padding: 1.5rem 2rem;
+        border-bottom: 2px solid #e2e8f0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .table-card-title {
+        color: var(--text-color);
+        font-weight: 700;
+        font-size: 1.125rem;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .table-card-title i {
+        color: var(--primary-color);
+    }
+
+    .btn-generar-cuotas {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+        border: none;
+        color: white;
+        padding: 0.5rem 1.25rem;
+        border-radius: 10px;
+        font-weight: 500;
+        font-size: 0.875rem;
+        box-shadow: 0 4px 12px rgba(46, 143, 204, 0.3);
+        transition: all 0.3s ease;
+    }
+
+    .btn-generar-cuotas:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(46, 143, 204, 0.4);
+        color: white;
+    }
+
+    /* Tabla */
+    .custom-table {
+        margin: 0;
+        width: 100%;
+    }
+
+    .custom-table thead th {
+        background: #f8fafc;
+        color: var(--text-color);
+        font-weight: 600;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 1rem 1.5rem;
+        border: none;
+    }
+
+    .custom-table tbody td {
+        padding: 1.25rem 1.5rem;
+        vertical-align: middle;
+        color: var(--text-color);
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .custom-table tbody tr {
+        transition: all 0.2s ease;
+    }
+
+    .custom-table tbody tr:hover {
+        background: #f8fafc;
+        transform: scale(1.005);
+    }
+
+    .custom-table tbody tr.table-danger {
+        background: rgba(239, 68, 68, 0.05);
+        border-left: 4px solid var(--danger-color);
+    }
+
+    .custom-table tbody tr.table-danger:hover {
+        background: rgba(239, 68, 68, 0.1);
+    }
+
+    .custom-table tbody tr.table-success {
+        background: rgba(16, 185, 129, 0.05);
+        border-left: 4px solid var(--success-color);
+    }
+
+    .custom-table tbody tr.table-success:hover {
+        background: rgba(16, 185, 129, 0.1);
+    }
+
+    .custom-table tbody tr.table-warning {
+        background: rgba(245, 158, 11, 0.05);
+        border-left: 4px solid var(--warning-color);
+    }
+
+    .custom-table tbody tr.table-warning:hover {
+        background: rgba(245, 158, 11, 0.1);
+    }
+
+    /* Cuota number */
+    .cuota-number {
+        display: inline-block;
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+        color: white;
+        padding: 0.375rem 0.875rem;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 1rem;
+        box-shadow: 0 2px 8px rgba(46, 143, 204, 0.3);
+    }
+
+    /* Fecha columns */
+    .fecha-container {
+        display: flex;
+        flex-direction: column;
+        gap: 0.375rem;
+    }
+
+    .fecha-principal {
+        font-weight: 600;
+        color: var(--text-color);
+        font-size: 0.95rem;
+    }
+
+    .fecha-atraso {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        background: rgba(239, 68, 68, 0.1);
+        color: var(--danger-color);
+        padding: 0.25rem 0.625rem;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        width: fit-content;
+    }
+
+    /* Monto */
+    .monto-principal {
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: var(--text-color);
+    }
+
+    /* Estado badges mejorados */
+    .estado-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.8rem;
+        letter-spacing: 0.3px;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+    }
+
+    /* Monto pagado */
+    .monto-pagado-container {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .monto-pagado {
+        font-weight: 700;
+        font-size: 1rem;
+    }
+
+    .monto-pagado.completo { color: var(--success-color); }
+    .monto-pagado.parcial { color: var(--warning-color); }
+
+    .pago-parcial-tag {
+        display: inline-block;
+        background: rgba(245, 158, 11, 0.1);
+        color: var(--warning-color);
+        padding: 0.2rem 0.5rem;
+        border-radius: 6px;
+        font-size: 0.7rem;
+        font-weight: 600;
+    }
+
+    /* Botones de acción en tabla */
+    .action-buttons-table .btn {
+        border-radius: 8px;
+        padding: 0.5rem 0.75rem;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+    }
+
+    .action-buttons-table .btn-outline-primary {
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+    }
+
+    .action-buttons-table .btn-outline-primary:hover {
+        background: var(--primary-color);
+        color: white;
+        transform: scale(1.1);
+        box-shadow: 0 4px 12px rgba(46, 143, 204, 0.3);
+    }
+
+    .action-buttons-table .btn-outline-secondary {
+        border-color: #94a3b8;
+        color: #64748b;
+    }
+
+    .action-buttons-table .btn-outline-secondary:hover {
+        background: #64748b;
+        color: white;
+        transform: scale(1.1);
+        box-shadow: 0 4px 12px rgba(100, 116, 139, 0.3);
+    }
+
+    .action-buttons-table .btn-outline-info {
+        border-color: var(--info-color);
+        color: var(--info-color);
+    }
+
+    .action-buttons-table .btn-outline-info:hover {
+        background: var(--info-color);
+        color: white;
+        transform: scale(1.1);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+
+    /* Empty state */
+    .empty-state {
+        padding: 4rem 2rem;
+        text-align: center;
+    }
+
+    .empty-state i {
+        color: #cbd5e1;
+        margin-bottom: 1.5rem;
+        animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+
+    .empty-state h5 {
+        color: var(--text-color);
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .empty-state p {
+        color: #94a3b8;
+        margin-bottom: 1.5rem;
+    }
+
+    /* Modal mejorado */
+    .modal-content {
+        border-radius: 16px;
+        border: none;
+        box-shadow: var(--card-shadow-hover);
+    }
+
+    .modal-header {
+        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+        border-bottom: 2px solid #e2e8f0;
+        border-radius: 16px 16px 0 0;
+        padding: 1.5rem;
+    }
+
+    .modal-title {
+        color: var(--text-color);
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .modal-title i {
+        color: var(--primary-color);
+    }
+
+    .modal-body {
+        padding: 2rem;
+    }
+
+    .modal-footer {
+        border-top: 1px solid #f1f5f9;
+        padding: 1.5rem;
+    }
+
+    .modal-footer .btn-primary {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+        border: none;
+        padding: 0.625rem 1.5rem;
+        border-radius: 10px;
+        font-weight: 500;
+        box-shadow: 0 4px 12px rgba(46, 143, 204, 0.3);
+        transition: all 0.3s ease;
+    }
+
+    .modal-footer .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(46, 143, 204, 0.4);
+    }
+
+    .modal-footer .btn-secondary {
+        background: #e2e8f0;
+        border: none;
+        color: var(--text-color);
+        padding: 0.625rem 1.5rem;
+        border-radius: 10px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .modal-footer .btn-secondary:hover {
+        background: #cbd5e1;
+        transform: translateY(-2px);
+    }
+
+    /* Alert de atención */
+    .alert-atrasados {
+        background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(239, 68, 68, 0.05) 100%);
+        border-left: 4px solid var(--danger-color);
+        border-radius: 12px;
+        padding: 1rem 1.5rem;
+        color: var(--danger-color);
+        font-weight: 500;
+        box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);
+        animation: slideInDown 0.5s ease-out;
+    }
+
+    @keyframes slideInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Animaciones de entrada */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .info-card, .progress-card, .table-card {
+        animation: fadeInUp 0.5s ease-out;
+    }
+
+    .info-card:nth-child(1) { animation-delay: 0.1s; }
+    .info-card:nth-child(2) { animation-delay: 0.2s; }
+    .info-card:nth-child(3) { animation-delay: 0.3s; }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .detalle-header {
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .custom-table thead th,
+        .custom-table tbody td {
+            padding: 0.75rem 1rem;
+            font-size: 0.875rem;
+        }
+
+        .info-card {
+            margin-bottom: 1rem;
+        }
+    }
+
+    /* Print styles */
+    @media print {
+        .action-dropdown,
+        .action-buttons-table,
+        .detalle-header nav,
+        .btn-generar-cuotas {
+            display: none !important;
+        }
+
+        .detalle-container {
+            background: white;
+        }
+
+        .info-card,
+        .progress-card,
+        .table-card {
+            box-shadow: none;
+            border: 1px solid #e2e8f0;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="detalle-container">
+    <div class="container-fluid">
+        <!-- Encabezado -->
+        <div class="detalle-header text-center">
+            <h1 class="detalle-title justify-content-center">
+                <i class="fas fa-file-contract"></i>Trámite #{{ tramite.id }}
+            </h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb justify-content-center">
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'pagos:dashboard' %}">
+                            <i class="fas fa-arrow-left me-1"></i>Volver al Dashboard
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item active">Detalle del trámite</li>
+                </ol>
+            </nav>
+        </div>
+        
+        <!-- Resumen del trámite -->
+        <div class="row mb-4">
+            <div class="col-lg-4 mb-4">
+                <div class="info-card primary">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="flex-grow-1">
+                            <div class="info-card-label">Información del Cliente</div>
+                            <div class="info-card-title">{{ tramite.cliente.nombre }}</div>
+                            <div class="info-card-content">
+                                <div class="mb-2">
+                                    <i class="fas fa-user"></i>
+                                    {{ tramite.cliente.nombre_completo|default:"No registrado" }}
+                                </div>
+                                <div class="mb-2">
+                                    <i class="fas fa-phone"></i>
+                                    {{ tramite.cliente.telefono|default:"No registrado" }}
+                                </div>
+                                <div>
+                                    <i class="fas fa-envelope"></i>
+                                    {{ tramite.cliente.email|default:"No registrado"|truncatechars:20 }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="info-card-icon">
+                            <i class="fas fa-user"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 mb-4">
+                <div class="info-card info">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="flex-grow-1">
+                            <div class="info-card-label">Proyecto y Lote</div>
+                            <div class="info-card-title">{{ tramite.financiamiento.lote.proyecto.nombre }}</div>
+                            <div class="info-card-content">
+                                <div class="mb-2">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    Lote: {{ tramite.financiamiento.lote.identificador }}
+                                </div>
+                                <div>
+                                    <i class="fas fa-dollar-sign"></i>
+                                    Precio: ${{ tramite.financiamiento.precio_lote|floatformat:2 }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="info-card-icon">
+                            <i class="fas fa-home"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 mb-4">
+                <div class="info-card success">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="flex-grow-1">
+                            <div class="info-card-label">Resumen de Pagos</div>
+                            <div class="info-card-title">${{ monto_pagado|floatformat:2 }} / ${{ monto_total|floatformat:2 }}</div>
+                            <div class="info-card-content">
+                                <div class="mb-2">
+                                    <i class="fas fa-wallet"></i>
+                                    Saldo: <span class="fw-bold text-danger">${{ saldo_pendiente|floatformat:2 }}</span>
+                                </div>
+                                <div>
+                                    <i class="fas fa-chart-bar"></i>
+                                    Progreso: {{ porcentaje_pagado|floatformat:0 }}%
+                                </div>
+                            </div>
+                        </div>
+                        <div class="info-card-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Barra de progreso -->
+        <div class="progress-card mb-4">
+            <div class="progress-card-header">
+                <h6 class="progress-card-title">Progreso de pagos</h6>
+                <span class="progress-badge">{{ pagos_count }} cuota{{ pagos_count|pluralize }}</span>
+            </div>
+            <div class="progress-bar-custom">
+                <div class="progress-bar-fill-custom" style="width: {{ porcentaje_pagado }}%;">
+                    {{ porcentaje_pagado|floatformat:0 }}% Pagado
+                </div>
+            </div>
+            <div class="progress-stats">
+                <div class="progress-stat-item">
+                    <span class="progress-stat-value total">${{ monto_total|floatformat:2 }}</span>
+                </div>
+                <div class="progress-stat-item">
+                    <span class="progress-stat-label">
+                        <i class="fas fa-check-circle me-1"></i>Pagado
+                    </span>
+                    <span class="progress-stat-value pagado">${{ monto_pagado|floatformat:2 }}</span>
+                </div>
+                <div class="progress-stat-item">
+                    <span class="progress-stat-label">
+                        <i class="fas fa-clock me-1"></i>Pendiente
+                    </span>
+                    <span class="progress-stat-value pendiente">${{ saldo_pendiente|floatformat:2 }}</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tabla de pagos -->
+        <div class="table-card">
+            <div class="table-card-header">
+                <h6 class="table-card-title">
+                    <i class="fas fa-calendar-alt"></i>Calendario de Pagos
+                </h6>
+                <div>
+                    {% if user.is_staff or perms.pagos.add_pago %}
+                    <button class="btn btn-generar-cuotas" data-bs-toggle="modal" data-bs-target="#generarCuotasModal">
+                        <i class="fas fa-calendar-plus me-1"></i>Generar Cuotas
+                    </button>
+                    {% endif %}
+                    {% if saldo_disponible > 0 %}
+                    <a href="{% url 'pagos:aplicar_saldo' tramite.id %}" 
+                    class="btn btn-success btn-sm">
+                        <i class="fas fa-piggy-bank me-1"></i>Aplicar Saldo (${{ saldo_disponible|floatformat:2 }})
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="table-responsive">
+                {% if pagos_info %}
+                <table class="table custom-table">
+                    <thead>
+                        <tr>
+                            <th># Cuota</th>
+                            <th>Fecha Vencimiento</th>
+                            <th>Monto</th>
+                            <th>Estado</th>
+                            <th>Fecha Pago</th>
+                            <th>Monto Pagado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for pago_info in pagos_info %}
+                        {% with pago_info.pago as pago %}
+                        <tr class="{% if pago.estado.codigo == 'atrasado' %}table-danger
+                                   {% elif pago.estado.codigo == 'pagado' %}table-success
+                                   {% elif pago.estado.codigo == 'pendiente' and pago.fecha_vencimiento < today %}table-warning
+                                   {% endif %}">
+                            <td>
+                                <span class="cuota-number">{{ pago.numero_cuota }}</span>
+                            </td>
+                            <td>
+                                <div class="fecha-container">
+                                    <span class="fecha-principal">{{ pago.fecha_vencimiento|date:"d/m/Y" }}</span>
+                                    {% if pago_info.dias_atraso > 0 %}
+                                    <span class="fecha-atraso">
+                                        <i class="fas fa-exclamation-triangle"></i> 
+                                        {{ pago_info.dias_atraso }} día{{ pago_info.dias_atraso|pluralize }} atrasado
+                                    </span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td>
+                                <span class="monto-principal">${{ pago.monto|floatformat:2 }}</span>
+                            </td>
+                            <td>
+                                <span class="badge estado-badge" style="background-color: {{ pago.estado.color }}; color: white;">
+                                    {{ pago.estado.nombre }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if pago.fecha_pago %}
+                                <span class="fecha-principal text-success">
+                                    {{ pago.fecha_pago|date:"d/m/Y" }}
+                                </span>
+                                {% else %}
+                                <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if pago.monto_pagado > 0 %}
+                                <div class="monto-pagado-container">
+                                    <span class="monto-pagado {% if pago.monto_pagado < pago.monto %}parcial{% else %}completo{% endif %}">
+                                        ${{ pago.monto_pagado|floatformat:2 }}
+                                    </span>
+                                    {% if pago.monto_pagado < pago.monto %}
+                                    <span class="pago-parcial-tag">Pago parcial</span>
+                                    {% endif %}
+                                </div>
+                                {% else %}
+                                <span class="text-muted">$0.00</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group action-buttons-table btn-group-sm">
+                                    {% if pago.estado.codigo != 'pagado' %}
+                                    <a href="{% url 'pagos:registrar_pago' pago.id %}" 
+                                        class="btn btn-outline-primary" title="Registrar pago">
+                                        <i class="fas fa-money-bill-wave"></i>
+                                    </a>
+                                    {% endif %}
+                                    
+                                    <!-- Botón para descargar recibo (si tiene algún pago registrado) -->
+                                    {% if pago.monto_pagado > 0 %}
+                                    <a href="{% url 'pagos:descargar_recibo_pago_pdf' pago.id %}" 
+                                    class="btn btn-success" 
+                                    target="_blank"
+                                    title="Descargar recibo">
+                                        <i class="fas fa-file-pdf"></i>
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endwith %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-calendar-times fa-3x"></i>
+                    <h5>No hay pagos registrados</h5>
+                    <p>Este trámite no tiene cuotas generadas aún.</p>
+                    {% if user.is_staff or perms.pagos.add_pago %}
+                    <button class="btn btn-generar-cuotas" data-bs-toggle="modal" data-bs-target="#generarCuotasModal">
+                        <i class="fas fa-calendar-plus me-1"></i>Generar Cuotas Automáticamente
+                    </button>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para generar cuotas -->
+<div class="modal fade" id="generarCuotasModal" tabindex="-1" aria-labelledby="generarCuotasModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="generarCuotasModalLabel">
+                    <i class="fas fa-calendar-plus"></i>Generar Cuotas
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Deseas generar las cuotas de pago para este trámite?</p>
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Se crearán {{ tramite.financiamiento.num_mensualidades|default:"?" }} cuotas basadas en el financiamiento.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form method="post" action="{% url 'pagos:generar_cuotas' tramite.id %}" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary">Generar Cuotas</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para registrar pago (placeholder) -->
+<div class="modal fade" id="registrarPagoModal" tabindex="-1" aria-labelledby="registrarPagoModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="registrarPagoModalLabel">
+                    <i class="fas fa-money-bill-wave"></i>Registrar Pago
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="registrarPagoModalBody">
+                <!-- Cargado dinámicamente -->
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function mostrarModalRegistroPago(pagoId) {
+        // Cargar formulario de registro de pago via AJAX
+        fetch(`/pagos/registrar/${pagoId}/`)
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('registrarPagoModalBody').innerHTML = html;
+                var modal = new bootstrap.Modal(document.getElementById('registrarPagoModal'));
+                modal.show();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al cargar el formulario de pago');
+            });
+    }
+    
+    function generarRecibo(pagoId) {
+        window.open(`/pagos/recibo/${pagoId}/`, '_blank');
+    }
+    
+    function editarPago(pagoId) {
+        // Implementar edición de pago
+        alert('Función de edición en desarrollo...');
+    }
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        // Agregar tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        });
+        
+        // Mostrar alerta si hay pagos atrasados
+        var pagosAtrasados = document.querySelectorAll('tr.table-danger');
+        if (pagosAtrasados.length > 0) {
+            setTimeout(function() {
+                var alertDiv = document.createElement('div');
+                alertDiv.className = 'alert alert-atrasados alert-dismissible fade show';
+                alertDiv.innerHTML = `
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Atención:</strong> Hay ${pagosAtrasados.length} pago(s) atrasado(s).
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                `;
+                
+                var progressCard = document.querySelector('.progress-card');
+                progressCard.parentNode.insertBefore(alertDiv, progressCard);
+            }, 1000);
+        }
+    });
+</script>
+{% endblock %}label">
+                        <i class="fas fa-money-bill-wave me-1"></i>Total
+                    </span>
+                    <span class="progress-stat-

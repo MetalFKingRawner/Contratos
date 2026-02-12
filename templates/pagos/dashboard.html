@@ -1,0 +1,841 @@
+<!-- templates/pagos/dashboard.html -->
+{% extends 'base.html' %}
+{% load static %}
+{% load pagos_filters %}
+
+{% block title %}Dashboard de Pagos{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Variables de color basadas en base.html */
+    :root {
+        --primary-color: #2E8FCC;
+        --primary-dark: #1a6ba8;
+        --text-color: #5A6B8C;
+        --success-color: #10b981;
+        --warning-color: #f59e0b;
+        --danger-color: #ef4444;
+        --info-color: #3b82f6;
+        --light-bg: #f8fafc;
+        --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --card-shadow-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+
+    /* Fondo general */
+    .dashboard-container {
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        min-height: 100vh;
+        padding: 2rem 0;
+    }
+
+    /* Header mejorado */
+    .dashboard-header {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem 2rem;
+        margin-bottom: 2rem;
+        box-shadow: var(--card-shadow);
+        border-left: 5px solid var(--primary-color);
+    }
+
+    .dashboard-title {
+        color: var(--text-color);
+        font-weight: 700;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+    }
+
+    .dashboard-title i {
+        color: var(--primary-color);
+        font-size: 1.75rem;
+    }
+
+    /* Botones de acción */
+    .action-dropdown .dropdown-toggle {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+        border: none;
+        color: white;
+        padding: 0.625rem 1.5rem;
+        border-radius: 10px;
+        font-weight: 500;
+        box-shadow: 0 4px 12px rgba(46, 143, 204, 0.3);
+        transition: all 0.3s ease;
+    }
+
+    .action-dropdown .dropdown-toggle:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(46, 143, 204, 0.4);
+    }
+
+    .action-dropdown .dropdown-menu {
+        border: none;
+        box-shadow: var(--card-shadow-hover);
+        border-radius: 12px;
+        padding: 0.5rem;
+        margin-top: 0.5rem;
+    }
+
+    .action-dropdown .dropdown-item {
+        border-radius: 8px;
+        padding: 0.625rem 1rem;
+        transition: all 0.2s ease;
+        color: var(--text-color);
+    }
+
+    .action-dropdown .dropdown-item:hover {
+        background: var(--light-bg);
+        color: var(--primary-color);
+        transform: translateX(5px);
+    }
+
+    /* Tarjetas de resumen mejoradas */
+    .stats-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: var(--card-shadow);
+        transition: all 0.3s ease;
+        border: 1px solid rgba(0, 0, 0, 0.04);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stats-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background: var(--card-color);
+        transition: width 0.3s ease;
+    }
+
+    .stats-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--card-shadow-hover);
+    }
+
+    .stats-card:hover::before {
+        width: 8px;
+    }
+
+    .stats-card.primary { --card-color: var(--primary-color); }
+    .stats-card.warning { --card-color: var(--warning-color); }
+    .stats-card.danger { --card-color: var(--danger-color); }
+    .stats-card.success { --card-color: var(--success-color); }
+
+    .stats-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-left: auto;
+    }
+
+    .stats-card.primary .stats-icon {
+        background: linear-gradient(135deg, rgba(46, 143, 204, 0.1) 0%, rgba(46, 143, 204, 0.2) 100%);
+        color: var(--primary-color);
+    }
+
+    .stats-card.warning .stats-icon {
+        background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(245, 158, 11, 0.2) 100%);
+        color: var(--warning-color);
+    }
+
+    .stats-card.danger .stats-icon {
+        background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(239, 68, 68, 0.2) 100%);
+        color: var(--danger-color);
+    }
+
+    .stats-card.success .stats-icon {
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.2) 100%);
+        color: var(--success-color);
+    }
+
+    .stats-label {
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #94a3b8;
+        margin-bottom: 0.5rem;
+    }
+
+    .stats-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--text-color);
+        margin: 0;
+        line-height: 1;
+    }
+
+    /* Tabla mejorada */
+    .table-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: var(--card-shadow);
+        overflow: hidden;
+        border: 1px solid rgba(0, 0, 0, 0.04);
+    }
+
+    .table-card-header {
+        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+        padding: 1.5rem 2rem;
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+    .table-card-title {
+        color: var(--text-color);
+        font-weight: 700;
+        font-size: 1.125rem;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .table-card-title i {
+        color: var(--primary-color);
+    }
+
+    /* Botones de filtro */
+    .filter-buttons .btn {
+        border-radius: 10px;
+        padding: 0.5rem 1.25rem;
+        font-weight: 500;
+        font-size: 0.875rem;
+        transition: all 0.3s ease;
+        border: 2px solid #e2e8f0;
+        background: white;
+        color: var(--text-color);
+    }
+
+    .filter-buttons .btn:hover {
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(46, 143, 204, 0.2);
+    }
+
+    .filter-buttons .btn.active {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+        border-color: var(--primary-color);
+        color: white;
+        box-shadow: 0 4px 12px rgba(46, 143, 204, 0.3);
+    }
+
+    .filter-buttons .btn-filter-atrasados.active {
+        background: linear-gradient(135deg, var(--danger-color) 0%, #dc2626 100%);
+        border-color: var(--danger-color);
+    }
+
+    .filter-buttons .btn-filter-pendientes.active {
+        background: linear-gradient(135deg, var(--warning-color) 0%, #ea580c 100%);
+        border-color: var(--warning-color);
+    }
+
+    /* Tabla */
+    .custom-table {
+        margin: 0;
+    }
+
+    .custom-table thead th {
+        background: #f8fafc;
+        color: var(--text-color);
+        font-weight: 600;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 1rem 1.5rem;
+        border: none;
+    }
+
+    .custom-table tbody td {
+        padding: 1.25rem 1.5rem;
+        vertical-align: middle;
+        color: var(--text-color);
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .custom-table tbody tr {
+        transition: all 0.2s ease;
+    }
+
+    .custom-table tbody tr:hover {
+        background: #f8fafc;
+        transform: scale(1.01);
+    }
+
+    .custom-table tbody tr.table-danger {
+        background: rgba(239, 68, 68, 0.05);
+        border-left: 4px solid var(--danger-color);
+    }
+
+    .custom-table tbody tr.table-danger:hover {
+        background: rgba(239, 68, 68, 0.1);
+    }
+
+    /* Mejorar presentación de datos en la tabla */
+    .tramite-id {
+        display: inline-block;
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        box-shadow: 0 2px 4px rgba(46, 143, 204, 0.3);
+    }
+
+    .tramite-date {
+        display: inline-block;
+        background: #f1f5f9;
+        padding: 0.25rem 0.5rem;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        color: #64748b;
+        margin-top: 0.25rem;
+    }
+
+    .client-info {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .client-name {
+        font-weight: 600;
+        color: var(--text-color);
+        font-size: 0.95rem;
+    }
+
+    .client-phone {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        background: #f1f5f9;
+        padding: 0.2rem 0.6rem;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        color: #64748b;
+        width: fit-content;
+    }
+
+    .client-phone i {
+        font-size: 0.7rem;
+    }
+
+    .project-info {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .project-name {
+        font-weight: 600;
+        color: var(--text-color);
+        font-size: 0.95rem;
+    }
+
+    .lote-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        width: fit-content;
+    }
+
+    .vencimiento-box {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .vencimiento-date {
+        font-weight: 600;
+        color: var(--text-color);
+        font-size: 0.95rem;
+    }
+
+    .vencimiento-countdown {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        background: #f1f5f9;
+        padding: 0.2rem 0.6rem;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        color: #64748b;
+        width: fit-content;
+    }
+
+    .vencimiento-countdown.urgent {
+        background: rgba(239, 68, 68, 0.1);
+        color: var(--danger-color);
+        font-weight: 600;
+    }
+
+    .vencimiento-countdown i {
+        font-size: 0.7rem;
+    }
+
+    .saldo-box {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .saldo-amount {
+        font-weight: 700;
+        font-size: 1.1rem;
+    }
+
+    .progress-info {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .progress-bar-custom {
+        flex: 1;
+        height: 6px;
+        background: #e2e8f0;
+        border-radius: 3px;
+        overflow: hidden;
+    }
+
+    .progress-bar-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--success-color) 0%, #059669 100%);
+        border-radius: 3px;
+        transition: width 0.3s ease;
+    }
+
+    .progress-text {
+        font-size: 0.75rem;
+        color: #64748b;
+        font-weight: 600;
+        min-width: 45px;
+    }
+
+    /* Badges mejorados */
+    .badge {
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 0.8rem;
+        letter-spacing: 0.3px;
+    }
+
+    .badge.bg-danger {
+        background: linear-gradient(135deg, var(--danger-color) 0%, #dc2626 100%) !important;
+        box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+    }
+
+    .badge.bg-warning {
+        background: linear-gradient(135deg, var(--warning-color) 0%, #ea580c 100%) !important;
+        box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+    }
+
+    .badge.bg-success {
+        background: linear-gradient(135deg, var(--success-color) 0%, #059669 100%) !important;
+        box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+    }
+
+    .badge.bg-info {
+        background: linear-gradient(135deg, var(--info-color) 0%, #2563eb 100%) !important;
+        box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+    }
+
+    .badge.bg-secondary {
+        background: linear-gradient(135deg, #64748b 0%, #475569 100%) !important;
+        box-shadow: 0 2px 8px rgba(100, 116, 139, 0.3);
+    }
+
+    /* Botones de acción en tabla */
+    .action-buttons .btn {
+        border-radius: 8px;
+        padding: 0.5rem 0.75rem;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+    }
+
+    .action-buttons .btn-outline-primary {
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+    }
+
+    .action-buttons .btn-outline-primary:hover {
+        background: var(--primary-color);
+        color: white;
+        transform: scale(1.1);
+        box-shadow: 0 4px 12px rgba(46, 143, 204, 0.3);
+    }
+
+    .action-buttons .btn-outline-success {
+        border-color: var(--success-color);
+        color: var(--success-color);
+    }
+
+    .action-buttons .btn-outline-success:hover {
+        background: var(--success-color);
+        color: white;
+        transform: scale(1.1);
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+
+    .action-buttons .btn-outline-secondary {
+        border-color: #94a3b8;
+        color: #64748b;
+    }
+
+    .action-buttons .btn-outline-secondary:hover {
+        background: #64748b;
+        color: white;
+        transform: scale(1.1);
+        box-shadow: 0 4px 12px rgba(100, 116, 139, 0.3);
+    }
+
+    /* Estado vacío mejorado */
+    .empty-state {
+        padding: 4rem 2rem;
+        text-align: center;
+    }
+
+    .empty-state i {
+        color: #cbd5e1;
+        margin-bottom: 1.5rem;
+        animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+
+    .empty-state .text-muted {
+        color: #94a3b8 !important;
+        font-size: 1.125rem;
+        line-height: 1.6;
+    }
+
+    /* Animaciones */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .stats-card, .table-card {
+        animation: fadeInUp 0.5s ease-out;
+    }
+
+    .stats-card:nth-child(1) { animation-delay: 0.1s; }
+    .stats-card:nth-child(2) { animation-delay: 0.2s; }
+    .stats-card:nth-child(3) { animation-delay: 0.3s; }
+    .stats-card:nth-child(4) { animation-delay: 0.4s; }
+
+    /* Responsivo */
+    @media (max-width: 768px) {
+        .dashboard-header {
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .stats-value {
+            font-size: 1.5rem;
+        }
+
+        .custom-table thead th,
+        .custom-table tbody td {
+            padding: 0.75rem 1rem;
+            font-size: 0.875rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="container-fluid">
+        <!-- Header -->
+        <div class="dashboard-header">
+            <h1 class="dashboard-title">
+                <i class="fas fa-chart-line"></i>
+                Dashboard de Pagos
+            </h1>
+            
+        </div>
+        
+        <!-- Tarjetas de resumen -->
+        <div class="row mb-4">
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="stats-card primary">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="stats-label">Trámites Activos</div>
+                            <div class="stats-value">{{ tramites.count }}</div>
+                        </div>
+                        <div class="stats-icon">
+                            <i class="fas fa-file-contract"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="stats-card warning">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="stats-label">Pagos Pendientes</div>
+                            <div class="stats-value">{{ total_pendientes }}</div>
+                        </div>
+                        <div class="stats-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="stats-card danger">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="stats-label">Pagos Atrasados</div>
+                            <div class="stats-value">{{ tramites|contar_atrasados }}</div>
+                        </div>
+                        <div class="stats-icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="stats-card success">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="stats-label">Monto por Cobrar</div>
+                            <div class="stats-value">${{ total_saldo|floatformat:2 }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tabla de trámites -->
+        <div class="table-card">
+            <div class="table-card-header d-flex justify-content-between align-items-center">
+                <h6 class="table-card-title">
+                    <i class="fas fa-list"></i>Trámites con Pagos Activos
+                </h6>
+                <div class="btn-group filter-buttons" role="group">
+                    <button type="button" class="btn btn-filter-todos active" data-filter="todos">
+                        Todos
+                    </button>
+                    <button type="button" class="btn btn-filter-atrasados" data-filter="atrasado">
+                        Atrasados
+                    </button>
+                    <button type="button" class="btn btn-filter-pendientes" data-filter="pendiente">
+                        Pendientes
+                    </button>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table custom-table" id="tablaPagos">
+                    <thead>
+                        <tr>
+                            <th>Trámite</th>
+                            <th>Cliente</th>
+                            <th>Proyecto/Lote</th>
+                            <th>Próximo Vencimiento</th>
+                            <th>Estado</th>
+                            <th>Saldo Pendiente</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for tramite in tramites %}
+                        {% with tramite.pagos.all|estado_general as estado %}
+                        <tr class="tramite-row {% if tramite.pagos.all|tiene_pagos_atrasados %}table-danger{% endif %}" 
+                            data-estado="{{ estado }}">
+                            <td>
+                                <span class="tramite-id">#{{ tramite.id }}</span>
+                                <div class="tramite-date">
+                                    <i class="fas fa-calendar-alt"></i> {{ tramite.creado_en|date:"d/m/Y" }}
+                                </div>
+                            </td>
+                            <td>
+                                <div class="client-info">
+                                    <span class="client-name">{{ tramite.cliente.nombre_completo }}</span>
+                                    {% if tramite.cliente.telefono %}
+                                    <span class="client-phone">
+                                        <i class="fas fa-phone"></i> {{ tramite.cliente.telefono }}
+                                    </span>
+                                    {% else %}
+                                    <span class="client-phone">
+                                        <i class="fas fa-phone-slash"></i> Sin teléfono
+                                    </span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td>
+                                <div class="project-info">
+                                    <span class="project-name">{{ tramite.financiamiento.lote.proyecto.nombre }}</span>
+                                    <span class="badge bg-info lote-badge">
+                                        <i class="fas fa-map-marker-alt"></i> Lote {{ tramite.financiamiento.lote.identificador }}
+                                    </span>
+                                </div>
+                            </td>
+                            <td>
+                                {% with tramite.pagos.all|proximo_vencimiento as prox_venc %}
+                                    {% if prox_venc %}
+                                        <div class="vencimiento-box">
+                                            <span class="vencimiento-date">{{ prox_venc|date:"d/m/Y" }}</span>
+                                            {% with prox_venc|timeuntil as tiempo %}
+                                            <span class="vencimiento-countdown {% if 'día' in tiempo or 'hour' in tiempo %}urgent{% endif %}">
+                                                <i class="fas fa-hourglass-half"></i> {{ tiempo }}
+                                            </span>
+                                            {% endwith %}
+                                        </div>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                {% endwith %}
+                            </td>
+                            <td>
+                                {% if estado == 'atrasado' %}
+                                    <span class="badge bg-danger">
+                                        <i class="fas fa-exclamation-triangle me-1"></i>Atrasado
+                                    </span>
+                                {% elif estado == 'pendiente' %}
+                                    <span class="badge bg-warning">
+                                        <i class="fas fa-clock me-1"></i>Pendiente
+                                    </span>
+                                {% elif estado == 'pagado' %}
+                                    <span class="badge bg-success">
+                                        <i class="fas fa-check-circle me-1"></i>Pagado
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-secondary">
+                                        <i class="fas fa-times-circle me-1"></i>Sin cuotas
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% with tramite.pagos.all|saldo_pendiente as saldo %}
+                                    <div class="saldo-box">
+                                        {% if saldo > 0 %}
+                                            <span class="saldo-amount text-danger">${{ saldo|floatformat:2 }}</span>
+                                            {% with tramite.pagos.all|porcentaje_pagado as porcentaje %}
+                                            <div class="progress-info">
+                                                <div class="progress-bar-custom">
+                                                    <div class="progress-bar-fill" style="width: {{ porcentaje }}%"></div>
+                                                </div>
+                                                <span class="progress-text">{{ porcentaje|floatformat:0 }}%</span>
+                                            </div>
+                                            {% endwith %}
+                                        {% else %}
+                                            <span class="saldo-amount text-success">$0.00</span>
+                                            <span class="progress-text">Completado ✓</span>
+                                        {% endif %}
+                                    </div>
+                                {% endwith %}
+                            </td>
+                            <td>
+                                <div class="btn-group action-buttons btn-group-sm" role="group">
+                                    <a href="{% url 'pagos:detalle_tramite' tramite.id %}" 
+                                       class="btn btn-outline-primary" title="Ver detalles">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    {% if estado != 'pagado' %}
+                                    
+                                    <a href="{% url 'pagos:registrar_pago' tramite.id %}" 
+                                        class="btn btn-outline-primary" title="Registrar pago">
+                                        <i class="fas fa-money-bill-wave"></i>
+                                    </a>
+                                    {% endif %}
+                                    
+                                </div>
+                            </td>
+                        </tr>
+                        {% endwith %}
+                        {% empty %}
+                        <tr>
+                            <td colspan="7">
+                                <div class="empty-state">
+                                    <i class="fas fa-inbox fa-3x"></i>
+                                    <div class="text-muted">
+                                        <strong>No hay trámites con pagos activos.</strong><br>
+                                        <small>Los trámites con financiamiento a pagos aparecerán aquí.</small>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Sistema de filtrado
+        const filterButtons = document.querySelectorAll('.filter-buttons .btn');
+        const tableRows = document.querySelectorAll('.tramite-row');
+        
+        filterButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // Remover active de todos los botones
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                
+                // Agregar active al botón clickeado
+                this.classList.add('active');
+                
+                // Obtener el filtro
+                const filter = this.getAttribute('data-filter');
+                
+                // Filtrar las filas
+                tableRows.forEach(row => {
+                    const estado = row.getAttribute('data-estado');
+                    
+                    if (filter === 'todos') {
+                        row.style.display = '';
+                    } else if (filter === estado) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            });
+        });
+        
+        // Inicializar DataTable si existe
+        if (typeof $.fn.DataTable !== 'undefined') {
+            $('#tablaPagos').DataTable({
+                "language": {
+                    "url": "//cdn.datatables.net/plug-ins/1.11.5/i18n/es-MX.json"
+                },
+                "order": [[3, "asc"]],
+                "pageLength": 25,
+                "responsive": true
+            });
+        }
+    });
+</script>
+{% endblock %}
