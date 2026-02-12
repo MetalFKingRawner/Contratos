@@ -1,0 +1,667 @@
+{% extends "financiamiento/form.html" %}
+
+{% block title %}{% if object %}Editar{% else %}Nuevo{% endif %} Financiamiento - Commeta Community{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+/* Estilos específicos para Commeta */
+.commeta-badge {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.commeta-section {
+    border-left: 4px solid #ff6b6b;
+    background: rgba(255,107,107,0.05);
+}
+
+.commeta-field {
+    border: 2px solid rgba(255,107,107,0.3);
+}
+
+.commeta-field:focus {
+    border-color: #ff6b6b;
+    box-shadow: 0 0 0 0.2rem rgba(255,107,107,0.25);
+}
+
+.meses-fuertes-preview {
+    background: rgba(255,107,107,0.1);
+    border-radius: 12px;
+    padding: 1rem;
+    margin-top: 1rem;
+}
+
+.meses-fuertes-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.mes-fuerte-item {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.configuracion-info {
+    background: rgba(46,143,204,0.05);
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.config-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+
+.config-label {
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.config-value {
+    font-weight: 600;
+    color: #2e8fcc;
+}
+/* AGREGAR estos estilos en la sección de estilos */
+.mes-fuerte-item {
+    display: inline-flex;
+    align-items: center;
+    background: #ff6b6b;
+    color: white;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.5rem;
+    margin: 0.25rem;
+    font-weight: 500;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.mes-fuerte-par {
+    background: #ff6b6b;
+}
+
+.mes-fuerte-impar {
+    background: #ff8e8e;
+}
+
+.mes-fuerte-primero {
+    background: #4ecdc4 !important;
+    transform: scale(1.05);
+}
+
+.mes-fuerte-ultimo {
+    background: #45b7af !important;
+    border: 2px solid #2a8c85;
+}
+
+.mes-fuerte-error {
+    background: #ff4757;
+    color: white;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    text-align: center;
+    font-weight: 500;
+}
+
+.mes-fuerte-vacio {
+    background: #a4b0be;
+    text-align: center;
+}
+
+.mes-numero {
+    font-weight: bold;
+    margin-right: 0.5rem;
+    font-size: 1.1em;
+}
+
+.mes-texto {
+    font-size: 0.9em;
+}
+
+.meses-fuertes-resumen {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    background: #f8f9fa;
+    border-radius: 0.5rem;
+    border-left: 4px solid #2e8fcc;
+    font-size: 0.9em;
+    color: #495057;
+}
+
+.meses-fuertes-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 1rem 0;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <!-- Badge Commeta -->
+    <div class="commeta-badge">
+        <i class="fas fa-crown"></i>
+        Commeta Community
+    </div>
+
+    <h2 class="section-title">{% if object %}Editar{% else %}Nuevo{% endif %} Financiamiento</h2>
+    
+    <form method="post" novalidate id="financiamiento-form">
+        {% csrf_token %}
+        <input type="hidden" id="id_monto_pago_final" name="monto_pago_final" value="{{ form.initial.monto_pago_final|default_if_none:'' }}">
+
+        <!-- Información de configuración Commeta (solo lectura) -->
+        <div class="configuracion-info" id="commeta-config-info" style="display: none;">
+            <h4 style="margin-bottom: 1rem; color: #2e8fcc;">
+                <i class="fas fa-info-circle"></i> Configuración Commeta
+            </h4>
+            <div class="config-item">
+                <span class="config-label">Zona:</span>
+                <span class="config-value" id="config-zona">-</span>
+            </div>
+            <div class="config-item">
+                <span class="config-label">Precio Base:</span>
+                <span class="config-value" id="config-precio-base">-</span>
+            </div>
+            <div class="config-item">
+                <span class="config-label">Apartado Sugerido:</span>
+                <span class="config-value" id="config-apartado">-</span>
+            </div>
+            <div class="config-item">
+                <span class="config-label">Enganche Sugerido:</span>
+                <span class="config-value" id="config-enganche">-</span>
+            </div>
+            <div class="config-item">
+                <span class="config-label">Mensualidad Sugerida:</span>
+                <span class="config-value" id="config-mensualidad">-</span>
+            </div>
+            <div class="config-item">
+                <span class="config-label">Total de Meses:</span>
+                <span class="config-value" id="config-total-meses">-</span>
+            </div>
+        </div>
+
+        <!-- Sección de datos generales (igual al form base) -->
+        <div class="field-group">
+            <div class="field-group-title"><i class="fas fa-info-circle"></i> Datos Generales</div>
+            <div class="form-row">
+                <div class="form-field">      
+                    {{ form.nombre_cliente.label_tag }}
+                    {{ form.nombre_cliente }}
+                    {% for err in form.nombre_cliente.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
+                </div>
+                <div class="form-field">
+                    {{ form.proyecto.label_tag }}
+                    {{ form.proyecto }}
+                </div>
+                <div class="form-field">
+                    {{ form.lote.label_tag }}
+                    {{ form.lote }}
+                </div>
+                <div class="form-field">
+                    {{ form.tipo_pago.label_tag }}
+                    {{ form.tipo_pago }}
+                    {% for err in form.tipo_pago.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
+                </div>
+                <div class="form-field">
+                    {{ form.precio_lote.label_tag }}
+                    {{ form.precio_lote }}
+                </div>
+                <div class="form-field">
+                    {{ form.apartado.label_tag }}
+                    {{ form.apartado }}
+                </div>
+            </div>
+            
+            <!-- Campos de estado del plan -->
+            <div class="form-row" style="margin-top: 1.5rem;">
+                <div class="form-field">
+                    <label class="checkbox-container">
+                        {{ form.es_cotizacion }}
+                        <span class="checkbox-label">{{ form.es_cotizacion.label }}</span>
+                    </label>
+                    {% if form.es_cotizacion.help_text %}
+                    <div class="help-text">{{ form.es_cotizacion.help_text }}</div>
+                    {% endif %}
+                    {% for err in form.es_cotizacion.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
+                </div>
+                
+                <div class="form-field">
+                    <label class="checkbox-container">
+                        {{ form.activo }}
+                        <span class="checkbox-label">{{ form.activo.label }}</span>
+                    </label>
+                    {% if form.activo.help_text %}
+                    <div class="help-text">{{ form.activo.help_text }}</div>
+                    {% endif %}
+                    {% for err in form.activo.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sección específica de Commeta -->
+        <div class="field-group commeta-section">
+            <div class="field-group-title"><i class="fas fa-chart-line"></i> Configuración Commeta</div>
+            
+            <!-- Campos específicos de Commeta -->
+            <div class="form-row">
+                <div class="form-field">
+                    {{ form.cantidad_meses_fuertes.label_tag }}
+                    {{ form.cantidad_meses_fuertes }}
+                    {% for err in form.cantidad_meses_fuertes.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
+                </div>
+                
+                <div class="form-field">
+                    {{ form.frecuencia_meses_fuertes.label_tag }}
+                    {{ form.frecuencia_meses_fuertes }}
+                    {% for err in form.frecuencia_meses_fuertes.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
+                </div>
+                
+                <div class="form-field">
+                    {{ form.monto_mes_fuerte.label_tag }}
+                    {{ form.monto_mes_fuerte }}
+                    {% for err in form.monto_mes_fuerte.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
+                </div>
+            </div>
+
+            <!-- Preview de meses fuertes -->
+            <div class="meses-fuertes-preview" id="meses-fuertes-preview" style="display: none;">
+                <h5 style="margin-bottom: 0.5rem; color: #ff6b6b;">
+                    <i class="fas fa-calendar-alt"></i> Distribución de Meses Fuertes
+                </h5>
+                <div id="meses-fuertes-list" class="meses-fuertes-list">
+                    <!-- Aquí se mostrarán los meses fuertes calculados -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Sección de financiamiento (igual al form base) -->
+        <div class="field-group">
+            <div class="field-group-title"><i class="fas fa-wallet"></i> Financiamiento</div>
+            <div class="form-row">
+                <div class="form-field pago-contado">
+                    {{ form.fecha_pago_completo.label_tag }}
+                    {{ form.fecha_pago_completo }}
+                    {% for err in form.fecha_pago_completo.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
+                </div>
+                <div class="form-field pago-contado">
+                    {{ form.monto_pago_completo.label_tag }}
+                    {{ form.monto_pago_completo }}
+                    {% for err in form.monto_pago_completo.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
+                </div>
+
+                <div class="form-field pago-financiado">
+                    {{ form.enganche.label_tag }}
+                    {{ form.enganche }}
+                    {% for err in form.enganche.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
+                </div>
+                <div class="form-field pago-financiado">
+                    {{ form.fecha_enganche.label_tag }}
+                    {{ form.fecha_enganche }}
+                    {% for err in form.fecha_enganche.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
+                </div>
+                <div class="form-field pago-financiado">
+                    {{ form.num_mensualidades.label_tag }}
+                    {{ form.num_mensualidades }}
+                    {% for err in form.num_mensualidades.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
+                </div>
+                <div class="form-field pago-financiado">
+                    {{ form.monto_mensualidad.label_tag }}
+                    {{ form.monto_mensualidad }}
+                    {% for err in form.monto_mensualidad.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
+                </div>
+                <div class="form-field pago-financiado">
+                    {{ form.fecha_primer_pago.label_tag }}
+                    {{ form.fecha_primer_pago }}
+                    {% for err in form.fecha_primer_pago.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
+                </div>
+                <div class="form-field pago-financiado">
+                    {{ form.fecha_ultimo_pago.label_tag }}
+                    {{ form.fecha_ultimo_pago }}
+                    {% for err in form.fecha_ultimo_pago.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="submit-section">
+            <button type="submit" class="btn btn-save">Guardar</button>
+            <a href="{% url 'financiamiento:list' %}" class="btn btn-secondary btn-cancel">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script>
+// JavaScript específico para Commeta Community
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 INICIANDO SCRIPT COMMETA');
+
+    // Variables para Commeta
+    let configuracionCommeta = null;
+
+    // Elementos del DOM
+    const loteSelect = document.getElementById('id_lote');
+    const configInfo = document.getElementById('commeta-config-info');
+    const mesesFuertesPreview = document.getElementById('meses-fuertes-preview');
+    const mesesFuertesList = document.getElementById('meses-fuertes-list');
+
+    // Campos específicos de Commeta
+    const cantidadMesesFuertes = document.getElementById('id_cantidad_meses_fuertes');
+    const frecuenciaMesesFuertes = document.getElementById('id_frecuencia_meses_fuertes');
+    const montoMesFuerte = document.getElementById('id_monto_mes_fuerte');
+    const numMensualidades = document.getElementById('id_num_mensualidades');
+
+    // Inicializar AutoNumeric para el campo monto_mes_fuerte
+    if (montoMesFuerte) {
+        new AutoNumeric(montoMesFuerte, {
+            currencySymbol: '$',
+            digitGroupSeparator: ',',
+            decimalCharacter: '.',
+            decimalPlaces: 2,
+            unformatOnSubmit: true,
+            minimumValue: '0'
+        });
+    }
+
+    // Función para cargar configuración Commeta
+    function cargarConfiguracionCommeta(loteId) {
+        if (!loteId) {
+            configInfo.style.display = 'none';
+            configuracionCommeta = null;
+            return;
+        }
+
+        fetch(`/financiamiento/ajax/configuracion-commeta/${loteId}/`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.configuracion) {
+                    configuracionCommeta = data.configuracion;
+                    mostrarConfiguracionCommeta(data.configuracion);
+                    
+                    // Autocompletar campos si están vacíos
+                    autocompletarCampos(data.configuracion);
+                } else {
+                    configInfo.style.display = 'none';
+                    configuracionCommeta = null;
+                }
+            })
+            .catch(error => {
+                console.error('Error cargando configuración Commeta:', error);
+                configInfo.style.display = 'none';
+                configuracionCommeta = null;
+            });
+    }
+
+    // Función para mostrar configuración Commeta
+    function mostrarConfiguracionCommeta(config) {
+        document.getElementById('config-zona').textContent = config.zona_display;
+        document.getElementById('config-precio-base').textContent = `$${parseFloat(config.precio_base).toLocaleString()}`;
+        document.getElementById('config-apartado').textContent = `$${parseFloat(config.apartado_sugerido).toLocaleString()}`;
+        document.getElementById('config-enganche').textContent = `$${parseFloat(config.enganche_sugerido).toLocaleString()}`;
+        document.getElementById('config-mensualidad').textContent = `$${parseFloat(config.mensualidad_sugerida).toLocaleString()}`;
+        document.getElementById('config-total-meses').textContent = config.total_meses;
+        
+        configInfo.style.display = 'block';
+    }
+
+    // Función para autocompletar campos basados en la configuración
+    function autocompletarCampos(config) {
+        // Autocompletar precio_lote si está vacío
+        const precioLote = document.getElementById('id_precio_lote');
+        if (precioLote && (!precioLote.value || parseFloat(precioLote.value) === 0)) {
+            const precioInstance = AutoNumeric.getAutoNumericElement(precioLote);
+            if (precioInstance) {
+                precioInstance.set(config.precio_base);
+            }
+        }
+
+        // Autocompletar apartado si está vacío
+        const apartado = document.getElementById('id_apartado');
+        if (apartado && (!apartado.value || parseFloat(apartado.value) === 0)) {
+            const apartadoInstance = AutoNumeric.getAutoNumericElement(apartado);
+            if (apartadoInstance) {
+                apartadoInstance.set(config.apartado_sugerido);
+            }
+        }
+
+        // Autocompletar num_mensualidades si está vacío
+        if (numMensualidades && !numMensualidades.value) {
+            numMensualidades.value = config.total_meses;
+        }
+
+        // NUEVO: Autocompletar cantidad_meses_fuertes si está vacío y hay sugerencia
+        if (cantidadMesesFuertes && !cantidadMesesFuertes.value && config.cantidad_meses_fuertes_sugerida) {
+            cantidadMesesFuertes.value = config.cantidad_meses_fuertes_sugerida;
+            console.log('💡 Autocompletado cantidad meses fuertes:', config.cantidad_meses_fuertes_sugerida);
+        }
+        
+        // NUEVO: Autocompletar monto_mes_fuerte si está vacío
+        if (montoMesFuerte && (!montoMesFuerte.value || parseFloat(montoMesFuerte.value) === 0)) {
+            const montoFuerteInstance = AutoNumeric.getAutoNumericElement(montoMesFuerte);
+            if (montoFuerteInstance && config.monto_mes_fuerte) {
+                montoFuerteInstance.set(config.monto_mes_fuerte);
+            }
+        }
+
+        // Disparar evento change para recalcular
+        setTimeout(() => {
+            if (precioLote) precioLote.dispatchEvent(new Event('change'));
+            if (apartado) apartado.dispatchEvent(new Event('change'));
+            if (numMensualidades) numMensualidades.dispatchEvent(new Event('change'));
+            if (cantidadMesesFuertes) {
+                cantidadMesesFuertes.dispatchEvent(new Event('change'));
+                // Calcular meses fuertes después de autocompletar
+                setTimeout(calcularMesesFuertes, 200);
+            }
+        }, 100);
+    }
+
+    // Función para calcular y mostrar meses fuertes
+    function calcularMesesFuertes() {
+        if (!configuracionCommeta || !cantidadMesesFuertes.value || !numMensualidades.value) {
+            mesesFuertesPreview.style.display = 'none';
+            return;
+        }
+
+        const totalMeses = parseInt(numMensualidades.value);
+        const cantidad = parseInt(cantidadMesesFuertes.value);
+        const frecuencia = frecuenciaMesesFuertes.value ? parseInt(frecuenciaMesesFuertes.value) : null;
+
+        if (cantidad > totalMeses) {
+            alert('❌ Los meses fuertes no pueden exceder el total de mensualidades');
+            //cantidadMesesFuertes.value = '';
+            //mesesFuertesPreview.style.display = 'none';
+            return;
+        }
+        if (frecuencia && frecuencia >= totalMeses) {
+            mostrarErrorMesesFuertes('❌ La frecuencia debe ser menor al total de meses');
+            return;
+        }
+
+        // Calcular meses fuertes
+        const mesesFuertes = calcularDistribucionMeses(totalMeses, cantidad, frecuencia);
+        
+        // Validar que se pudieron calcular todos los meses fuertes
+        if (mesesFuertes.length !== cantidad) {
+            mostrarErrorMesesFuertes(`❌ No se pudieron calcular ${cantidad} meses fuertes. Intenta con una frecuencia diferente.`);
+            return;
+        } 
+        // Mostrar preview
+        mostrarMesesFuertes(mesesFuertes);
+    }
+
+    // AGREGAR función para mostrar errores
+    function mostrarErrorMesesFuertes(mensaje) {
+        mesesFuertesList.innerHTML = `<div class="mes-fuerte-error">${mensaje}</div>`;
+        mesesFuertesPreview.style.display = 'block';
+        
+        // Ocultar después de 5 segundos
+        setTimeout(() => {
+            mesesFuertesPreview.style.display = 'none';
+        }, 5000);
+    }
+
+    // Función para calcular distribución de meses fuertes
+    function calcularDistribucionMeses(totalMeses, cantidadMesesFuertes, frecuencia) {
+        console.log('🧮 Calculando meses fuertes:', { totalMeses, cantidadMesesFuertes, frecuencia });
+        // Caso especial: si todos los meses son fuertes
+        if (cantidadMesesFuertes >= totalMeses) {
+            return Array.from({length: totalMeses}, (_, i) => i + 1);
+        }
+        if (frecuencia) {
+            // Distribución con frecuencia fija
+            const mesesFuertes = [];
+            let mesActual = frecuencia;
+            while (mesesFuertes.length < cantidadMesesFuertes && mesActual <= totalMeses) {
+                mesesFuertes.push(mesActual);
+                mesActual += frecuencia;
+            }
+            return mesesFuertes;
+        } else {
+            // Distribución automática (equidistante)
+            if (cantidadMesesFuertes === 0) {
+                return [];
+            }
+
+            const espaciado = Math.max(1, Math.floor(totalMeses / cantidadMesesFuertes));
+            const mesesFuertes = [];
+            
+            // Comenzar desde el primer mes disponible (no el 0)
+            for (let i = 0; i < cantidadMesesFuertes; i++) {
+                // Priorizar primeros meses: mes 1, luego espaciado, etc.
+                const mes = Math.min((i * espaciado) + 1, totalMeses);
+                mesesFuertes.push(mes);
+            }
+            
+            // Eliminar duplicados y ordenar
+            const mesesUnicos = [...new Set(mesesFuertes)].sort((a, b) => a - b);
+            const mesesFiltrados = mesesUnicos.filter(mes => mes <= totalMeses);
+            
+            // Si nos faltan meses fuertes, agregar al final
+            let mesesFinales = [...mesesFiltrados];
+            while (mesesFinales.length < cantidadMesesFuertes && mesesFinales[mesesFinales.length - 1] < totalMeses) {
+                const nuevoMes = Math.min(mesesFinales[mesesFinales.length - 1] + 1, totalMeses);
+                if (!mesesFinales.includes(nuevoMes)) {
+                    mesesFinales.push(nuevoMes);
+                }
+            }
+            
+            console.log('📅 Meses fuertes calculados:', mesesFinales.slice(0, cantidadMesesFuertes));
+            return mesesFinales.slice(0, cantidadMesesFuertes).sort((a, b) => a - b);
+            }
+    }
+
+    // Función para mostrar meses fuertes en el preview
+    function mostrarMesesFuertes(mesesFuertes) {
+        mesesFuertesList.innerHTML = '';
+        
+        if (mesesFuertes.length === 0) {
+            mesesFuertesList.innerHTML = '<div class="mes-fuerte-item mes-fuerte-vacio">No hay meses fuertes calculados</div>';
+        } else {
+            mesesFuertes.forEach((mes, index) => {
+                const mesElement = document.createElement('div');
+                mesElement.className = `mes-fuerte-item ${index % 2 === 0 ? 'mes-fuerte-par' : 'mes-fuerte-impar'}`;
+                
+                // Destacar el primer y último mes
+                if (index === 0) mesElement.classList.add('mes-fuerte-primero');
+                if (index === mesesFuertes.length - 1) mesElement.classList.add('mes-fuerte-ultimo');
+                
+                mesElement.innerHTML = `
+                    <span class="mes-numero">${mes}</span>
+                    <span class="mes-texto">${mes === 1 ? 'primer mes' : `mes ${mes}`}</span>
+                `;
+                
+                mesesFuertesList.appendChild(mesElement);
+            });
+            
+            // Agregar resumen
+            const resumenElement = document.createElement('div');
+            resumenElement.className = 'meses-fuertes-resumen';
+            resumenElement.innerHTML = `
+                <strong>Resumen:</strong> ${mesesFuertes.length} meses fuertes de ${parseInt(numMensualidades.value)} totales
+            `;
+            mesesFuertesList.appendChild(resumenElement);
+        }
+        
+        mesesFuertesPreview.style.display = 'block';
+    }
+
+    // Event Listeners
+    if (loteSelect) {
+        loteSelect.addEventListener('change', function() {
+            cargarConfiguracionCommeta(this.value);
+        });
+
+        // Cargar configuración si ya hay un lote seleccionado
+        if (loteSelect.value) {
+            cargarConfiguracionCommeta(loteSelect.value);
+        }
+    }
+
+    if (cantidadMesesFuertes) {
+        cantidadMesesFuertes.addEventListener('change', calcularMesesFuertes);
+        cantidadMesesFuertes.addEventListener('input', function() {
+            const totalMeses = parseInt(numMensualidades.value) || 0;
+            const cantidad = parseInt(this.value) || 0;
+            
+            if (totalMeses > 0 && cantidad > totalMeses) {
+                this.setCustomValidity(`Máximo ${totalMeses} meses fuertes`);
+            } else {
+                this.setCustomValidity('');
+            }
+        });
+    }
+
+    if (frecuenciaMesesFuertes) {
+        frecuenciaMesesFuertes.addEventListener('change', calcularMesesFuertes);
+        frecuenciaMesesFuertes.addEventListener('input', calcularMesesFuertes);
+    }
+
+    if (numMensualidades) {
+        numMensualidades.addEventListener('change', function() {
+            // Recalcular meses fuertes si ya hay una cantidad definida
+            if (cantidadMesesFuertes && cantidadMesesFuertes.value) {
+                setTimeout(calcularMesesFuertes, 100);
+            }
+        });
+    }
+
+    console.log('✅ SCRIPT COMMETA INICIALIZADO');
+});
+
+// Sobrescribir la función recalculate del script base para Commeta
+const originalRecalculate = window.recalculate;
+window.recalculateCommeta = function() {
+    // Tu lógica existente de recalculate para Commeta
+    console.log('🔧 Recalculando Commeta...');
+    
+    // Lógica de recálculo específica de Commeta aquí
+    if (typeof calcularMesesFuertes === 'function') {
+        calcularMesesFuertes();
+    }
+    
+    // Llamar a la función original si existe
+    if (typeof originalRecalculate === 'function') {
+        originalRecalculate();
+    }
+};
+</script>
+{% endblock %}

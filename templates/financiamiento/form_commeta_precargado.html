@@ -1,0 +1,2334 @@
+{% extends "base.html" %}
+
+{% block title %}Nuevo Financiamiento - Commeta Community{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+<style>
+:root {
+    --primary-gradient: linear-gradient(135deg, #2e8fcc 0%, #1e5f8c 100%);
+    --accent-gradient: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+    --commeta-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --text-primary: #2c3e50;
+    --text-secondary: #6c757d;
+    --glass-bg: rgba(255,255,255,0.15);
+    --glass-border: rgba(255,255,255,0.2);
+}
+
+.form-container {
+    background: var(--glass-bg);
+    border-radius: 25px;
+    backdrop-filter: blur(15px);
+    border: 1px solid var(--glass-border);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    padding: 2.5rem;
+    max-width: 900px;
+    margin: 2rem auto;
+    position: relative;
+    overflow: hidden;
+    animation: fadeInUp 0.8s ease both;
+}
+
+.commeta-badge {
+    background: var(--commeta-gradient);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 50px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-weight: 600;
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+    animation: pulse 2s ease-in-out infinite;
+}
+
+.commeta-badge i {
+    font-size: 1.2rem;
+    animation: rotate 3s linear infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+}
+
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.section-title {
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.75rem;
+    background: var(--commeta-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 1.5rem;
+    position: relative;
+    padding-bottom: 0.5rem;
+}
+
+.section-title::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 80px;
+    height: 4px;
+    background: var(--accent-gradient);
+    border-radius: 2px;
+}
+
+.proyecto-bloqueado {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+    border: 2px solid rgba(102, 126, 234, 0.2);
+    border-radius: 20px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.proyecto-bloqueado::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--commeta-gradient);
+}
+
+.proyecto-bloqueado h4 {
+    margin-bottom: 1.25rem;
+    color: #667eea;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.15rem;
+}
+
+.campo-bloqueado {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    color: #495057;
+    border: 2px solid #dee2e6;
+    padding: 0.85rem 1.25rem;
+    border-radius: 12px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.campo-bloqueado:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.configuracion-info {
+    background: linear-gradient(135deg, rgba(46, 143, 204, 0.05) 0%, rgba(30, 95, 140, 0.05) 100%);
+    border-radius: 20px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    border: 2px solid rgba(46, 143, 204, 0.15);
+    box-shadow: 0 5px 15px rgba(46, 143, 204, 0.08);
+}
+
+.configuracion-info h4 {
+    margin-bottom: 1.25rem;
+    color: #2e8fcc;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.15rem;
+}
+
+.config-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.config-item {
+    background: white;
+    padding: 0.75rem 1rem;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    border: 1px solid rgba(46, 143, 204, 0.1);
+    transition: all 0.3s ease;
+}
+
+.config-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(46, 143, 204, 0.15);
+    border-color: rgba(46, 143, 204, 0.3);
+}
+
+.config-label {
+    font-weight: 500;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.config-value {
+    font-weight: 700;
+    color: #2e8fcc;
+    font-size: 1.1rem;
+}
+
+.field-group {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    border-left: 4px solid #667eea;
+    background: rgba(240, 245, 255, 0.4);
+    border-radius: 20px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+}
+
+.field-group-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.field-group-title i {
+    color: #667eea;
+    font-size: 1.3rem;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+}
+
+.form-field {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-field label {
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
+}
+
+.form-field .form-control,
+.form-field select,
+.form-field input {
+    border-radius: 12px;
+    border: 2px solid rgba(102, 126, 234, 0.2);
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.form-field .form-control:focus,
+.form-field select:focus,
+.form-field input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.15);
+    transform: translateY(-1px);
+}
+
+.checkbox-container {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.85rem 1.25rem;
+    border-radius: 12px;
+    border: 2px solid rgba(102, 126, 234, 0.2);
+    background: white;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.checkbox-container:hover {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.1);
+    transform: translateY(-1px);
+}
+
+.checkbox-container input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    accent-color: #667eea;
+}
+
+.checkbox-label {
+    font-weight: 500;
+    color: var(--text-primary);
+    cursor: pointer;
+    margin: 0;
+}
+
+.help-text {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin-top: 0.5rem;
+    font-style: italic;
+}
+
+.commeta-section {
+    border-left-color: #ff6b6b;
+    background: rgba(255, 107, 107, 0.05);
+}
+
+.meses-fuertes-preview {
+    background: linear-gradient(135deg, rgba(255, 107, 107, 0.08) 0%, rgba(238, 90, 111, 0.08) 100%);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-top: 1.5rem;
+    border: 2px solid rgba(255, 107, 107, 0.2);
+}
+
+.meses-fuertes-preview h5 {
+    margin-bottom: 1rem;
+    color: #ff6b6b;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.meses-fuertes-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin: 1rem 0;
+}
+
+.mes-fuerte-item {
+    display: inline-flex;
+    align-items: center;
+    background: var(--accent-gradient);
+    color: white;
+    padding: 0.6rem 1rem;
+    border-radius: 50px;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+}
+
+.mes-fuerte-item:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 6px 16px rgba(255, 107, 107, 0.4);
+}
+
+.mes-fuerte-par {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+}
+
+.mes-fuerte-impar {
+    background: linear-gradient(135deg, #ff8e8e 0%, #ff7a7a 100%);
+}
+
+.mes-fuerte-primero {
+    background: linear-gradient(135deg, #4ecdc4 0%, #44bdb5 100%) !important;
+    transform: scale(1.08);
+    border: 2px solid #3db5ac;
+}
+
+.mes-fuerte-ultimo {
+    background: linear-gradient(135deg, #45b7af 0%, #3aa59d 100%) !important;
+    border: 2px solid #2a8c85;
+}
+
+.mes-numero {
+    font-weight: 700;
+    margin-right: 0.5rem;
+    font-size: 1.15em;
+}
+
+.mes-texto {
+    font-size: 0.85em;
+    opacity: 0.95;
+}
+
+.mes-fuerte-error {
+    background: linear-gradient(135deg, #ff4757 0%, #e84545 100%);
+    color: white;
+    padding: 1rem;
+    border-radius: 12px;
+    text-align: center;
+    font-weight: 600;
+}
+
+.mes-fuerte-vacio {
+    background: linear-gradient(135deg, #a4b0be 0%, #95a1ae 100%);
+    text-align: center;
+}
+
+.meses-fuertes-resumen {
+    margin-top: 1.25rem;
+    padding: 1rem;
+    background: white;
+    border-radius: 12px;
+    border-left: 4px solid #2e8fcc;
+    font-size: 0.95rem;
+    color: #495057;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.alert-warning {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffe8a1 100%);
+    border: 2px solid #ffc107;
+    border-radius: 12px;
+    padding: 0.85rem 1.25rem;
+    color: #856404;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 0.75rem;
+}
+
+.alert-warning i {
+    font-size: 1.2rem;
+}
+
+.submit-section {
+    text-align: center;
+    margin-top: 2.5rem;
+    padding-top: 1.5rem;
+    border-top: 2px solid rgba(102, 126, 234, 0.1);
+}
+
+.btn-save {
+    background: var(--commeta-gradient);
+    border: none;
+    color: white;
+    padding: 1rem 3rem;
+    font-size: 1.1rem;
+    border-radius: 50px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+}
+
+.btn-save:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 12px 28px rgba(102, 126, 234, 0.4);
+}
+
+.btn-cancel {
+    margin-left: 1rem;
+    padding: 1rem 2.5rem;
+    border-radius: 50px;
+    background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+    color: white;
+    border: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-cancel:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(108, 117, 125, 0.3);
+}
+
+.text-danger {
+    color: #dc3545;
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+    font-weight: 500;
+}
+
+@keyframes fadeInUp {
+    from { 
+        opacity: 0; 
+        transform: translateY(30px);
+    } 
+    to { 
+        opacity: 1; 
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 768px) {
+    .form-container {
+        padding: 1.5rem;
+        margin: 1rem;
+    }
+    
+    .form-row,
+    .config-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .section-title {
+        font-size: 1.5rem;
+    }
+    
+    .btn-save,
+    .btn-cancel {
+        display: block;
+        width: 100%;
+        margin: 0.5rem 0;
+    }
+}
+.alert-success {
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+    border: 2px solid #28a745;
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    color: #155724;
+}
+
+.alert-danger {
+    background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+    border: 2px solid #dc3545;
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    color: #721c24;
+}
+
+.btn-info {
+    background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+    border: none;
+    color: white;
+    padding: 1rem 2.5rem;
+    font-size: 1.1rem;
+    border-radius: 50px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 20px rgba(23, 162, 184, 0.3);
+}
+
+.btn-info:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 12px 28px rgba(23, 162, 184, 0.4);
+}
+
+.btn-info:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="commeta-badge">
+        <i class="fas fa-crown"></i>
+        Commeta Community - Financiamiento Pre-configurado
+    </div>
+
+    <h2 class="section-title">{% if object %}Editando{% else %}Nuevo{% endif %} Financiamiento Commeta</h2>
+    
+    <form method="post" novalidate id="financiamiento-form">
+        {% csrf_token %}
+        <!-- Agregar esto JUSTO después de la etiqueta <form> -->
+        {% if form.errors %}
+        <div class="alert alert-danger">
+            <h4><i class="fas fa-exclamation-triangle"></i> Errores en el formulario:</h4>
+            <ul>
+                {% for field in form %}
+                    {% if field.errors %}
+                        <li><strong>{{ field.label }}:</strong>
+                            <ul>
+                                {% for error in field.errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+                {% if form.non_field_errors %}
+                    <li><strong>Errores generales:</strong>
+                        <ul>
+                            {% for error in form.non_field_errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+        {% endif %}
+        
+
+        <!-- Proyecto Bloqueado -->
+        <div class="proyecto-bloqueado">
+            <h4>
+                <i class="fas fa-lock"></i> {% if object %}Editando{% else %}Nuevo{% endif %} Financiamiento Commeta
+            </h4>
+            <div class="form-row">
+                <div class="form-field">
+                    <label>Lotificación Commeta:</label>
+                    <div class="campo-bloqueado">
+                        <i class="fas fa-check-circle" style="color: #28a745;"></i>
+                        {{ proyecto_commeta_precargado.nombre }}
+                    </div>
+                    <!-- Para edición, usar el proyecto del objeto existente -->
+                    {% if object %}
+                        <input type="hidden" name="proyecto" value="{{ object.lote.proyecto.id }}">
+                    {% else %}
+                        <input type="hidden" name="proyecto" value="{{ proyecto_commeta_precargado.id }}">
+                    {% endif %}
+                </div>
+                
+                <div class="form-field">
+                    <label for="id_lote">Lote Commeta:</label>
+                    {{ form.lote }}
+                    {% if form.lote.errors %}
+                        <div class="text-danger">
+                            {% for error in form.lote.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    
+                    {% if not lotes_commeta %}
+                        <div class="alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            No hay lotes disponibles para este proyecto Commeta.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Información de configuración Commeta -->
+        <div class="configuracion-info" id="commeta-config-info" style="display: none;">
+            <h4>
+                <i class="fas fa-info-circle"></i> Configuración Commeta del Lote
+            </h4>
+            <div class="config-grid">
+                <div class="config-item">
+                    <span class="config-label">Zona</span>
+                    <span class="config-value" id="config-zona">-</span>
+                </div>
+                <div class="config-item">
+                    <span class="config-label">Precio Base</span>
+                    <span class="config-value" id="config-precio-base">-</span>
+                </div>
+                <div class="config-item">
+                    <span class="config-label">Apartado Sugerido</span>
+                    <span class="config-value" id="config-apartado">-</span>
+                </div>
+                <div class="config-item">
+                    <span class="config-label">Enganche Sugerido</span>
+                    <span class="config-value" id="config-enganche">-</span>
+                </div>
+                <div class="config-item">
+                    <span class="config-label">Total de Meses</span>
+                    <span class="config-value" id="config-total-meses">-</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sección de datos generales -->
+        <div class="field-group">
+            <div class="field-group-title">
+                <i class="fas fa-info-circle"></i> Datos Generales
+            </div>
+            <div class="form-row">
+                <div class="form-field">      
+                    {{ form.nombre_cliente.label_tag }}
+                    {{ form.nombre_cliente }}
+                    {% for err in form.nombre_cliente.errors %}<div class="text-danger">{{ err }}</div>{% endfor %}
+                </div>
+                <div class="form-field">
+                    {{ form.tipo_pago.label_tag }}
+                    {{ form.tipo_pago }}
+                    {% for err in form.tipo_pago.errors %}<div class="text-danger">{{ err }}</div>{% endfor %}
+                </div>
+                <div class="form-field">
+                    {{ form.precio_lote.label_tag }}
+                    {{ form.precio_lote }}
+                </div>
+                <div class="form-field">
+                    {{ form.apartado.label_tag }}
+                    {{ form.apartado }}
+                </div>
+            </div>
+            
+            <!-- Campos de estado del plan -->
+            <div class="form-row" style="margin-top: 1.5rem;">
+                <div class="form-field" id="es-cotizacion-field">
+                    <label class="checkbox-container">
+                        {{ form.es_cotizacion }}
+                        <span class="checkbox-label">{{ form.es_cotizacion.label }}</span>
+                    </label>
+                    {% if form.es_cotizacion.help_text %}
+                    <div class="help-text">{{ form.es_cotizacion.help_text }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-field">
+                    <label class="checkbox-container">
+                        {{ form.activo }}
+                        <span class="checkbox-label">{{ form.activo.label }}</span>
+                    </label>
+                    {% if form.activo.help_text %}
+                    <div class="help-text">{{ form.activo.help_text }}</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sección de financiamiento -->
+        <div class="field-group" id="financiamiento-section" style="display: none;">
+            <div class="field-group-title">
+                <i class="fas fa-wallet"></i> Financiamiento
+            </div>
+            <div class="form-row">
+                <div class="form-field pago-contado">
+                    {{ form.fecha_pago_completo.label_tag }}
+                    {{ form.fecha_pago_completo }}
+                </div>
+                <div class="form-field pago-contado">
+                    {{ form.monto_pago_completo.label_tag }}
+                    {{ form.monto_pago_completo }}
+                </div>
+
+                <div class="form-field pago-financiado">
+                    {{ form.enganche.label_tag }}
+                    {{ form.enganche }}
+                </div>
+                <div class="form-field pago-financiado">
+                    {{ form.fecha_enganche.label_tag }}
+                    {{ form.fecha_enganche }}
+                </div>
+                <div class="form-field pago-financiado">
+                    {{ form.num_mensualidades.label_tag }}
+                    {{ form.num_mensualidades }}
+                </div>
+                <div class="form-field pago-financiado">
+                    {{ form.monto_mensualidad.label_tag }}
+                    {{ form.monto_mensualidad }}
+                </div>
+                <div class="form-field pago-financiado">
+                    {{ form.fecha_primer_pago.label_tag }}
+                    {{ form.fecha_primer_pago }}
+                </div>
+                <div class="form-field pago-financiado">
+                    {{ form.fecha_ultimo_pago.label_tag }}
+                    {{ form.fecha_ultimo_pago }}
+                </div>
+                <!-- ✅ NUEVO: Campo visible para monto pago final -->
+                <div class="form-field pago-financiado">
+                    <label for="id_monto_pago_final_display">Monto pago final:</label>
+                    <input type="text" id="id_monto_pago_final_display" class="form-control">
+                    <div class="help-text">Monto del último pago (puede ser diferente a las mensualidades)</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sección de Tipo de Esquema -->
+        <div class="field-group">
+            <div class="field-group-title">
+                <i class="fas fa-cog"></i> Tipo de Esquema de Pagos
+            </div>
+            <div class="form-row">
+                <div class="form-field">
+                    <label for="id_tipo_esquema_display">Esquema:</label>
+                    <select id="id_tipo_esquema_display" class="form-control">
+                        <option value="mensualidades_fijas">Mensualidades Fijas</option>
+                        <option value="meses_fuertes">Meses Fuertes</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Sección de Meses Fuertes (se muestra/oculta según esquema) -->
+        <div class="field-group commeta-section" id="esquema-meses-fuertes-section" style="display: none;">
+            <div class="field-group-title">
+                <i class="fas fa-chart-line"></i> Configuración de Meses Fuertes
+            </div>
+            
+            <div class="form-row">
+                <div class="form-field">
+                    <label for="id_monto_mensualidad_normal_display">Mensualidad Normal:</label>
+                    <input type="text" id="id_monto_mensualidad_normal_display" class="form-control">
+                </div>
+                
+                <div class="form-field">
+                    {{ form.cantidad_meses_fuertes.label_tag }}
+                    {{ form.cantidad_meses_fuertes }}
+                    {% for err in form.cantidad_meses_fuertes.errors %}<div class="text-danger">{{ err }}</div>{% endfor %}
+                </div>
+                
+                <div class="form-field">
+                    {{ form.frecuencia_meses_fuertes.label_tag }}
+                    {{ form.frecuencia_meses_fuertes }}
+                    {% for err in form.frecuencia_meses_fuertes.errors %}<div class="text-danger">{{ err }}</div>{% endfor %}
+                </div>
+                
+                <div class="form-field">
+                    {{ form.monto_mes_fuerte.label_tag }}
+                    {{ form.monto_mes_fuerte }}
+                    {% for err in form.monto_mes_fuerte.errors %}<div class="text-danger">{{ err }}</div>{% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Botón de Validar antes del Submit -->
+        <div class="submit-section" style="border-top: none; padding-top: 0;">
+            <button type="button" id="btn-validar-estructura" class="btn btn-info" style="background: linear-gradient(135deg, #17a2b8 0%, #138496 100%); margin-right: 1rem;">
+                <i class="fas fa-check-circle"></i> Validar Estructura de Pagos
+            </button>
+        </div>
+
+        <!-- Panel de Resultados de Validación -->
+        <div id="validacion-resultado" style="display: none; margin: 2rem 0;">
+            <div class="meses-fuertes-preview">
+                <h5 id="validacion-titulo">
+                    <i class="fas fa-info-circle"></i> Resultado de Validación
+                </h5>
+                <div id="validacion-contenido"></div>
+            </div>
+        </div>
+
+        <!-- Campo oculto para tipo_esquema -->
+        <input type="hidden" id="id_tipo_esquema" name="tipo_esquema" value="{{ form.tipo_esquema.value|default:'mensualidades_fijas' }}">
+        <input type="hidden" id="id_monto_mensualidad_normal" name="monto_mensualidad_normal" value="{{ form.monto_mensualidad_normal.value|default:'' }}">
+        <input type="hidden" id="id_monto_pago_final" name="monto_pago_final" value="{{ form.monto_pago_final.value|default:'' }}">
+        <div class="submit-section">
+            <button type="submit" class="btn btn-save">
+                <i class="fas fa-save"></i> Guardar Financiamiento Commeta
+            </button>
+            <a href="{% url 'financiamiento:list' %}" class="btn btn-secondary btn-cancel">
+                <i class="fas fa-times"></i> Cancelar
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script src="https://cdn.jsdelivr.net/npm/autonumeric@4.6.0/dist/autoNumeric.min.js"></script>
+<script>
+// Prevenir ejecución múltiple
+if (!window.commetaScriptLoaded) {
+    window.commetaScriptLoaded = true;
+
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('🚀 INICIANDO COMMETA PRECARGADO - VERSIÓN MEJORADA');
+        
+        // =============================================
+        // VARIABLES GLOBALES
+        // =============================================
+        let configuracionCommeta = null;
+        let autoNumericInstances = {};
+        let isCalculating = false;
+        let userInputFields = new Set();
+        const esEdicion = {% if es_edicion %}true{% else %}false{% endif %};
+        console.log('🔍 Modo:', esEdicion ? 'EDICIÓN' : 'CREACIÓN');
+
+        const proyectoId = {{ proyecto_commeta_precargado.id|default:0 }};
+        
+        // =============================================
+        // ELEMENTOS DEL DOM (DECLARAR PRIMERO)
+        // =============================================
+        const loteSelect = document.getElementById('id_lote');
+        const tipoPagoSelect = document.getElementById('id_tipo_pago');
+        const configInfo = document.getElementById('commeta-config-info');
+        const financiamientoSection = document.getElementById('financiamiento-section');
+        const esCotizacionField = document.getElementById('es-cotizacion-field');
+        
+        // Elementos de tipo de esquema
+        const tipoEsquemaSelect = document.getElementById('id_tipo_esquema_display');
+        const tipoEsquemaHidden = document.getElementById('id_tipo_esquema');
+        const esquemaFijasSection = document.getElementById('esquema-fijas-section');
+        const esquemaMesesFuertesSection = document.getElementById('esquema-meses-fuertes-section');
+        const montoMensualidadNormalDisplay = document.getElementById('id_monto_mensualidad_normal_display');
+        const montoMensualidadNormalHidden = document.getElementById('id_monto_mensualidad_normal');
+        
+        // Elementos de validación
+        const btnValidar = document.getElementById('btn-validar-estructura');
+        const validacionResultado = document.getElementById('validacion-resultado');
+        const validacionContenido = document.getElementById('validacion-contenido');
+        const validacionTitulo = document.getElementById('validacion-titulo');
+
+        // =============================================
+        // CONFIGURACIÓN DE AUTONUMERIC
+        // =============================================
+        const autoNumericConfig = {
+            currencySymbol: '$',
+            digitGroupSeparator: ',',
+            decimalCharacter: '.',
+            decimalPlaces: 2,
+            unformatOnSubmit: true,
+            minimumValue: '0',
+            watchExternalChanges: false
+        };
+
+        const moneyFields = [
+            'id_precio_lote',
+            'id_apartado', 
+            'id_enganche',
+            'id_monto_pago_completo',
+            'id_monto_mensualidad',
+            'id_monto_mes_fuerte',
+            'id_monto_mensualidad_normal_display',  // ✅ AGREGADO
+            'id_monto_pago_final_display'  // ✅ AGREGADO
+        ];
+
+        const inputFields = [
+            'id_precio_lote',
+            'id_apartado', 
+            'id_enganche'
+        ];
+
+        const calculatedFields = [
+            'id_monto_pago_completo',
+            'id_monto_mensualidad'
+        ];
+
+        console.log('💰 Inicializando AutoNumeric para campos monetarios...');
+        
+        // Inicializar AutoNumeric
+        moneyFields.forEach(fieldId => {
+            const element = document.getElementById(fieldId);
+            if (element) {
+                console.log(`🔧 Procesando campo: ${fieldId}, tipo actual: ${element.type}`);
+                
+                // Cambiar type a text si es number
+                if (element.type === 'number') {
+                    console.log(`🔄 Cambiando type de number a text en: ${fieldId}`);
+                    element.type = 'text';
+                }
+                
+                try {
+                    const existingInstance = AutoNumeric.getAutoNumericElement(element);
+                    if (existingInstance) {
+                        console.log(`✅ AutoNumeric ya existe en ${fieldId}, reutilizando instancia`);
+                        autoNumericInstances[fieldId] = existingInstance;
+                        return;
+                    }
+                } catch (e) {
+                    // No existe instancia previa
+                }
+                
+                try {
+                    autoNumericInstances[fieldId] = new AutoNumeric(element, autoNumericConfig);
+                    console.log(`✅ AutoNumeric creado exitosamente en: ${fieldId}`);
+
+                    // Agregar eventos solo para campos de entrada
+                    if (inputFields.includes(fieldId)) {
+                        element.addEventListener('focus', () => {
+                            userInputFields.add(fieldId);
+                            console.log(`🎯 FOCUS en ${fieldId} - Campo marcado como "en uso"`);
+                        });
+                        
+                        element.addEventListener('blur', () => {
+                            console.log(`👋 BLUR en ${fieldId} - Campo desmarcado`);
+                            userInputFields.delete(fieldId);
+                            setTimeout(() => recalculate(), 100);
+                        });
+                    }
+                } catch (error) {
+                    console.error(`❌ ERROR al crear AutoNumeric en ${fieldId}:`, error);
+                }
+            }
+        });
+
+        function calcularMesesFuertesInicio(totalMeses, cantidadMesesFuertes, frecuencia) {
+            console.log('🧮 Calculando meses fuertes:', { totalMeses, cantidadMesesFuertes, frecuencia });
+            
+            if (cantidadMesesFuertes >= totalMeses) {
+                return Array.from({length: totalMeses}, (_, i) => i + 1);
+            }
+            
+            if (frecuencia) {
+                const mesesFuertes = [];
+                let mesActual = frecuencia;
+                while (mesesFuertes.length < cantidadMesesFuertes && mesActual <= totalMeses) {
+                    mesesFuertes.push(mesActual);
+                    mesActual += frecuencia;
+                }
+                return mesesFuertes;
+            } else {
+                if (cantidadMesesFuertes === 0) return [];
+                
+                const espaciado = Math.max(1, Math.floor(totalMeses / cantidadMesesFuertes));
+                const mesesFuertes = [];
+                
+                for (let i = 0; i < cantidadMesesFuertes; i++) {
+                    const mes = Math.min((i * espaciado) + 1, totalMeses);
+                    mesesFuertes.push(mes);
+                }
+                
+                let mesesUnicos = [...new Set(mesesFuertes)].filter(mes => mes <= totalMeses).sort((a, b) => a - b);
+                
+                while (mesesUnicos.length < cantidadMesesFuertes && mesesUnicos[mesesUnicos.length - 1] < totalMeses) {
+                    const nuevoMes = Math.min(mesesUnicos[mesesUnicos.length - 1] + 1, totalMeses);
+                    if (!mesesUnicos.includes(nuevoMes)) {
+                        mesesUnicos.push(nuevoMes);
+                    }
+                }
+                
+                return mesesUnicos.slice(0, cantidadMesesFuertes).sort((a, b) => a - b);
+            }
+        }
+
+        // =============================================
+        // FUNCIONES AUXILIARES
+        // =============================================
+        
+        function debugLog(message, data = null) {
+            console.log(`🛠 DEBUG: ${message}`, data ? data : '');
+        }
+
+        function getNumericValue(fieldId) {
+            const instance = autoNumericInstances[fieldId];
+            if (instance) {
+                return parseFloat(instance.getNumericString()) || 0;
+            }
+            
+            const element = document.getElementById(fieldId);
+            return parseFloat(element?.value?.replace(/[$,]/g, '') || 0);
+        }
+
+        function setCalculatedValue(fieldId, value) {
+            if (userInputFields.has(fieldId)) {
+                debugLog(`🚫 BLOQUEADO - Usuario escribiendo en ${fieldId}`);
+                return;
+            }
+            
+            if (!calculatedFields.includes(fieldId)) {
+                debugLog(`🚫 BLOQUEADO - ${fieldId} no es un campo calculado`);
+                return;
+            }
+            
+            const instance = autoNumericInstances[fieldId];
+            if (instance) {
+                isCalculating = true;
+                instance.set(value);
+                setTimeout(() => { isCalculating = false; }, 50);
+            } else {
+                const element = document.getElementById(fieldId);
+                if (element) element.value = value;
+            }
+        }
+
+        function setAutoNumericValue(fieldId, value) {
+            const element = document.getElementById(fieldId);
+            if (element && value) {
+                try {
+                    const instance = autoNumericInstances[fieldId];
+                    if (instance) {
+                        instance.set(parseFloat(value));
+                        console.log(`✅ ${fieldId} precargado: ${value}`);
+                    } else {
+                        element.value = value;
+                        console.log(`✅ ${fieldId} precargado directamente: ${value}`);
+                    }
+                } catch (error) {
+                    console.error(`❌ Error precargando ${fieldId}:`, error);
+                }
+            }
+        }
+
+        function limpiarCamposConfiguracion() {
+            console.log('🧹 Limpiando campos específicos antes de cargar nueva configuración');
+            
+            // Limpiar solo monto_pago_final
+            const montoPagoFinalInstance = autoNumericInstances['id_monto_pago_final_display'];
+            const montoPagoFinalHidden = document.getElementById('id_monto_pago_final');
+            
+            if (montoPagoFinalInstance) {
+                montoPagoFinalInstance.set(0);
+                console.log('✅ Monto pago final display limpiado');
+            }
+            
+            if (montoPagoFinalHidden) {
+                montoPagoFinalHidden.value = '';
+                console.log('✅ Monto pago final hidden limpiado');
+            }
+            
+            // Limpiar campos de meses fuertes
+            const camposMesesFuertes = [
+                'id_cantidad_meses_fuertes',
+                'id_frecuencia_meses_fuertes',
+                'id_monto_mes_fuerte',
+                'id_monto_mensualidad_normal_display'
+            ];
+            
+            camposMesesFuertes.forEach(campoId => {
+                const instance = autoNumericInstances[campoId];
+                if (instance) {
+                    instance.set(0);
+                } else {
+                    const campo = document.getElementById(campoId);
+                    if (campo) {
+                        campo.value = '';
+                    }
+                }
+            });
+            
+            // Limpiar monto_mensualidad_normal hidden
+            const montoNormalHidden = document.getElementById('id_monto_mensualidad_normal');
+            if (montoNormalHidden) {
+                montoNormalHidden.value = '';
+            }
+            
+            console.log('✅ Campos específicos limpiados');
+        }
+
+        // =============================================
+        // SISTEMA DE RECÁLCULO EN CASCADA
+        // =============================================
+
+        // Variables para almacenar valores originales de la configuración
+        let valoresOriginales = {
+            precio_lote: 0,
+            apartado: 0,
+            enganche: 0,
+            monto_mensualidad: 0,
+            monto_mensualidad_normal: 0,
+            monto_mes_fuerte: 0,
+            monto_pago_final: 0,
+            num_mensualidades: 0,
+            cantidad_meses_fuertes: 0
+        };
+
+        function guardarValoresOriginales(config) {
+            valoresOriginales = {
+                precio_lote: parseFloat(config.precio_base) || 0,
+                apartado: parseFloat(config.apartado_sugerido) || 0,
+                enganche: parseFloat(config.enganche_sugerido) || 0,
+                monto_mensualidad: parseFloat(config.mensualidad_sugerida) || 0,
+                monto_mensualidad_normal: parseFloat(config.monto_mensualidad_normal) || 0,
+                monto_mes_fuerte: parseFloat(config.monto_mes_fuerte) || 0,
+                monto_pago_final: parseFloat(config.monto_pago_final) || 0,
+                num_mensualidades: parseInt(config.total_meses) || 0,
+                cantidad_meses_fuertes: parseInt(config.cantidad_meses_fuertes_sugerida) || 0,
+                frecuencia_meses_fuertes: parseInt(config.frecuencia_meses_fuertes) || 0,
+                tipo_esquema: config.tipo_esquema || 'mensualidades_fijas'
+            };
+            console.log('💾 Valores originales guardados:', valoresOriginales);
+        }
+
+        function recalcularEnCascada(campoModificado) {
+            if (isCalculating) return;
+            isCalculating = true;
+            
+            console.log(`🔄 Recalculando en cascada desde: ${campoModificado}`);
+            
+            const tipoEsquema = tipoEsquemaHidden.value;
+            const precioLote = getNumericValue('id_precio_lote');
+            const apartado = getNumericValue('id_apartado');
+            const enganche = getNumericValue('id_enganche');
+            const numMensualidades = parseInt(document.getElementById('id_num_mensualidades').value) || 0;
+            
+            // Calcular el total que debe financiarse
+            const totalAFinanciar = precioLote - apartado - enganche;
+            
+            console.log('📊 Valores actuales:', { precioLote, apartado, enganche, totalAFinanciar, numMensualidades });
+            
+            if (campoModificado === 'apartado') {
+                // Si cambió el apartado, ajustar el enganche
+                recalcularEnganche(precioLote, apartado);
+            } else if (campoModificado === 'enganche' || 
+                    campoModificado === 'precio_lote' || 
+                    campoModificado === 'num_mensualidades' ||
+                    campoModificado === 'cantidad_meses_fuertes' ||  // ✅ NUEVO
+                    campoModificado === 'frecuencia_meses_fuertes') { // ✅ NUEVO
+                // Si cambió enganche, precio, mensualidades o configuración de meses fuertes, recalcular
+                recalcularMensualidades(totalAFinanciar, numMensualidades, tipoEsquema);
+            }
+            
+            setTimeout(() => {
+                isCalculating = false;
+            }, 100);
+        }
+
+        function recalcularEnganche(precioLote, nuevoApartado) {
+            // Calcular la diferencia entre el apartado original y el nuevo
+            const diferenciaApartado = nuevoApartado - valoresOriginales.apartado;
+            
+            // Ajustar el enganche restando la diferencia
+            let nuevoEnganche = valoresOriginales.enganche - diferenciaApartado;
+            
+            // El enganche no puede ser negativo ni mayor al total restante
+            const maxEnganche = precioLote - nuevoApartado;
+            nuevoEnganche = Math.max(0, Math.min(nuevoEnganche, maxEnganche));
+            
+            console.log('💰 Recalculando enganche:', {
+                apartadoOriginal: valoresOriginales.apartado,
+                nuevoApartado,
+                diferenciaApartado,
+                engancheOriginal: valoresOriginales.enganche,
+                nuevoEnganche
+            });
+            
+            // Actualizar el campo de enganche
+            const instanceEnganche = autoNumericInstances['id_enganche'];
+            if (instanceEnganche) {
+                instanceEnganche.set(nuevoEnganche);
+            }
+            
+            // Ahora recalcular mensualidades con el nuevo enganche
+            const numMensualidades = parseInt(document.getElementById('id_num_mensualidades').value) || 0;
+            const totalAFinanciar = precioLote - nuevoApartado - nuevoEnganche;
+            const tipoEsquema = tipoEsquemaHidden.value;
+            
+            recalcularMensualidades(totalAFinanciar, numMensualidades, tipoEsquema);
+        }
+
+        function recalcularMensualidades(totalAFinanciar, numMensualidades, tipoEsquema) {
+            if (totalAFinanciar <= 0 || numMensualidades <= 0) {
+                console.log('⚠️ No se puede recalcular: valores inválidos');
+                return;
+            }
+            
+            console.log('📐 Recalculando mensualidades:', { totalAFinanciar, numMensualidades, tipoEsquema });
+            
+            if (tipoEsquema === 'mensualidades_fijas') {
+                recalcularMensualidadesFijas(totalAFinanciar, numMensualidades);
+            } else if (tipoEsquema === 'meses_fuertes') {
+                recalcularMesesFuertes(totalAFinanciar, numMensualidades);
+            }
+        }
+
+        function recalcularMensualidadesFijas(totalAFinanciar, numMensualidades) {
+            console.log('💰 Recalculando mensualidades fijas:', { totalAFinanciar, numMensualidades });
+            
+            let montoMensualidad;
+            let montoPagoFinal;
+            
+            // Determinar si tenemos valores originales de referencia
+            const tieneValoresOriginales = valoresOriginales.monto_mensualidad > 0;
+            
+            if (tieneValoresOriginales && valoresOriginales.monto_pago_final > 0) {
+                // =============================================
+                // CASO 1: Hay pago final diferente en la configuración original
+                // =============================================
+                
+                console.log('📐 Usando proporción de configuración original con pago final diferente');
+                
+                // Calcular la proporción original entre mensualidad y pago final
+                const totalOriginal = (valoresOriginales.monto_mensualidad * (valoresOriginales.num_mensualidades - 1)) + 
+                                    valoresOriginales.monto_pago_final;
+                
+                const proporcionMensualidad = valoresOriginales.monto_mensualidad / (totalOriginal / valoresOriginales.num_mensualidades);
+                const proporcionPagoFinal = valoresOriginales.monto_pago_final / (totalOriginal / valoresOriginales.num_mensualidades);
+                
+                console.log('📊 Proporciones:', { proporcionMensualidad, proporcionPagoFinal });
+                
+                // Aplicar proporciones al nuevo total
+                const mensualidadBase = totalAFinanciar / numMensualidades;
+                const mensualidadObjetivo = mensualidadBase * proporcionMensualidad;
+                const pagoFinalObjetivo = mensualidadBase * proporcionPagoFinal;
+                
+                // Redondear mensualidad hacia abajo a la centena más cercana
+                montoMensualidad = Math.floor(mensualidadObjetivo / 100) * 100;
+                
+                // Calcular pago final para cuadrar exactamente
+                montoPagoFinal = totalAFinanciar - (montoMensualidad * (numMensualidades - 1));
+                
+                console.log('💵 Calculado con proporción:', { montoMensualidad, montoPagoFinal });
+                
+            } else if (tieneValoresOriginales && valoresOriginales.monto_pago_final === 0) {
+                // =============================================
+                // CASO 2: Mensualidades todas iguales en configuración original
+                // =============================================
+                
+                console.log('📐 Configuración original con mensualidades iguales');
+                
+                const mensualidadExacta = totalAFinanciar / numMensualidades;
+                
+                // Redondear hacia abajo a la centena más cercana
+                montoMensualidad = Math.floor(mensualidadExacta / 100) * 100;
+                
+                // El pago final absorbe la diferencia
+                montoPagoFinal = totalAFinanciar - (montoMensualidad * (numMensualidades - 1));
+                
+                console.log('💵 Mensualidades iguales:', { montoMensualidad, montoPagoFinal });
+                
+            } else {
+                // =============================================
+                // CASO 3: Sin valores originales, calcular distribución óptima
+                // =============================================
+                
+                console.log('📐 Sin valores originales, calculando distribución óptima');
+                
+                const mensualidadExacta = totalAFinanciar / numMensualidades;
+                
+                // Estrategia: mensualidades pequeñas y pago final mayor
+                montoMensualidad = Math.floor(mensualidadExacta / 100) * 100 - 100;
+                
+                // Asegurar que la mensualidad no sea muy pequeña
+                if (montoMensualidad < mensualidadExacta * 0.7) {
+                    montoMensualidad = Math.floor(mensualidadExacta * 0.85 / 100) * 100;
+                }
+                
+                montoPagoFinal = totalAFinanciar - (montoMensualidad * (numMensualidades - 1));
+                
+                console.log('💵 Distribución óptima:', { montoMensualidad, montoPagoFinal });
+            }
+            
+            // =============================================
+            // VALIDACIONES
+            // =============================================
+            
+            // Asegurar que el pago final sea positivo y razonable
+            if (montoPagoFinal <= 0) {
+                console.log('⚠️ Pago final negativo o cero, ajustando...');
+                montoMensualidad = Math.floor((totalAFinanciar / numMensualidades) / 100) * 100 - 100;
+                montoPagoFinal = totalAFinanciar - (montoMensualidad * (numMensualidades - 1));
+            }
+            
+            // Si el pago final es excesivamente grande comparado con las mensualidades
+            if (montoPagoFinal > montoMensualidad * 3) {
+                console.log('⚠️ Pago final muy grande, redistribuyendo...');
+                
+                // Calcular una distribución más equilibrada
+                const pagoFinalObjetivo = montoMensualidad * 1.5;
+                const totalSinFinal = totalAFinanciar - pagoFinalObjetivo;
+                montoMensualidad = Math.floor((totalSinFinal / (numMensualidades - 1)) / 100) * 100;
+                montoPagoFinal = totalAFinanciar - (montoMensualidad * (numMensualidades - 1));
+            }
+            
+            // Si el pago final es muy pequeño comparado con las mensualidades
+            if (montoPagoFinal < montoMensualidad * 0.5 && montoPagoFinal > 0) {
+                console.log('⚠️ Pago final muy pequeño, ajustando...');
+                
+                // Reducir un poco las mensualidades para aumentar el pago final
+                montoMensualidad = Math.floor(montoMensualidad * 0.95 / 100) * 100;
+                montoPagoFinal = totalAFinanciar - (montoMensualidad * (numMensualidades - 1));
+            }
+            
+            console.log('✅ Mensualidades fijas finales:', {
+                montoMensualidad: montoMensualidad.toFixed(2),
+                montoPagoFinal: montoPagoFinal.toFixed(2),
+                totalCalculado: ((montoMensualidad * (numMensualidades - 1)) + montoPagoFinal).toFixed(2),
+                totalEsperado: totalAFinanciar.toFixed(2)
+            });
+            
+            // =============================================
+            // ACTUALIZAR CAMPOS
+            // =============================================
+            
+            const instanceMensualidad = autoNumericInstances['id_monto_mensualidad'];
+            if (instanceMensualidad) {
+                instanceMensualidad.set(montoMensualidad);
+            }
+            
+            const instancePagoFinal = autoNumericInstances['id_monto_pago_final_display'];
+            const hiddenPagoFinal = document.getElementById('id_monto_pago_final');
+            if (instancePagoFinal) {
+                instancePagoFinal.set(montoPagoFinal);
+            }
+            if (hiddenPagoFinal) {
+                hiddenPagoFinal.value = montoPagoFinal.toFixed(2);
+            }
+            
+            console.log('✅ Mensualidades fijas recalculadas completamente');
+        }
+
+        function recalcularMesesFuertes(totalAFinanciar, numMensualidades) {
+            const cantidadMesesFuertes = parseInt(document.getElementById('id_cantidad_meses_fuertes').value) || 0;
+            const frecuencia = parseInt(document.getElementById('id_frecuencia_meses_fuertes').value) || 0;
+            
+            if (cantidadMesesFuertes <= 0) {
+                console.log('⚠️ No se puede recalcular meses fuertes: cantidad inválida');
+                return;
+            }
+            
+            if (cantidadMesesFuertes > numMensualidades) {
+                console.log('⚠️ Cantidad de meses fuertes excede el total de mensualidades');
+                return;
+            }
+            
+            console.log('📊 Calculando meses fuertes:', {
+                totalAFinanciar,
+                numMensualidades,
+                cantidadMesesFuertes,
+                frecuencia
+            });
+            
+            // Calcular qué meses serán fuertes
+            const mesesFuertesCalculados = calcularMesesFuertesInicio(numMensualidades, cantidadMesesFuertes, frecuencia);
+            const ultimoMesEsFuerte = mesesFuertesCalculados.includes(numMensualidades);
+            const mesesNormales = numMensualidades - cantidadMesesFuertes;
+            
+            console.log('📅 Meses fuertes calculados:', mesesFuertesCalculados);
+            console.log('🔚 ¿Último mes es fuerte?', ultimoMesEsFuerte);
+            console.log('📊 Meses normales:', mesesNormales);
+            
+            let montoNormal, montoFuerte, montoPagoFinal;
+            
+            // =============================================
+            // ESTRATEGIA: Calcular proporción óptima
+            // =============================================
+            
+            // Determinar si tenemos valores originales de referencia
+            const tieneValoresOriginales = valoresOriginales.monto_mensualidad_normal > 0 && 
+                                        valoresOriginales.monto_mes_fuerte > 0 &&
+                                        valoresOriginales.cantidad_meses_fuertes > 0;
+            
+            let proporcion;
+            
+            if (tieneValoresOriginales) {
+                // Usar proporción de la configuración original
+                proporcion = valoresOriginales.monto_mes_fuerte / valoresOriginales.monto_mensualidad_normal;
+                console.log('📐 Usando proporción de configuración original:', proporcion.toFixed(2));
+            } else {
+                // Proporción por defecto basada en análisis de tus datos
+                proporcion = 5; // Meses fuertes son ~5x los normales
+                console.log('📐 Usando proporción por defecto:', proporcion);
+            }
+            
+            // =============================================
+            // CÁLCULO BASADO EN SI EL ÚLTIMO MES ES FUERTE
+            // =============================================
+            
+            if (ultimoMesEsFuerte) {
+                // CASO 1: Último mes es fuerte
+                // Formula: totalAFinanciar = (mesesNormales × montoNormal) + (mesesFuertes × montoFuerte)
+                // Donde: montoFuerte = montoNormal × proporción
+                // Entonces: totalAFinanciar = (mesesNormales × montoNormal) + (mesesFuertes × montoNormal × proporción)
+                // totalAFinanciar = montoNormal × (mesesNormales + mesesFuertes × proporción)
+                
+                const divisor = mesesNormales + (cantidadMesesFuertes * proporcion);
+                const montoNormalCalculado = totalAFinanciar / divisor;
+                
+                // Redondear montoNormal hacia abajo a la centena
+                montoNormal = Math.floor(montoNormalCalculado / 100) * 100;
+                
+                // Calcular montoFuerte manteniendo la proporción
+                montoFuerte = Math.round(montoNormal * proporcion / 100) * 100;
+                
+                // Calcular cuánto llevamos con estos montos
+                const totalSinAjuste = (montoNormal * mesesNormales) + (montoFuerte * (cantidadMesesFuertes - 1));
+                
+                // El último pago absorbe la diferencia
+                montoPagoFinal = totalAFinanciar - totalSinAjuste;
+                
+                console.log('✅ CASO: Último mes FUERTE');
+                console.log('💰 Cálculos:', {
+                    divisor,
+                    montoNormalCalculado: montoNormalCalculado.toFixed(2),
+                    montoNormal,
+                    montoFuerte,
+                    totalSinAjuste: totalSinAjuste.toFixed(2),
+                    montoPagoFinal: montoPagoFinal.toFixed(2)
+                });
+                
+            } else {
+                // CASO 2: Último mes es normal (tiene pago final diferente)
+                // Formula: totalAFinanciar = ((mesesNormales-1) × montoNormal) + (mesesFuertes × montoFuerte) + pagoFinal
+                
+                const mesesNormalesSinUltimo = mesesNormales - 1;
+                
+                // Dejar espacio razonable para el pago final (aproximadamente 1-2 mensualidades normales)
+                const espacioParaFinal = totalAFinanciar * 0.05; // 5% para el pago final
+                const totalParaDistribuir = totalAFinanciar - espacioParaFinal;
+                
+                const divisor = mesesNormalesSinUltimo + (cantidadMesesFuertes * proporcion);
+                const montoNormalCalculado = totalParaDistribuir / divisor;
+                
+                // Redondear
+                montoNormal = Math.floor(montoNormalCalculado / 100) * 100;
+                montoFuerte = Math.round(montoNormal * proporcion / 100) * 100;
+                
+                // Calcular el pago final exacto
+                const totalCalculado = (montoNormal * mesesNormalesSinUltimo) + (montoFuerte * cantidadMesesFuertes);
+                montoPagoFinal = totalAFinanciar - totalCalculado;
+                
+                console.log('✅ CASO: Último mes NORMAL');
+                console.log('💰 Cálculos:', {
+                    mesesNormalesSinUltimo,
+                    espacioParaFinal: espacioParaFinal.toFixed(2),
+                    divisor,
+                    montoNormalCalculado: montoNormalCalculado.toFixed(2),
+                    montoNormal,
+                    montoFuerte,
+                    totalCalculado: totalCalculado.toFixed(2),
+                    montoPagoFinal: montoPagoFinal.toFixed(2)
+                });
+            }
+            
+            // =============================================
+            // VALIDACIONES Y AJUSTES FINALES
+            // =============================================
+            
+            // 1. Asegurar que ningún monto sea negativo
+            if (montoNormal <= 0 || montoFuerte <= 0 || montoPagoFinal <= 0) {
+                console.log('⚠️ Valores negativos o cero detectados, recalculando de forma segura...');
+                
+                // Método de respaldo: distribución simple
+                const promedioMensual = totalAFinanciar / numMensualidades;
+                montoNormal = Math.floor(promedioMensual * 0.25 / 100) * 100; // 25% del promedio
+                
+                if (montoNormal < 100) montoNormal = 100; // Mínimo $100
+                
+                montoFuerte = montoNormal * proporcion;
+                
+                if (ultimoMesEsFuerte) {
+                    const totalSinFinal = (montoNormal * mesesNormales) + (montoFuerte * (cantidadMesesFuertes - 1));
+                    montoPagoFinal = totalAFinanciar - totalSinFinal;
+                } else {
+                    const totalSinFinal = (montoNormal * (mesesNormales - 1)) + (montoFuerte * cantidadMesesFuertes);
+                    montoPagoFinal = totalAFinanciar - totalSinFinal;
+                }
+                
+                console.log('✅ Recalculado con método de respaldo');
+            }
+            
+            // 2. Validar que el pago final esté en rango razonable
+            const limiteInferior = ultimoMesEsFuerte ? montoFuerte * 0.3 : montoNormal * 0.3;
+            const limiteSuperior = ultimoMesEsFuerte ? montoFuerte * 2.5 : montoFuerte * 1.5;
+            
+            if (montoPagoFinal < limiteInferior || montoPagoFinal > limiteSuperior) {
+                console.log('⚠️ Pago final fuera de rango, ajustando distribución...');
+                
+                // Objetivo: pago final entre normal y fuerte
+                const pagoFinalObjetivo = ultimoMesEsFuerte ? montoFuerte : (montoNormal + montoFuerte) / 2;
+                const totalSinFinal = totalAFinanciar - pagoFinalObjetivo;
+                
+                if (ultimoMesEsFuerte) {
+                    // Recalcular con pago final objetivo
+                    const divisor = mesesNormales + ((cantidadMesesFuertes - 1) * proporcion);
+                    montoNormal = Math.floor((totalSinFinal / divisor) / 100) * 100;
+                    montoFuerte = Math.round(montoNormal * proporcion / 100) * 100;
+                    montoPagoFinal = totalAFinanciar - (montoNormal * mesesNormales) - (montoFuerte * (cantidadMesesFuertes - 1));
+                } else {
+                    const divisor = (mesesNormales - 1) + (cantidadMesesFuertes * proporcion);
+                    montoNormal = Math.floor((totalSinFinal / divisor) / 100) * 100;
+                    montoFuerte = Math.round(montoNormal * proporcion / 100) * 100;
+                    montoPagoFinal = totalAFinanciar - (montoNormal * (mesesNormales - 1)) - (montoFuerte * cantidadMesesFuertes);
+                }
+                
+                console.log('✅ Pago final ajustado a rango razonable');
+            }
+            
+            // =============================================
+            // VERIFICACIÓN FINAL
+            // =============================================
+            
+            const totalCalculadoFinal = ultimoMesEsFuerte 
+                ? (montoNormal * mesesNormales) + (montoFuerte * (cantidadMesesFuertes - 1)) + montoPagoFinal
+                : (montoNormal * (mesesNormales - 1)) + (montoFuerte * cantidadMesesFuertes) + montoPagoFinal;
+            
+            const diferencia = Math.abs(totalCalculadoFinal - totalAFinanciar);
+            
+            console.log('📊 VERIFICACIÓN FINAL:');
+            console.log('   • Monto Normal:', montoNormal.toFixed(2));
+            console.log('   • Monto Fuerte:', montoFuerte.toFixed(2));
+            console.log('   • Pago Final:', montoPagoFinal.toFixed(2));
+            console.log('   • Total Calculado:', totalCalculadoFinal.toFixed(2));
+            console.log('   • Total Esperado:', totalAFinanciar.toFixed(2));
+            console.log('   • Diferencia:', diferencia.toFixed(2));
+            
+            if (diferencia > 1) {
+                console.warn('⚠️ Advertencia: Diferencia mayor a $1.00');
+            } else {
+                console.log('✅ Cálculo exacto dentro del margen de error');
+            }
+            
+            // =============================================
+            // ACTUALIZAR CAMPOS EN LA INTERFAZ
+            // =============================================
+            
+            const instanceNormal = autoNumericInstances['id_monto_mensualidad_normal_display'];
+            if (instanceNormal) {
+                instanceNormal.set(montoNormal);
+            }
+            if (montoMensualidadNormalHidden) {
+                montoMensualidadNormalHidden.value = montoNormal.toFixed(2);
+            }
+            
+            const instanceFuerte = autoNumericInstances['id_monto_mes_fuerte'];
+            if (instanceFuerte) {
+                instanceFuerte.set(montoFuerte);
+            }
+            
+            const instancePagoFinal = autoNumericInstances['id_monto_pago_final_display'];
+            const hiddenPagoFinal = document.getElementById('id_monto_pago_final');
+            if (instancePagoFinal) {
+                instancePagoFinal.set(montoPagoFinal);
+            }
+            if (hiddenPagoFinal) {
+                hiddenPagoFinal.value = montoPagoFinal.toFixed(2);
+            }
+            
+            console.log('✅ Meses fuertes recalculados completamente');
+        }
+
+        // =============================================
+        // MANEJO DE TIPO DE ESQUEMA
+        // =============================================
+
+        function toggleEsquemaSections() {
+            const tipoEsquema = tipoEsquemaSelect.value;
+            debugLog(`📋 Cambiando a esquema: ${tipoEsquema}`);
+            
+            tipoEsquemaHidden.value = tipoEsquema;
+            
+            // ✅ CORREGIDO: Ya no existe esquemaFijasSection
+            if (tipoEsquema === 'mensualidades_fijas') {
+                esquemaMesesFuertesSection.style.display = 'none';
+                
+                // Limpiar campos de meses fuertes
+                const camposMesesFuertes = [
+                    'id_cantidad_meses_fuertes',
+                    'id_frecuencia_meses_fuertes',
+                    'id_monto_mes_fuerte',
+                    'id_monto_mensualidad_normal_display'
+                ];
+                
+                camposMesesFuertes.forEach(campoId => {
+                    const campo = document.getElementById(campoId);
+                    if (campo) {
+                        if (autoNumericInstances[campoId]) {
+                            autoNumericInstances[campoId].set(0);
+                        } else {
+                            campo.value = '';
+                        }
+                    }
+                });
+                
+                // Limpiar hidden
+                if (montoMensualidadNormalHidden) {
+                    montoMensualidadNormalHidden.value = '';
+                }
+                
+                debugLog('✅ Esquema MENSUALIDADES FIJAS activado');
+                
+            } else if (tipoEsquema === 'meses_fuertes') {
+                esquemaMesesFuertesSection.style.display = 'block';
+                
+                // ✅ NUEVO: Limpiar/resetear monto_mensualidad cuando es meses fuertes
+                const montoMensualidadField = document.getElementById('id_monto_mensualidad');
+                if (montoMensualidadField) {
+                    const instance = autoNumericInstances['id_monto_mensualidad'];
+                    if (instance) {
+                        instance.set(0);
+                    } else {
+                        montoMensualidadField.value = '';
+                    }
+                    debugLog('✅ Monto mensualidad limpiado para esquema meses fuertes');
+                }
+                
+                debugLog('✅ Esquema MESES FUERTES activado');
+            }
+        }
+
+        // Evento para cambio de tipo de esquema
+        if (tipoEsquemaSelect) {
+            tipoEsquemaSelect.addEventListener('change', toggleEsquemaSections);
+        }
+
+        // Sincronizar monto_mensualidad_normal entre display y hidden
+        if (montoMensualidadNormalDisplay) {
+            montoMensualidadNormalDisplay.addEventListener('change', function() {
+                const instance = autoNumericInstances['id_monto_mensualidad_normal_display'];
+                if (instance) {
+                    montoMensualidadNormalHidden.value = instance.getNumericString();
+                }
+            });
+        }
+        // ✅ NUEVO: Sincronizar monto_pago_final entre display y hidden
+        const montoPagoFinalDisplay = document.getElementById('id_monto_pago_final_display');
+        const montoPagoFinalHidden = document.getElementById('id_monto_pago_final');
+
+        if (montoPagoFinalDisplay) {
+            montoPagoFinalDisplay.addEventListener('change', function() {
+                const instance = autoNumericInstances['id_monto_pago_final_display'];
+                if (instance) {
+                    montoPagoFinalHidden.value = instance.getNumericString();
+                }
+            });
+        }
+
+        // =============================================
+        // FUNCIÓN DE VISIBILIDAD DE CAMPOS
+        // =============================================
+        
+        function toggleFieldsVisibility() {
+            const tipo = tipoPagoSelect.value;
+            debugLog(`🔀 Cambiando visibilidad de campos para tipo: ${tipo}`);
+            
+            if (!tipo) {
+                financiamientoSection.style.display = 'none';
+                esCotizacionField.style.display = 'none';
+                esquemaMesesFuertesSection.style.display = 'none';
+                return;
+            }
+            
+            financiamientoSection.style.display = 'block';
+            
+            const contadoFields = document.querySelectorAll('.pago-contado');
+            const financiadoFields = document.querySelectorAll('.pago-financiado');
+            
+            if (tipo === 'contado') {
+                contadoFields.forEach(el => el.style.display = 'block');
+                financiadoFields.forEach(el => el.style.display = 'none');
+                
+                esCotizacionField.style.display = 'none';
+                esquemaMesesFuertesSection.style.display = 'none';
+                
+                const esCotizacionCheckbox = document.getElementById('id_es_cotizacion');
+                if (esCotizacionCheckbox) {
+                    esCotizacionCheckbox.checked = false;
+                    esCotizacionCheckbox.disabled = true;
+                }
+                
+                debugLog('✅ Modo CONTADO activado');
+            } else if (tipo === 'financiado') {
+                contadoFields.forEach(el => el.style.display = 'none');
+                financiadoFields.forEach(el => el.style.display = 'block');
+                
+                esCotizacionField.style.display = 'flex';
+                
+                const esCotizacionCheckbox = document.getElementById('id_es_cotizacion');
+                if (esCotizacionCheckbox) {
+                    esCotizacionCheckbox.disabled = false;
+                }
+                
+                // Mostrar secciones de esquema según el tipo seleccionado
+                toggleEsquemaSections();
+                
+                debugLog('✅ Modo FINANCIADO activado');
+            }
+        }
+
+        // =============================================
+        // CÁLCULOS FINANCIEROS
+        // =============================================
+        
+        function calculateContado() {
+            if (isCalculating) return;
+            
+            debugLog('🧮 INICIANDO cálculo de contado');
+            
+            const precio = getNumericValue('id_precio_lote');
+            const apartado = getNumericValue('id_apartado');
+            const monto = precio - apartado;
+            
+            debugLog('🧮 Valores para cálculo contado:', { precio, apartado, monto });
+            
+            if (monto >= 0) {
+                setCalculatedValue('id_monto_pago_completo', monto);
+            }
+        }
+
+        function calculateFinanciado() {
+            if (isCalculating) return;
+            
+            debugLog('🧮 INICIANDO cálculo de financiado');
+            
+            const precio = getNumericValue('id_precio_lote');
+            const apartado = getNumericValue('id_apartado');
+            const enganche = getNumericValue('id_enganche');
+            const num = parseInt(document.getElementById('id_num_mensualidades').value) || 0;
+            const fechaPrimer = document.getElementById('id_fecha_primer_pago').value;
+            
+            debugLog('🧮 Valores para cálculo financiado:', { precio, apartado, enganche, num, fechaPrimer });
+            
+            // Calcular fecha último pago si hay datos
+            if (fechaPrimer && num >= 1) {
+                const [y, m, d] = fechaPrimer.split('-').map(Number);
+                const date = new Date(y, m - 1 + (num - 1), d);
+                const yyyy = date.getFullYear();
+                const mm = String(date.getMonth() + 1).padStart(2, '0');
+                const dd = String(date.getDate()).padStart(2, '0');
+                document.getElementById('id_fecha_ultimo_pago').value = `${yyyy}-${mm}-${dd}`;
+                debugLog('📅 Fecha último pago calculada:', `${yyyy}-${mm}-${dd}`);
+            }
+
+            // ✅ NUEVO: Calcular monto_pago_final estimado si no existe
+            const montoPagoFinalDisplay = document.getElementById('id_monto_pago_final_display');
+            const montoPagoFinalHidden = document.getElementById('id_monto_pago_final');
+            const tipoEsquema = tipoEsquemaHidden.value;
+            
+            // Solo calcular si está vacío
+            const pagoFinalActual = parseFloat(montoPagoFinalHidden.value) || 0;
+            
+            if (pagoFinalActual === 0 && num > 0) {
+                const restante = precio - apartado - enganche;
+                
+                if (tipoEsquema === 'mensualidades_fijas') {
+                    const montoMensualidad = getNumericValue('id_monto_mensualidad');
+                    if (montoMensualidad > 0) {
+                        const pagoFinal = restante - (montoMensualidad * (num - 1));
+                        if (pagoFinal > 0) {
+                            const instanceDisplay = autoNumericInstances['id_monto_pago_final_display'];
+                            if (instanceDisplay) {
+                                instanceDisplay.set(pagoFinal);
+                                montoPagoFinalHidden.value = pagoFinal.toFixed(2);
+                                debugLog('💰 Pago final calculado (fijas):', pagoFinal.toFixed(2));
+                            }
+                        }
+                    }
+                } else if (tipoEsquema === 'meses_fuertes') {
+                    // Para meses fuertes, el cálculo es más complejo, se hace en la validación
+                    debugLog('ℹ️ Pago final para meses fuertes se calcula en validación');
+                }
+            }
+
+            debugLog('ℹ️ Cálculo financiado completado');
+        }
+
+        function recalculate() {
+            if (isCalculating) return;
+            
+            debugLog('🔄 INICIANDO RECÁLCULO GENERAL');
+            
+            const tipo = tipoPagoSelect.value;
+            debugLog('📋 Tipo de pago actual:', tipo);
+            
+            toggleFieldsVisibility();
+            
+            if (tipo === 'contado') {
+                calculateContado();
+            } else if (tipo === 'financiado') {
+                calculateFinanciado();
+            }
+            
+            debugLog('🔄 RECÁLCULO COMPLETADO');
+        }
+
+        // =============================================
+        // VALIDACIÓN DE ESTRUCTURA
+        // =============================================
+
+        function validarEstructuraCommeta() {
+            debugLog('🔍 Iniciando validación de estructura Commeta');
+            
+            const tipoEsquema = tipoEsquemaHidden.value;
+            const tipoPago = tipoPagoSelect.value;
+            
+            if (tipoPago !== 'financiado') {
+                mostrarResultadoValidacion(false, 'La validación solo aplica para pagos financiados');
+                return;
+            }
+            
+            // Recopilar datos del financiamiento
+            const financiamientoData = {
+                precio_lote: getNumericValue('id_precio_lote'),
+                apartado: getNumericValue('id_apartado'),
+                enganche: getNumericValue('id_enganche'),
+                num_mensualidades: parseInt(document.getElementById('id_num_mensualidades').value) || 0,
+                monto_mensualidad: getNumericValue('id_monto_mensualidad'),
+                monto_pago_final: parseFloat(document.getElementById('id_monto_pago_final').value) || 0
+            };
+            
+            // Recopilar datos del detalle Commeta
+            const detalleCommetaData = {
+                tipo_esquema: tipoEsquema
+            };
+            
+            if (tipoEsquema === 'meses_fuertes') {
+                const montoNormalInstance = autoNumericInstances['id_monto_mensualidad_normal_display'];
+                
+                detalleCommetaData.cantidad_meses_fuertes = parseInt(document.getElementById('id_cantidad_meses_fuertes').value) || 0;
+                detalleCommetaData.frecuencia_meses_fuertes = document.getElementById('id_frecuencia_meses_fuertes').value || null;
+                detalleCommetaData.monto_mensualidad_normal = montoNormalInstance ? parseFloat(montoNormalInstance.getNumericString()) : 0;
+                detalleCommetaData.monto_mes_fuerte = getNumericValue('id_monto_mes_fuerte');
+            }
+            
+            debugLog('📤 Enviando datos para validación:', { financiamientoData, detalleCommetaData });
+            
+            // Mostrar loading
+            btnValidar.disabled = true;
+            btnValidar.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Validando...';
+            
+            // Hacer request AJAX
+            fetch('/financiamiento/ajax/validar-estructura-commeta/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify({
+                    financiamiento: financiamientoData,
+                    detalle_commeta: detalleCommetaData
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                debugLog('📥 Respuesta de validación:', data);
+                mostrarResultadoValidacion(data.valido, data.mensaje, data.desglose);
+            })
+            .catch(error => {
+                console.error('❌ Error en validación:', error);
+                mostrarResultadoValidacion(false, 'Error al validar estructura de pagos');
+            })
+            .finally(() => {
+                btnValidar.disabled = false;
+                btnValidar.innerHTML = '<i class="fas fa-check-circle"></i> Validar Estructura de Pagos';
+            });
+        }
+
+        function mostrarResultadoValidacion(esValido, mensaje, desglose = null) {
+            debugLog('📊 Mostrando resultado de validación:', { esValido, mensaje });
+            
+            validacionResultado.style.display = 'block';
+            
+            const iconoResultado = esValido 
+                ? '<i class="fas fa-check-circle" style="color: #28a745;"></i>' 
+                : '<i class="fas fa-exclamation-triangle" style="color: #dc3545;"></i>';
+            
+            validacionTitulo.innerHTML = `${iconoResultado} ${esValido ? 'Validación Exitosa' : 'Validación Fallida'}`;
+            
+            let contenidoHTML = `
+                <div class="alert ${esValido ? 'alert-success' : 'alert-danger'}" style="margin-bottom: 1rem;">
+                    ${mensaje}
+                </div>
+            `;
+            
+            if (desglose && desglose.pagos) {
+                contenidoHTML += `
+                    <div class="meses-fuertes-resumen" style="margin-bottom: 1rem;">
+                        <div style="display: grid; gap: 10px;">
+                            <div style="display: flex; justify-content: space-between;">
+                                <span><strong>Total a Financiar:</strong></span>
+                                <span>$${desglose.total_a_financiar.toLocaleString('es-MX', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span><strong>Total Calculado:</strong></span>
+                                <span>$${desglose.total_calculado.toLocaleString('es-MX', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; color: ${Math.abs(desglose.diferencia) < 1 ? '#28a745' : '#dc3545'};">
+                                <span><strong>Diferencia:</strong></span>
+                                <span>$${desglose.diferencia.toLocaleString('es-MX', {minimumFractionDigits: 2, maximumFractionDigits: 2})} (${desglose.porcentaje_diferencia.toFixed(2)}%)</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // Mostrar desglose de pagos
+                contenidoHTML += `
+                    <div class="meses-fuertes-preview" style="background: rgba(240, 245, 255, 0.5);">
+                        <h5 style="color: #2e8fcc; margin-bottom: 1rem;">
+                            <i class="fas fa-calendar-alt"></i> Desglose de Pagos (${desglose.total_meses} meses)
+                        </h5>
+                        <div class="meses-fuertes-list">
+                `;
+                
+                // Agrupar pagos por tipo para mostrar resumen
+                const pagosPorTipo = {};
+                desglose.pagos.forEach(pago => {
+                    const tipo = pago.tipo;
+                    if (!pagosPorTipo[tipo]) {
+                        pagosPorTipo[tipo] = {
+                            cantidad: 0,
+                            monto: pago.monto,
+                            meses: []
+                        };
+                    }
+                    pagosPorTipo[tipo].cantidad++;
+                    pagosPorTipo[tipo].meses.push(pago.mes);
+                });
+                
+                // Mostrar resumen por tipo
+                Object.keys(pagosPorTipo).forEach(tipo => {
+                    const info = pagosPorTipo[tipo];
+                    let tipoLabel = '';
+                    let tipoClass = '';
+                    
+                    if (tipo === 'fija') {
+                        tipoLabel = 'Mensualidades Fijas';
+                        tipoClass = 'mes-fuerte-par';
+                    } else if (tipo === 'normal') {
+                        tipoLabel = 'Mensualidades Normales';
+                        tipoClass = 'mes-fuerte-par';
+                    } else if (tipo === 'fuerte') {
+                        tipoLabel = 'Meses Fuertes';
+                        tipoClass = 'mes-fuerte-impar';
+                    } else if (tipo === 'final') {
+                        tipoLabel = 'Pago Final';
+                        tipoClass = 'mes-fuerte-ultimo';
+                    }
+                    
+                    contenidoHTML += `
+                        <div class="mes-fuerte-item ${tipoClass}">
+                            <div style="display: flex; flex-direction: column; width: 100%;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span class="mes-texto" style="font-size: 0.9rem;">${tipoLabel}</span>
+                                    <span class="mes-numero" style="font-size: 1.1rem;">$${info.monto.toLocaleString('es-MX', {minimumFractionDigits: 2})}</span>
+                                </div>
+                                <div style="margin-top: 0.5rem; font-size: 0.8rem; opacity: 0.9;">
+                                    ${info.cantidad} pago${info.cantidad > 1 ? 's' : ''} - Meses: ${info.meses.join(', ')}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                contenidoHTML += `
+                        </div>
+                    </div>
+                `;
+            }
+            
+            validacionContenido.innerHTML = contenidoHTML;
+            
+            // Scroll al resultado
+            validacionResultado.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        // Event listener para el botón de validar
+        if (btnValidar) {
+            btnValidar.addEventListener('click', validarEstructuraCommeta);
+        }
+
+        // =============================================
+        // CARGA DE CONFIGURACIÓN COMMETA
+        // =============================================
+        
+        function cargarConfiguracionCommeta(loteId, forzarCarga = false) {
+            if (!loteId) {
+                console.log('🚫 No hay lote seleccionado');
+                if (configInfo) configInfo.style.display = 'none';
+                configuracionCommeta = null;
+                return;
+            }
+
+            if (esEdicion && !forzarCarga) {
+                console.log('ℹ️ Modo edición: No se cargará configuración automáticamente');
+                if (configInfo) configInfo.style.display = 'none';
+                return;
+            }
+
+            console.log(`📡 Solicitando configuración para lote: ${loteId}`);
+
+            // ✅ NUEVO: Limpiar campos antes de cargar nueva configuración
+            limpiarCamposConfiguracion();
+            
+            const url = `/financiamiento/ajax/configuracion-commeta/${loteId}/`;
+            
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Error HTTP! estado: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('📦 Respuesta recibida:', data);
+                    
+                    if (data.configuracion) {
+                        configuracionCommeta = data.configuracion;
+                        console.log('✅ Configuración Commeta cargada:', configuracionCommeta);
+                        
+                        mostrarConfiguracionCommeta(data.configuracion);
+                        if (!esEdicion) {
+                            precargarConfiguracionCommeta(data.configuracion);
+                        } else {
+                            console.log('ℹ️ Modo edición: Solo se muestra información, no se precargan valores');
+                        }
+                    } else {
+                        console.warn('⚠️ No se encontró configuración para este lote');
+                        if (configInfo) configInfo.style.display = 'none';
+                        configuracionCommeta = null;
+                    }
+                })
+                .catch(error => {
+                    console.error('❌ Error cargando configuración Commeta:', error);
+                    if (configInfo) configInfo.style.display = 'none';
+                    configuracionCommeta = null;
+                });
+        }
+
+        function mostrarConfiguracionCommeta(config) {
+            if (!configInfo) return;
+
+            document.getElementById('config-zona').textContent = config.zona_display;
+            document.getElementById('config-precio-base').textContent = `$${parseFloat(config.precio_base).toLocaleString('es-MX', {minimumFractionDigits: 2})}`;
+            document.getElementById('config-apartado').textContent = `$${parseFloat(config.apartado_sugerido).toLocaleString('es-MX', {minimumFractionDigits: 2})}`;
+            document.getElementById('config-enganche').textContent = `$${parseFloat(config.enganche_sugerido).toLocaleString('es-MX', {minimumFractionDigits: 2})}`;
+            document.getElementById('config-total-meses').textContent = config.total_meses;
+            
+            configInfo.style.display = 'block';
+            console.log('✅ Información de configuración mostrada');
+        }
+
+        function precargarConfiguracionCommeta(config) {
+            console.log('🔄 Precargando configuración Commeta:', config);
+            
+            if (!config) return;
+
+            if (esEdicion) {
+                console.log('ℹ️ Modo edición: No se precargarán valores de configuración');
+                return;
+            }
+
+            // ✅ NUEVO: Guardar valores originales para recálculos
+            guardarValoresOriginales(config);
+
+            setAutoNumericValue('id_precio_lote', config.precio_base);
+            setAutoNumericValue('id_apartado', config.apartado_sugerido);
+            setAutoNumericValue('id_enganche', config.enganche_sugerido);
+
+            const numMensualidades = document.getElementById('id_num_mensualidades');
+            if (numMensualidades && config.total_meses) {
+                numMensualidades.value = config.total_meses;
+                console.log(`✅ Total meses precargado: ${config.total_meses}`);
+            }
+
+            // Precargar tipo de esquema
+            if (config.tipo_esquema) {
+                tipoEsquemaSelect.value = config.tipo_esquema;
+                tipoEsquemaHidden.value = config.tipo_esquema;
+                console.log(`✅ Tipo esquema precargado: ${config.tipo_esquema}`);
+            }
+
+            // Precargar según tipo de esquema
+            if (config.tipo_esquema === 'mensualidades_fijas') {
+                if (config.mensualidad_sugerida) {
+                    setAutoNumericValue('id_monto_mensualidad', config.mensualidad_sugerida);
+                }
+                
+                if (config.monto_pago_final) {
+                    document.getElementById('id_monto_pago_final').value = config.monto_pago_final;
+                }
+            } else if (config.tipo_esquema === 'meses_fuertes') {
+                const cantidadMesesFuertes = document.getElementById('id_cantidad_meses_fuertes');
+                if (cantidadMesesFuertes && config.cantidad_meses_fuertes_sugerida) {
+                    cantidadMesesFuertes.value = config.cantidad_meses_fuertes_sugerida;
+                }
+
+                const frecuenciaMesesFuertes = document.getElementById('id_frecuencia_meses_fuertes');
+                if (frecuenciaMesesFuertes && config.frecuencia_meses_fuertes) {
+                    frecuenciaMesesFuertes.value = config.frecuencia_meses_fuertes;
+                }
+
+                if (config.monto_mes_fuerte) {
+                    setAutoNumericValue('id_monto_mes_fuerte', config.monto_mes_fuerte);
+                }
+
+                if (config.monto_mensualidad_normal) {
+                    const instance = autoNumericInstances['id_monto_mensualidad_normal_display'];
+                    if (instance) {
+                        instance.set(parseFloat(config.monto_mensualidad_normal));
+                        montoMensualidadNormalHidden.value = config.monto_mensualidad_normal;
+                    }
+                }
+                
+                // ✅ NUEVO: Precargar monto_pago_final_display para meses fuertes
+                if (config.monto_pago_final) {
+                    const instanceDisplay = autoNumericInstances['id_monto_pago_final_display'];
+                    const hiddenField = document.getElementById('id_monto_pago_final');
+                    
+                    if (instanceDisplay) {
+                        instanceDisplay.set(parseFloat(config.monto_pago_final));
+                    }
+                    if (hiddenField) {
+                        hiddenField.value = config.monto_pago_final;
+                    }
+                    console.log(`✅ Monto pago final precargado: ${config.monto_pago_final}`);
+                }
+            }
+
+            // Actualizar visibilidad de secciones
+            toggleEsquemaSections();
+
+            setTimeout(() => {
+                const campos = [
+                    'id_precio_lote', 'id_apartado', 'id_enganche', 
+                    'id_num_mensualidades', 'id_cantidad_meses_fuertes',
+                    'id_monto_mes_fuerte', 'id_monto_mensualidad',
+                    'id_monto_mensualidad_normal_display',
+                    'id_monto_pago_final_display'  // ✅ AGREGADO
+                ];
+                
+                campos.forEach(campoId => {
+                    const campo = document.getElementById(campoId);
+                    if (campo) {
+                        campo.dispatchEvent(new Event('change', { bubbles: true }));
+                        campo.dispatchEvent(new Event('input', { bubbles: true }));
+                    }
+                });
+                
+                setTimeout(() => {
+                    toggleFieldsVisibility();
+                }, 300);
+            }, 500);
+        }
+
+        // =============================================
+        // EVENT LISTENERS
+        // =============================================
+
+        if (tipoPagoSelect) {
+            tipoPagoSelect.addEventListener('change', recalculate);
+        }
+
+        if (loteSelect) {
+            loteSelect.addEventListener('change', function() {
+                console.log(`🔄 Lote cambiado a: ${this.value}`);
+                if (!esEdicion) {
+                    cargarConfiguracionCommeta(this.value);
+                } else {
+                    console.log('ℹ️ Modo edición: No se cargará configuración al cambiar lote');
+                }
+            });
+
+            if (loteSelect.value && !esEdicion) {
+                console.log(`🎯 Lote ya seleccionado: ${loteSelect.value}`);
+                setTimeout(() => {
+                    cargarConfiguracionCommeta(loteSelect.value);
+                }, 1000);
+            }
+        }
+
+        // ✅ NUEVO: Event listeners para recálculo en cascada
+        const campoApartado = document.getElementById('id_apartado');
+        if (campoApartado) {
+            campoApartado.addEventListener('blur', function() {
+                console.log('📝 Campo apartado modificado');
+                setTimeout(() => recalcularEnCascada('apartado'), 150);
+            });
+        }
+
+        const campoEnganche = document.getElementById('id_enganche');
+        if (campoEnganche) {
+            campoEnganche.addEventListener('blur', function() {
+                console.log('📝 Campo enganche modificado');
+                setTimeout(() => recalcularEnCascada('enganche'), 150);
+            });
+        }
+
+        const campoPrecioLote = document.getElementById('id_precio_lote');
+        if (campoPrecioLote) {
+            campoPrecioLote.addEventListener('blur', function() {
+                console.log('📝 Campo precio lote modificado');
+                setTimeout(() => recalcularEnCascada('precio_lote'), 150);
+            });
+        }
+
+        const campoNumMensualidades = document.getElementById('id_num_mensualidades');
+        if (campoNumMensualidades) {
+            campoNumMensualidades.addEventListener('change', function() {
+                console.log('📝 Campo número mensualidades modificado');
+                setTimeout(() => recalcularEnCascada('num_mensualidades'), 150);
+            });
+        }
+
+        const campoCantidadMesesFuertes = document.getElementById('id_cantidad_meses_fuertes');
+        if (campoCantidadMesesFuertes) {
+            campoCantidadMesesFuertes.addEventListener('change', function() {
+                console.log('📝 Campo cantidad meses fuertes modificado');
+                // ✅ NUEVO: Recalcular en cascada cuando cambia cantidad de meses fuertes
+                setTimeout(() => recalcularEnCascada('cantidad_meses_fuertes'), 150);
+            });
+        }
+
+        // ✅ NUEVO: Event listener para frecuencia de meses fuertes
+        const campoFrecuenciaMesesFuertes = document.getElementById('id_frecuencia_meses_fuertes');
+        if (campoFrecuenciaMesesFuertes) {
+            campoFrecuenciaMesesFuertes.addEventListener('change', function() {
+                console.log('📝 Campo frecuencia meses fuertes modificado');
+                setTimeout(() => recalcularEnCascada('frecuencia_meses_fuertes'), 150);
+            });
+        }
+
+        // Triggers para fecha
+        const nonMoneyTriggers = [
+            'id_fecha_primer_pago'
+        ];
+
+        nonMoneyTriggers.forEach(fieldId => {
+            const element = document.getElementById(fieldId);
+            if (element) {
+                element.addEventListener('change', recalculate);
+            }
+        });
+
+        // =============================================
+        // INICIALIZACIÓN
+        // =============================================
+        
+        console.log('🚀 Ejecutando inicialización');
+        toggleFieldsVisibility();
+        toggleEsquemaSections();
+
+        // Si estamos editando, cargar el tipo de esquema actual
+        if (esEdicion) {
+            {% if form.tipo_esquema.value %}
+            tipoEsquemaSelect.value = '{{ form.tipo_esquema.value }}';
+            tipoEsquemaHidden.value = '{{ form.tipo_esquema.value }}';
+            toggleEsquemaSections();
+            
+            // Cargar monto_mensualidad_normal si existe
+            {% if form.monto_mensualidad_normal.value %}
+            setTimeout(() => {
+                const montoNormalInstance = autoNumericInstances['id_monto_mensualidad_normal_display'];
+                if (montoNormalInstance) {
+                    montoNormalInstance.set({{ form.monto_mensualidad_normal.value }});
+                    montoMensualidadNormalHidden.value = '{{ form.monto_mensualidad_normal.value }}';
+                    console.log('✅ Monto mensualidad normal cargado en edición');
+                }
+            }, 500);
+            {% endif %}
+            // ✅ NUEVO: Cargar monto_pago_final si existe
+            {% if form.monto_pago_final.value %}
+            setTimeout(() => {
+                const montoPagoFinalInstance = autoNumericInstances['id_monto_pago_final_display'];
+                const montoPagoFinalHidden = document.getElementById('id_monto_pago_final');
+                
+                if (montoPagoFinalInstance) {
+                    montoPagoFinalInstance.set({{ form.monto_pago_final.value }});
+                    if (montoPagoFinalHidden) {
+                        montoPagoFinalHidden.value = '{{ form.monto_pago_final.value }}';
+                    }
+                    console.log('✅ Monto pago final cargado en edición');
+                }
+            }, 500);
+            {% endif %}
+            // ✅ NUEVO: Cargar cantidad_meses_fuertes si existe
+            {% if form.cantidad_meses_fuertes.value %}
+            const campoCantidadMesesFuertes = document.getElementById('id_cantidad_meses_fuertes');
+            if (campoCantidadMesesFuertes) {
+                campoCantidadMesesFuertes.value = {{ form.cantidad_meses_fuertes.value }};
+                console.log('✅ Cantidad meses fuertes cargado en edición: {{ form.cantidad_meses_fuertes.value }}');
+            }
+            {% endif %}
+            
+            // ✅ NUEVO: Cargar frecuencia_meses_fuertes si existe
+            {% if form.frecuencia_meses_fuertes.value %}
+            const campoFrecuenciaMesesFuertes = document.getElementById('id_frecuencia_meses_fuertes');
+            if (campoFrecuenciaMesesFuertes) {
+                campoFrecuenciaMesesFuertes.value = {{ form.frecuencia_meses_fuertes.value }};
+                console.log('✅ Frecuencia meses fuertes cargado en edición: {{ form.frecuencia_meses_fuertes.value }}');
+            }
+            {% endif %}
+            
+            // ✅ NUEVO: Cargar monto_mes_fuerte si existe
+            {% if form.monto_mes_fuerte.value %}
+            setTimeout(() => {
+                const montoMesFuerteInstance = autoNumericInstances['id_monto_mes_fuerte'];
+                if (montoMesFuerteInstance) {
+                    montoMesFuerteInstance.set({{ form.monto_mes_fuerte.value }});
+                    console.log('✅ Monto mes fuerte cargado en edición: {{ form.monto_mes_fuerte.value }}');
+                }
+            }, 500);
+            {% endif %}
+            {% endif %}
+        }
+
+        console.log('✅ SISTEMA COMMETA MEJORADO INICIALIZADO');
+    });
+}
+</script>
+{% endblock %}

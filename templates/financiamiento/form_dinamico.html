@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+
+{% block title %}Nuevo Financiamiento{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+/* Estilos para la transición suave entre formularios */
+.form-container {
+    position: relative;
+    min-height: 500px;
+}
+
+#form-normal, #form-commeta {
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.form-hidden {
+    opacity: 0;
+    transform: translateX(-20px);
+    pointer-events: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+}
+
+.form-visible {
+    opacity: 1;
+    transform: translateX(0);
+    pointer-events: all;
+}
+
+.loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div id="loading-overlay" class="loading-overlay" style="display: none;">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Cargando...</span>
+        </div>
+    </div>
+
+    <!-- Formulario Normal (visible por defecto) -->
+    <div id="form-normal" class="form-visible">
+        {% include "financiamiento/form_nuevo.html" %}
+    </div>
+
+    <!-- Formulario Commeta (oculto por defecto) -->
+    <div id="form-commeta" class="form-hidden">
+        {% include "financiamiento/form_commeta_precargado.html" %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Configuración inicial
+const proyectosCommetaIds = {{ proyectos_commeta_ids|default:'[]'|safe }};
+let formularioActual = 'normal';
+
+console.log('🚀 Proyectos Commeta:', proyectosCommetaIds);
+
+// Función para detectar cambios en el proyecto
+function detectarTipoProyecto() {
+    const proyectoSelect = document.getElementById('id_proyecto');
+    const proyectoId = proyectoSelect ? proyectoSelect.value : null;
+    
+    console.log('🔍 Proyecto seleccionado:', proyectoId);
+    
+    if (proyectoId && proyectosCommetaIds.includes(parseInt(proyectoId))) {
+        console.log('✅ Detectado proyecto Commeta - Redirigiendo a formulario pre-configurado');
+        
+        // Redirigir a URL pre-configurada para Commeta
+        const nuevaUrl = `${window.location.pathname}?proyecto_commeta=${proyectoId}`;
+        window.location.href = nuevaUrl;
+    } else {
+        console.log('ℹ️ Proyecto normal detectado');
+        mostrarFormularioNormal();
+    }
+}
+
+// Función para mostrar formulario Commeta
+function mostrarFormularioCommeta() {
+    if (formularioActual === 'commeta') return;
+    
+    console.log('🔄 Cambiando a formulario Commeta');
+    
+    const loadingOverlay = document.getElementById('loading-overlay');
+    const formNormal = document.getElementById('form-normal');
+    const formCommeta = document.getElementById('form-commeta');
+    
+    // Mostrar loading
+    loadingOverlay.style.display = 'flex';
+    
+    setTimeout(() => {
+        // Ocultar formulario normal
+        formNormal.classList.remove('form-visible');
+        formNormal.classList.add('form-hidden');
+        
+        // Mostrar formulario Commeta
+        formCommeta.classList.remove('form-hidden');
+        formCommeta.classList.add('form-visible');
+        
+        formularioActual = 'commeta';
+        
+        // Ocultar loading
+        loadingOverlay.style.display = 'none';
+        
+        console.log('✅ Formulario Commeta cargado');
+        
+        // Inicializar JavaScript específico de Commeta
+        inicializarCommeta();
+    }, 300);
+}
+
+// Función para mostrar formulario normal
+function mostrarFormularioNormal() {
+    if (formularioActual === 'normal') return;
+    
+    console.log('🔄 Cambiando a formulario normal');
+    
+    const loadingOverlay = document.getElementById('loading-overlay');
+    const formNormal = document.getElementById('form-normal');
+    const formCommeta = document.getElementById('form-commeta');
+    
+    // Mostrar loading
+    loadingOverlay.style.display = 'flex';
+    
+    setTimeout(() => {
+        // Ocultar formulario Commeta
+        formCommeta.classList.remove('form-visible');
+        formCommeta.classList.add('form-hidden');
+        
+        // Mostrar formulario normal
+        formNormal.classList.remove('form-hidden');
+        formNormal.classList.add('form-visible');
+        
+        formularioActual = 'normal';
+        
+        // Ocultar loading
+        loadingOverlay.style.display = 'none';
+        
+        console.log('✅ Formulario normal cargado');
+    }, 300);
+}
+
+// Función para inicializar JavaScript de Commeta
+function inicializarCommeta() {
+    console.log('🎯 Inicializando funcionalidades Commeta');
+    
+    // Disparar el evento change del lote para cargar configuración
+    const loteSelect = document.getElementById('id_lote');
+    if (loteSelect && loteSelect.value) {
+        const event = new Event('change');
+        loteSelect.dispatchEvent(event);
+    }
+    
+    // Inicializar cálculos de meses fuertes si hay datos
+    setTimeout(() => {
+        if (typeof calcularMesesFuertes === 'function') {
+            calcularMesesFuertes();
+        }
+    }, 500);
+}
+
+// Event Listeners
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('📝 Inicializando formulario dinámico');
+    
+    // Detectar cambios en el proyecto
+    const proyectoSelect = document.getElementById('id_proyecto');
+    if (proyectoSelect) {
+        proyectoSelect.addEventListener('change', detectarTipoProyecto);
+        
+        // Detectar inicialmente
+        detectarTipoProyecto();
+    }
+    
+    // Prevenir envío duplicado del formulario
+    const forms = document.querySelectorAll('form');
+    forms.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            const submitBtn = this.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+            }
+        });
+    });
+});
+
+// Función global para recálculo (compatibilidad con scripts existentes)
+window.recalculate = function() {
+    if (formularioActual === 'commeta' && typeof window.recalculateCommeta === 'function') {
+        window.recalculateCommeta();
+    } else if (typeof originalRecalculate === 'function') {
+        originalRecalculate();
+    }
+};
+</script>
+{% endblock %}

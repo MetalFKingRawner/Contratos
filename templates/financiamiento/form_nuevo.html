@@ -1,0 +1,670 @@
+{% block extra_css %}
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+<style>
+:root {
+  --primary-gradient: linear-gradient(135deg, #2e8fcc 0%, #1e5f8c 100%);
+  --accent-gradient: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+  --text-primary: #2c3e50;
+  --text-secondary: #6c757d;
+  --glass-bg: rgba(255,255,255,0.15);
+  --glass-border: rgba(255,255,255,0.2);
+}
+
+.form-container {
+  background: var(--glass-bg);
+  border-radius: 25px;
+  backdrop-filter: blur(15px);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+  padding: 2.5rem;
+  max-width: 900px;
+  margin: 2rem auto;
+  position: relative;
+  overflow: hidden;
+  animation: fadeInUp 0.8s ease both;
+}
+
+.section-title {
+  font-family: 'Poppins', sans-serif;
+  font-size: 1.75rem;
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 1rem;
+  position: relative;
+}
+.section-title::after {
+  content: '';
+  position: absolute;
+  bottom: -5px; left: 0;
+  width: 60px; height: 3px;
+  background: var(--accent-gradient);
+  border-radius: 2px;
+}
+
+.field-group {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  border-left: 4px solid #2e8fcc;
+  background: rgba(240,245,255,0.4);
+  border-radius: 20px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+}
+.field-group-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px,1fr));
+  gap: 1.5rem;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-field label {
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.form-field .form-control,
+.form-field select,
+.form-field input {
+  border-radius: 12px;
+  border: 2px solid rgba(46,143,204,0.2);
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  transition: all 0.3s;
+}
+.form-field .form-control:focus,
+.form-field select:focus {
+  outline: none;
+  border-color: #1e5f8c;
+  box-shadow: 0 0 0 0.2rem rgba(46,143,204,0.25);
+}
+
+/* Estilos para checkboxes personalizados */
+.checkbox-container {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  border: 2px solid rgba(46,143,204,0.2);
+  background: white;
+  transition: all 0.3s;
+  cursor: pointer;
+}
+
+.checkbox-container:hover {
+  border-color: #1e5f8c;
+  box-shadow: 0 0 0 0.2rem rgba(46,143,204,0.1);
+}
+
+.checkbox-container input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.checkbox-label {
+  font-weight: 500;
+  color: var(--text-primary);
+  cursor: pointer;
+  margin: 0;
+}
+
+.help-text {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin-top: 0.5rem;
+  font-style: italic;
+}
+
+.submit-section {
+  text-align: center;
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(46,143,204,0.1);
+}
+.btn-save {
+  background: var(--primary-gradient);
+  border: none;
+  color: white;
+  padding: 0.9rem 2.5rem;
+  font-size: 1.05rem;
+  border-radius: 50px;
+  font-weight: 600;
+  transition: transform 0.3s;
+}
+.btn-save:hover {
+  transform: translateY(-2px) scale(1.03);
+}
+.btn-cancel {
+  margin-left: 1rem;
+}
+
+@keyframes fadeInUp {
+  from { opacity:0; transform: translateY(20px);} to { opacity:1; transform: translateY(0);}  
+}
+@media (max-width:768px) { .form-row { grid-template-columns: 1fr; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+  <h2 class="section-title">{% if object %}Editar{% else %}Nuevo{% endif %} Financiamiento</h2>
+  <form method="post" novalidate id="financiamiento-form">
+    {% csrf_token %}
+    <!-- Hidden field for monto_pago_final -->
+    <input type="hidden" id="id_monto_pago_final" name="monto_pago_final" value="{{ form.initial.monto_pago_final|default_if_none:'' }}">
+
+    <div class="field-group">
+      <div class="field-group-title"><i class="fas fa-info-circle"></i> Datos Generales</div>
+      <div class="form-row">
+        <div class="form-field">      
+          {{ form.nombre_cliente.label_tag }}
+          {{ form.nombre_cliente }}
+          {% for err in form.nombre_cliente.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
+        </div>
+        <div class="form-field">
+          {{ form.proyecto.label_tag }}
+          {{ form.proyecto }}
+        </div>
+        <div class="form-field">
+          {{ form.lote.label_tag }}
+          {{ form.lote }}
+        </div>
+        <div class="form-field">
+          {{ form.tipo_pago.label_tag }}
+          {{ form.tipo_pago }}
+          {% for err in form.tipo_pago.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
+        </div>
+        <div class="form-field">
+          {{ form.precio_lote.label_tag }}
+          {{ form.precio_lote }}
+        </div>
+        <div class="form-field">
+          {{ form.apartado.label_tag }}
+          {{ form.apartado }}
+        </div>
+      </div>
+      
+      <!-- NUEVOS CAMPOS: Estado del Plan -->
+      <div class="form-row" style="margin-top: 1.5rem;">
+        <div class="form-field">
+          <label class="checkbox-container">
+            {{ form.es_cotizacion }}
+            <span class="checkbox-label">{{ form.es_cotizacion.label }}</span>
+          </label>
+          {% if form.es_cotizacion.help_text %}
+          <div class="help-text">{{ form.es_cotizacion.help_text }}</div>
+          {% endif %}
+          {% for err in form.es_cotizacion.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
+        </div>
+        
+        <div class="form-field">
+          <label class="checkbox-container">
+            {{ form.activo }}
+            <span class="checkbox-label">{{ form.activo.label }}</span>
+          </label>
+          {% if form.activo.help_text %}
+          <div class="help-text">{{ form.activo.help_text }}</div>
+          {% endif %}
+          {% for err in form.activo.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <div class="field-group-title"><i class="fas fa-wallet"></i> Financiamiento</div>
+      <div class="form-row">
+        <div class="form-field pago-contado">
+          {{ form.fecha_pago_completo.label_tag }}
+          {{ form.fecha_pago_completo }}
+          {% for err in form.fecha_pago_completo.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
+        </div>
+        <div class="form-field pago-contado">
+          {{ form.monto_pago_completo.label_tag }}
+          {{ form.monto_pago_completo }}
+          {% for err in form.monto_pago_completo.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
+        </div>
+
+        <div class="form-field pago-financiado">
+          {{ form.enganche.label_tag }}
+          {{ form.enganche }}
+          {% for err in form.enganche.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
+        </div>
+        <div class="form-field pago-financiado">
+          {{ form.fecha_enganche.label_tag }}
+          {{ form.fecha_enganche }}
+          {% for err in form.fecha_enganche.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
+        </div>
+        <div class="form-field pago-financiado">
+          {{ form.num_mensualidades.label_tag }}
+          {{ form.num_mensualidades }}
+          {% for err in form.num_mensualidades.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
+        </div>
+        <div class="form-field pago-financiado">
+          {{ form.monto_mensualidad.label_tag }}
+          {{ form.monto_mensualidad }}
+          {% for err in form.monto_mensualidad.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
+        </div>
+        <div class="form-field pago-financiado">
+          {{ form.fecha_primer_pago.label_tag }}
+          {{ form.fecha_primer_pago }}
+          {% for err in form.fecha_primer_pago.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
+        </div>
+        <div class="form-field pago-financiado">
+          {{ form.fecha_ultimo_pago.label_tag }}
+          {{ form.fecha_ultimo_pago }}
+          {% for err in form.fecha_ultimo_pago.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <div class="submit-section">
+      <button type="submit" class="btn btn-save">Guardar</button>
+      <a href="{% url 'financiamiento:list' %}" class="btn btn-secondary btn-cancel">Cancelar</a>
+    </div>
+  </form>
+</div>
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/autonumeric@4.6.0/dist/autoNumeric.min.js"></script>
+<script>
+// Prevenir ejecución múltiple
+if (!window.scriptLoaded) {
+  window.scriptLoaded = true;
+
+  document.addEventListener('DOMContentLoaded', () => {
+    
+    function toggleCotizacionField() {
+        const tipoPago = document.getElementById('id_tipo_pago').value;
+        const esCotizacionField = document.querySelector('.form-field:has(#id_es_cotizacion)');
+        const esCotizacionCheckbox = document.getElementById('id_es_cotizacion');
+        const esCotizacionLabel = esCotizacionField?.querySelector('.checkbox-label');
+        const esCotizacionHelp = esCotizacionField?.querySelector('.help-text');
+        
+        debugLog('🔀 Cambiando visibilidad de campo cotización para tipo:', tipoPago);
+        
+        if (tipoPago === 'contado') {
+            // Ocultar y deshabilitar para contado
+            if (esCotizacionField) {
+                esCotizacionField.style.display = 'none';
+            }
+            if (esCotizacionCheckbox) {
+                esCotizacionCheckbox.checked = false;
+                esCotizacionCheckbox.disabled = true;
+            }
+            debugLog('🚫 Campo cotización oculto y deshabilitado (pago contado)');
+        } else {
+            // Mostrar y habilitar para financiado
+            if (esCotizacionField) {
+                esCotizacionField.style.display = 'flex';
+            }
+            if (esCotizacionCheckbox) {
+                esCotizacionCheckbox.disabled = false;
+            }
+            debugLog('✅ Campo cotización visible y habilitado (pago financiado)');
+        }
+    }
+    
+    // SISTEMA DE DEBUG
+    function debugLog(message, data = null) {
+      console.log(`🐛 DEBUG: ${message}`, data ? data : '');
+    }
+
+    debugLog('=== INICIANDO SCRIPT (ÚNICA VEZ) ===');
+
+    // Variables globales
+    let autoNumericInstances = {};
+    let isCalculating = false;
+    let userInputFields = new Set();
+
+    // Configuración de AutoNumeric
+    const autoNumericConfig = {
+      currencySymbol: '$',
+      digitGroupSeparator: ',',
+      decimalCharacter: '.',
+      decimalPlaces: 2,
+      unformatOnSubmit: true,
+      minimumValue: '0',
+      watchExternalChanges: false
+    };
+
+    // Campos que tendrán formato de dinero
+    const moneyFields = [
+      'id_precio_lote',
+      'id_apartado', 
+      'id_enganche',
+      'id_monto_pago_completo',
+      'id_monto_mensualidad'
+    ];
+
+    // Campos que son SOLO de entrada
+    const inputFields = [
+      'id_precio_lote',
+      'id_apartado', 
+      'id_enganche'
+    ];
+
+    // Campos que son SOLO calculados
+    const calculatedFields = [
+      'id_monto_pago_completo',
+      'id_monto_mensualidad'
+    ];
+
+    debugLog('Configuración cargada', {
+      moneyFields,
+      inputFields,
+      calculatedFields
+    });
+
+    // Inicializar AutoNumeric CON VERIFICACIÓN DE DUPLICADOS
+    moneyFields.forEach(fieldId => {
+      const element = document.getElementById(fieldId);
+      if (element) {
+        debugLog(`Intentando inicializar AutoNumeric en: ${fieldId}`);
+        
+        // VERIFICAR SI YA EXISTE UNA INSTANCIA
+        try {
+          const existingInstance = AutoNumeric.getAutoNumericElement(`#${fieldId}`);
+          if (existingInstance) {
+            debugLog(`⚠️ AutoNumeric ya existe en ${fieldId}, reutilizando instancia`);
+            autoNumericInstances[fieldId] = existingInstance;
+            return; // Salir, no crear otra instancia
+          }
+        } catch (e) {
+          // No existe instancia previa, continuar
+        }
+        
+        try {
+          // CREAR INSTANCIA SOLO SI NO EXISTE
+          autoNumericInstances[fieldId] = new AutoNumeric(`#${fieldId}`, autoNumericConfig);
+          debugLog(`✅ AutoNumeric creado exitosamente en: ${fieldId}`);
+
+          // AGREGAR EVENTOS SOLO PARA CAMPOS DE ENTRADA
+          if (inputFields.includes(fieldId)) {
+            debugLog(`Configurando eventos especiales para campo de entrada: ${fieldId}`);
+            
+            element.addEventListener('focus', () => {
+              userInputFields.add(fieldId);
+              debugLog(`🎯 FOCUS en ${fieldId} - Campo marcado como "en uso"`);
+            });
+            
+            element.addEventListener('blur', () => {
+              debugLog(`👋 BLUR en ${fieldId} - Campo desmarcado`);
+              userInputFields.delete(fieldId);
+              
+              // Recalcular cuando el usuario termina de escribir
+              setTimeout(() => {
+                debugLog(`Ejecutando recálculo programado desde ${fieldId}`);
+                recalculate();
+              }, 100);
+            });
+          }
+
+        } catch (error) {
+          debugLog(`❌ ERROR al crear AutoNumeric en ${fieldId}:`, error);
+        }
+      } else {
+        debugLog(`⚠️ Elemento no encontrado: ${fieldId}`);
+      }
+    });
+
+    // Función para obtener valor numérico limpio
+    function getNumericValue(fieldId) {
+      debugLog(`🔍 Obteniendo valor numérico de: ${fieldId}`);
+      
+      const instance = autoNumericInstances[fieldId];
+      if (instance) {
+        const value = parseFloat(instance.getNumericString()) || 0;
+        debugLog(`✅ Valor obtenido de AutoNumeric ${fieldId}: ${value}`);
+        return value;
+      }
+      
+      const element = document.getElementById(fieldId);
+      const value = parseFloat(element?.value?.replace(/[$,]/g, '') || 0);
+      debugLog(`✅ Valor obtenido manualmente de ${fieldId}: ${value}`);
+      return value;
+    }
+
+    // Función para establecer valor SOLO en campos calculados
+    function setCalculatedValue(fieldId, value) {
+      debugLog(`🎯 Intentando establecer valor calculado en ${fieldId}: ${value}`);
+      
+      // NUNCA tocar campos donde el usuario está escribiendo
+      if (userInputFields.has(fieldId)) {
+        debugLog(`🚫 BLOQUEADO - Usuario escribiendo en ${fieldId}`);
+        return;
+      }
+      
+      // SOLO actualizar campos calculados
+      if (!calculatedFields.includes(fieldId)) {
+        debugLog(`🚫 BLOQUEADO - ${fieldId} no es un campo calculado`);
+        return;
+      }
+      
+      debugLog(`✅ Estableciendo valor en campo calculado ${fieldId}: ${value}`);
+      
+      const instance = autoNumericInstances[fieldId];
+      if (instance) {
+        isCalculating = true;
+        debugLog(`🔄 Usando AutoNumeric.set() para ${fieldId}`);
+        instance.set(value);
+        setTimeout(() => {
+          isCalculating = false;
+          debugLog(`🔄 Flag isCalculating desactivado para ${fieldId}`);
+        }, 50);
+      } else {
+        const element = document.getElementById(fieldId);
+        if (element) {
+          debugLog(`🔄 Usando element.value para ${fieldId}`);
+          element.value = value;
+        }
+      }
+    }
+
+    // Función para mostrar/ocultar campos
+    function toggleFieldsVisibility() {
+      const tipo = document.getElementById('id_tipo_pago').value;
+      debugLog(`🔀 Cambiando visibilidad de campos para tipo: ${tipo}`);
+      
+      const contadoFields = document.querySelectorAll('.pago-contado');
+      const financiadoFields = document.querySelectorAll('.pago-financiado');
+      
+      contadoFields.forEach(el => el.style.display = tipo === 'contado' ? 'block' : 'none');
+      financiadoFields.forEach(el => el.style.display = tipo === 'financiado' ? 'block' : 'none');
+    }
+
+    // Cálculos para pago de contado
+    function calculateContado() {
+      if (isCalculating) {
+        debugLog('🚫 calculateContado bloqueado - isCalculating = true');
+        return;
+      }
+      
+      debugLog('🧮 INICIANDO cálculo de contado');
+      
+      const precio = getNumericValue('id_precio_lote');
+      const apartado = getNumericValue('id_apartado');
+      const monto = precio - apartado;
+      
+      debugLog('🧮 Valores para cálculo contado:', { precio, apartado, monto });
+      
+      if (monto >= 0) {
+        debugLog('✅ Estableciendo monto de pago completo');
+        setCalculatedValue('id_monto_pago_completo', monto);
+      } else {
+        debugLog('⚠️ Monto negativo, no se establece valor');
+      }
+    }
+
+    // Cálculos para pago financiado
+    function calculateFinanciado() {
+      if (isCalculating) {
+        debugLog('🚫 calculateFinanciado bloqueado - isCalculating = true');
+        return;
+      }
+      
+      debugLog('🧮 INICIANDO cálculo de financiado');
+      
+      const precio = getNumericValue('id_precio_lote');
+      const apartado = getNumericValue('id_apartado');
+      const enganche = getNumericValue('id_enganche');
+      const num = parseInt(document.getElementById('id_num_mensualidades').value) || 0;
+      const fechaPrimer = document.getElementById('id_fecha_primer_pago').value;
+      
+      debugLog('🧮 Valores para cálculo financiado:', { precio, apartado, enganche, num, fechaPrimer });
+      
+      if (!fechaPrimer || num < 1) {
+        debugLog('⚠️ Datos insuficientes para cálculo financiado');
+        return;
+      }
+
+      // Calcular fecha último pago
+      const [y, m, d] = fechaPrimer.split('-').map(Number);
+      const date = new Date(y, m - 1 + (num - 1), d);
+      const yyyy = date.getFullYear();
+      const mm = String(date.getMonth() + 1).padStart(2, '0');
+      const dd = String(date.getDate()).padStart(2, '0');
+      document.getElementById('id_fecha_ultimo_pago').value = `${yyyy}-${mm}-${dd}`;
+      debugLog('📅 Fecha último pago calculada:', `${yyyy}-${mm}-${dd}`);
+
+      // Calcular montos - NUEVA LÓGICA: mensualidades fijas menores, pago final mayor
+      const restante = precio - apartado - enganche;
+      debugLog('💰 Monto restante:', restante);
+      
+      if (restante > 0 && num > 0) {
+        const base = restante / num;
+        
+        // Redondear hacia ABAJO a la centena más cercana y restar $100 adicional
+        // Esto asegura que SIEMPRE las mensualidades fijas sean menores, incluso en divisiones exactas
+        let mensual = Math.floor(base / 100) * 100 - 100;
+        
+        // Si el resultado es 0 o negativo, usar al menos 100
+        const mensualFinal = mensual > 0 ? mensual : 100;
+        
+        // El pago final será la diferencia (siempre mayor que las mensualidades fijas)
+        const pagoFinal = restante - mensualFinal * (num - 1);
+        
+        debugLog('💰 Cálculos finales:', { 
+          base: base.toFixed(2), 
+          mensualFija: mensualFinal, 
+          pagoFinal: pagoFinal.toFixed(2),
+          diferencia: (pagoFinal - mensualFinal).toFixed(2)
+        });
+        
+        // Validar que el pago final sea positivo
+        if (pagoFinal > 0) {
+          setCalculatedValue('id_monto_mensualidad', mensualFinal);
+          document.getElementById('id_monto_pago_final').value = pagoFinal.toFixed(2);
+          debugLog('✅ Mensualidades calculadas correctamente');
+        } else {
+          debugLog('❌ ERROR: Pago final negativo o cero');
+        }
+      }
+    }
+
+    // Función principal de recálculo
+    function recalculate() {
+      if (isCalculating) {
+        debugLog('🚫 recalculate bloqueado - isCalculating = true');
+        return;
+      }
+      
+      debugLog('🔄 INICIANDO RECÁLCULO GENERAL');
+      
+      const tipo = document.getElementById('id_tipo_pago').value;
+      debugLog('📋 Tipo de pago actual:', tipo);
+      
+      toggleFieldsVisibility();
+      toggleCotizacionField(); // NUEVA LLAMADA
+      
+      if (tipo === 'contado') {
+        calculateContado();
+      } else if (tipo === 'financiado') {
+        calculateFinanciado();
+      }
+      
+      debugLog('🔄 RECÁLCULO COMPLETADO');
+    }
+
+    // Event listeners SIMPLIFICADOS
+    const nonMoneyTriggers = [
+      'id_tipo_pago',
+      'id_num_mensualidades',
+      'id_fecha_primer_pago'
+    ];
+
+    nonMoneyTriggers.forEach(fieldId => {
+      const element = document.getElementById(fieldId);
+      if (element) {
+        debugLog(`🔗 Agregando listener 'change' a: ${fieldId}`);
+        element.addEventListener('change', () => {
+          debugLog(`🔔 CHANGE event en ${fieldId}, valor: ${element.value}`);
+          recalculate();
+        });
+      }
+    });
+
+    // Carga dinámica de lotes
+    const proyectoSelect = document.getElementById('id_proyecto');
+    const loteSelect = document.getElementById('id_lote');
+    
+    if (proyectoSelect && loteSelect) {
+      debugLog('🏗️ Configurando carga dinámica de lotes');
+      proyectoSelect.addEventListener('change', function() {
+        const projId = this.value;
+        debugLog('🏗️ Cambio en proyecto:', projId);
+        
+        if (!projId) {
+          loteSelect.innerHTML = '<option value="">— Selecciona lote —</option>';
+          return;
+        }
+        
+        loteSelect.innerHTML = '<option value="">Cargando...</option>';
+        
+        fetch(`/workflow/ajax/lotes/${projId}/`)
+          .then(response => response.json())
+          .then(data => {
+            loteSelect.innerHTML = '<option value="">— Selecciona lote —</option>';
+            if (data.lotes) {
+              data.lotes.forEach(lote => {
+                const option = document.createElement('option');
+                option.value = lote.id;
+                option.textContent = lote.identificador;
+                loteSelect.appendChild(option);
+              });
+              debugLog('🏗️ Lotes cargados:', data.lotes.length);
+            }
+          })
+          .catch(error => {
+            debugLog('❌ Error cargando lotes:', error);
+            loteSelect.innerHTML = '<option value="">Error al cargar lotes</option>';
+          });
+      });
+    }
+
+    // Inicialización
+    debugLog('🚀 Ejecutando inicialización');
+    recalculate();
+    debugLog('=== SCRIPT INICIALIZADO COMPLETAMENTE (ÚNICA VEZ) ===');
+  });
+}
+</script>
+{% endblock %}
+
+{% endblock %}
