@@ -1,8 +1,9 @@
 # financiamiento/forms.py
 
 from django import forms
-from core.models import Proyecto, Lote, Vendedor
-from .models import Financiamiento, CartaIntencion
+from core.models import Proyecto, Lote, Vendedor, ConfiguracionCommeta
+from .models import Financiamiento, CartaIntencion, FinanciamientoCommeta
+
 
 class FinanciamientoForm(forms.ModelForm):
     proyecto = forms.ModelChoiceField(
@@ -28,18 +29,15 @@ class FinanciamientoForm(forms.ModelForm):
             'es_cotizacion', 'activo'  # NUEVOS CAMPOS AÑADIDOS
         ]
         widgets = {
-            # ¡OJO! aquí forzamos text en lugar de number:
             'precio_lote':        forms.TextInput(attrs={'type': 'text'}),
             'apartado':           forms.TextInput(attrs={'type': 'text'}),
             'monto_pago_completo':forms.TextInput(attrs={'type': 'text'}),
             'enganche':           forms.TextInput(attrs={'type': 'text'}),
             'monto_mensualidad':  forms.TextInput(attrs={'type': 'text'}),
-            # Los dateInput se quedan igual:
             'fecha_pago_completo': forms.DateInput(attrs={'type': 'date'}),
             'fecha_enganche':      forms.DateInput(attrs={'type': 'date'}),
             'fecha_primer_pago':   forms.DateInput(attrs={'type': 'date'}),
             'fecha_ultimo_pago':   forms.DateInput(attrs={'type': 'date'}),
-            # NUEVOS CAMPOS - checkboxes
             'es_cotizacion': forms.CheckboxInput(attrs={'class': 'checkbox-field'}),
             'activo': forms.CheckboxInput(attrs={'class': 'checkbox-field'}),
         }
@@ -49,21 +47,17 @@ class FinanciamientoForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
-        # 💡 CORRECCIÓN: Establecer valores iniciales ANTES de super().__init__
         instance = kwargs.get('instance')
         if instance and instance.pk:
-            # Pre-inicializar kwargs para las fechas
             if not kwargs.get('initial'):
                 kwargs['initial'] = {}
             
-            # Establecer formato YYYY-MM-DD para campos de fecha
             date_fields = ['fecha_pago_completo', 'fecha_enganche', 'fecha_primer_pago', 'fecha_ultimo_pago']
             for field_name in date_fields:
                 field_value = getattr(instance, field_name, None)
                 if field_value:
                     kwargs['initial'][field_name] = field_value.strftime('%Y-%m-%d')
             
-            # También para campos de dinero
             money_fields = ['precio_lote', 'apartado', 'monto_pago_completo', 'enganche', 'monto_mensualidad']
             for field_name in money_fields:
                 field_value = getattr(instance, field_name, None)
@@ -72,7 +66,6 @@ class FinanciamientoForm(forms.ModelForm):
         
         super().__init__(*args, **kwargs)
         
-        # Resto de la lógica de inicialización...
         if self.instance and self.instance.lote_id:
             lote_actual = self.instance.lote
             if not lote_actual.activo:
@@ -91,7 +84,6 @@ class FinanciamientoForm(forms.ModelForm):
         else:
             self.fields['lote'].queryset = Lote.objects.none()
         
-        # Campos opcionales
         opcionales = [
             'fecha_pago_completo', 'monto_pago_completo',
             'enganche', 'fecha_enganche',
@@ -100,20 +92,17 @@ class FinanciamientoForm(forms.ModelForm):
             'es_cotizacion', 'activo'  # Los nuevos campos son opcionales en el formulario
         ]
         for field in opcionales:
-            self.fields[field].required = False
+            if field in self.fields:
+                self.fields[field].required = False
 
-        # Establecer valores por defecto para nuevos campos si es un nuevo registro
         if not instance:
             self.fields['es_cotizacion'].initial = False
             self.fields['activo'].initial = True
 
-        # NUEVA LÓGICA: Si es pago de contado, forzar es_cotizacion a False
         if self.instance and self.instance.pk:
-            # Si estamos editando y el tipo de pago es contado, desmarcar cotización
             if self.instance.tipo_pago == 'contado':
                 self.fields['es_cotizacion'].initial = False
         else:
-            # Si es nuevo, inicializar según el tipo de pago
             tipo_pago_initial = self.initial.get('tipo_pago')
             if tipo_pago_initial == 'contado':
                 self.fields['es_cotizacion'].initial = False
@@ -123,15 +112,12 @@ class FinanciamientoForm(forms.ModelForm):
         tipo = cd.get('tipo_pago')
         es_cotizacion = cd.get('es_cotizacion', False)
 
-        # NUEVA VALIDACIÓN: Cotización solo aplica para financiado
         if tipo == 'contado' and es_cotizacion:
             raise forms.ValidationError(
                 "Las cotizaciones solo están disponibles para pagos financiados, no para pagos de contado."
             )
 
-        # Si es cotización, las validaciones son más flexibles
         if es_cotizacion:
-            # Para cotizaciones, solo validamos campos básicos
             if not cd.get('nombre_cliente'):
                 raise forms.ValidationError("Para una cotización, el nombre del cliente es obligatorio.")
             if not cd.get('lote'):
@@ -139,7 +125,6 @@ class FinanciamientoForm(forms.ModelForm):
             if not cd.get('precio_lote'):
                 raise forms.ValidationError("Para una cotización, el precio del lote es obligatorio.")
         else:
-            # Para financiamientos reales, aplicamos todas las validaciones originales
             if tipo == 'contado':
                 if not cd.get('fecha_pago_completo') or cd.get('monto_pago_completo') is None:
                     raise forms.ValidationError(
@@ -160,6 +145,242 @@ class FinanciamientoForm(forms.ModelForm):
                 raise forms.ValidationError("Selecciona un tipo de pago válido.")
 
         return cd
+
+class FinanciamientoCommetaForm(FinanciamientoForm):
+    """Formulario especializado para Commeta Community"""
+    
+    tipo_esquema = forms.ChoiceField(
+        label="Tipo de esquema de pagos",
+        choices=[
+            ('mensualidades_fijas', 'Mensualidades Fijas'),
+            ('meses_fuertes', 'Meses Fuertes'),
+        ],
+        required=True,
+        help_text="Selecciona el tipo de estructura de pagos"
+    )
+    
+    monto_mensualidad_normal = forms.DecimalField(
+        label="Mensualidad Normal",
+        max_digits=12,
+        decimal_places=2,
+        required=False,
+        help_text="Monto en meses normales (solo para esquema de meses fuertes)"
+    )
+    
+    cantidad_meses_fuertes = forms.IntegerField(
+        label="Numero de meses fuertes",
+        min_value=0,
+        required=False,
+        help_text="Cantidad total de meses que tendran un pago fuerte"
+    )
+    
+    frecuencia_meses_fuertes = forms.IntegerField(
+        label="Frecuencia de meses fuertes",
+        min_value=1,
+        required=False,
+        help_text="Cada cuantos meses se repite un mes fuerte (ej: cada 6 meses)"
+    )
+    
+    monto_mes_fuerte = forms.DecimalField(
+        label="Monto del mes fuerte",
+        max_digits=12,
+        decimal_places=2,
+        required=False,
+        help_text="Monto a pagar en los meses fuertes"
+    )
+
+    class Meta(FinanciamientoForm.Meta):
+        widgets = {
+            'precio_lote':        forms.TextInput(attrs={'type': 'text'}),
+            'apartado':           forms.TextInput(attrs={'type': 'text'}),
+            'monto_pago_completo':forms.TextInput(attrs={'type': 'text'}),
+            'enganche':           forms.TextInput(attrs={'type': 'text'}),
+            'monto_mensualidad':  forms.TextInput(attrs={'type': 'text'}),
+            'fecha_pago_completo': forms.DateInput(attrs={'type': 'date'}),
+            'fecha_enganche':      forms.DateInput(attrs={'type': 'date'}),
+            'fecha_primer_pago':   forms.DateInput(attrs={'type': 'date'}),
+            'fecha_ultimo_pago':   forms.DateInput(attrs={'type': 'date'}),
+            'es_cotizacion': forms.CheckboxInput(attrs={'class': 'checkbox-field'}),
+            'activo': forms.CheckboxInput(attrs={'class': 'checkbox-field'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        self.proyecto_commeta = None
+        if 'proyecto_commeta' in kwargs:
+            self.proyecto_commeta = kwargs.pop('proyecto_commeta')
+        
+        # ✅ NUEVO: Manejar instancia de FinanciamientoCommeta
+        self.instance_commeta = None
+        
+        # Si la instancia es un FinanciamientoCommeta, guardarla y extraer el Financiamiento
+        if 'instance' in kwargs and kwargs['instance'] is not None:
+            instance = kwargs['instance']
+            
+            if isinstance(instance, FinanciamientoCommeta):
+                # Guardar la instancia de FinanciamientoCommeta para referencia
+                self.instance_commeta = instance
+                # Reemplazar con el Financiamiento asociado para el formulario padre
+                kwargs['instance'] = instance.financiamiento
+                print(f"✅ Convertido FinanciamientoCommeta ID {instance.id} a Financiamiento ID {instance.financiamiento.id}")
+        
+        super().__init__(*args, **kwargs)
+        
+        # ✅ CORREGIDO: Ahora self.instance es el Financiamiento (o None)
+        # Cargar datos del detalle Commeta si existe
+        if self.instance and self.instance.pk:
+            # Intentar obtener el detalle Commeta
+            detalle_commeta = None
+            
+            # Primero, usar self.instance_commeta si ya lo tenemos
+            if self.instance_commeta:
+                detalle_commeta = self.instance_commeta
+                print(f"✅ Usando instance_commeta existente: ID {detalle_commeta.id}")
+            else:
+                # Intentar obtener desde la relación
+                try:
+                    detalle_commeta = self.instance.detalle_commeta
+                    self.instance_commeta = detalle_commeta  # Guardar para referencia
+                    print(f"✅ Obtenido detalle_commeta desde relación: ID {detalle_commeta.id}")
+                except FinanciamientoCommeta.DoesNotExist:
+                    detalle_commeta = None
+                    print("⚠️ No hay detalle_commeta para este financiamiento")
+            
+            # Cargar valores iniciales desde el detalle Commeta
+            if detalle_commeta:
+                # Campos principales
+                self.fields['tipo_esquema'].initial = detalle_commeta.tipo_esquema
+                
+                # Campos de meses fuertes
+                self.fields['monto_mensualidad_normal'].initial = detalle_commeta.monto_mensualidad_normal
+                self.fields['cantidad_meses_fuertes'].initial = detalle_commeta.cantidad_meses_fuertes
+                self.fields['frecuencia_meses_fuertes'].initial = detalle_commeta.frecuencia_meses_fuertes
+                self.fields['monto_mes_fuerte'].initial = detalle_commeta.monto_mes_fuerte
+                
+                # También cargar monto_pago_final del financiamiento base
+                if hasattr(detalle_commeta.financiamiento, 'monto_pago_final'):
+                    self.fields['monto_pago_final'].initial = detalle_commeta.financiamiento.monto_pago_final
+                
+                print(f"✅ Valores iniciales cargados desde detalle_commeta ID {detalle_commeta.id}")
+                print(f"   - Tipo esquema: {detalle_commeta.tipo_esquema}")
+                print(f"   - Monto mensualidad normal: {detalle_commeta.monto_mensualidad_normal}")
+                print(f"   - Cantidad meses fuertes: {detalle_commeta.cantidad_meses_fuertes}")
+        
+        # ✅ CORREGIDO: Manejar proyecto_commeta y lotes
+        if self.proyecto_commeta: 
+            self.fields['lote'].queryset = self.proyecto_commeta.lotes.filter(activo=True)
+            
+            # Solo establecer lote inicial si no hay uno ya establecido
+            if not self.initial.get('lote') and self.fields['lote'].queryset.exists():
+                self.initial['lote'] = self.fields['lote'].queryset.first()
+                print(f"✅ Lote inicial establecido: {self.initial['lote']}")
+        
+        # ✅ CORREGIDO: Para edición, ajustar el queryset de lotes
+        elif self.instance and self.instance.pk and hasattr(self.instance, 'lote'):
+            if self.instance.lote.es_commeta:
+                proyecto = self.instance.lote.proyecto
+                # Mostrar todos los lotes activos de este proyecto Commeta
+                self.fields['lote'].queryset = proyecto.lotes.filter(activo=True)
+                print(f"✅ Queryset ajustado para proyecto Commeta: {proyecto.nombre}")
+
+        # ✅ CORREGIDO: Ocultar campo proyecto si es Commeta
+        if self.instance and self.instance.pk and self.instance.lote.es_commeta:
+            self.fields['proyecto'].widget = forms.HiddenInput()
+            self.fields['proyecto'].required = False
+            print("✅ Campo proyecto oculto para Commeta")
+
+    def clean(self):
+        cleaned_data = super().clean()
+        
+        lote = cleaned_data.get('lote')
+        tipo_pago = cleaned_data.get('tipo_pago')
+        tipo_esquema = cleaned_data.get('tipo_esquema')
+        
+        if lote and lote.es_commeta and tipo_pago == 'financiado':
+            if tipo_esquema == 'meses_fuertes':
+                cantidad_meses_fuertes = cleaned_data.get('cantidad_meses_fuertes')
+                monto_mes_fuerte = cleaned_data.get('monto_mes_fuerte')
+                monto_mensualidad_normal = cleaned_data.get('monto_mensualidad_normal')
+                num_mensualidades = cleaned_data.get('num_mensualidades')
+                
+                if not cantidad_meses_fuertes:
+                    raise forms.ValidationError(
+                        "Para esquema de meses fuertes, debe especificar la cantidad de meses fuertes."
+                    )
+                
+                if not monto_mes_fuerte:
+                    raise forms.ValidationError(
+                        "Para esquema de meses fuertes, debe especificar el monto del mes fuerte."
+                    )
+                
+                if not monto_mensualidad_normal:
+                    raise forms.ValidationError(
+                        "Para esquema de meses fuertes, debe especificar el monto de mensualidad normal."
+                    )
+                
+                if num_mensualidades and cantidad_meses_fuertes > num_mensualidades:
+                    raise forms.ValidationError(
+                        f"Los meses fuertes ({cantidad_meses_fuertes}) no pueden exceder "
+                        f"el total de mensualidades ({num_mensualidades})."
+                    )
+            
+            elif tipo_esquema == 'mensualidades_fijas':
+                monto_mensualidad = cleaned_data.get('monto_mensualidad')
+                if not monto_mensualidad:
+                    raise forms.ValidationError(
+                        "Para esquema de mensualidades fijas, debe especificar el monto de la mensualidad."
+                    )
+
+        return cleaned_data
+
+    def save(self, commit=True):
+        # Guardar el Financiamiento base
+        financiamiento = super().save(commit=commit)
+        
+        if financiamiento.lote.es_commeta and commit and financiamiento.tipo_pago == 'financiado':
+            from .utils import obtener_configuracion_commeta, calcular_meses_fuertes_inicio
+            
+            configuracion = obtener_configuracion_commeta(financiamiento.lote)
+            if not configuracion:
+                raise ValueError("El lote Commeta no tiene configuracion asignada")
+            
+            tipo_esquema = self.cleaned_data.get('tipo_esquema')
+            cantidad_meses_fuertes = self.cleaned_data.get('cantidad_meses_fuertes')
+            frecuencia_meses_fuertes = self.cleaned_data.get('frecuencia_meses_fuertes')
+            
+            meses_fuertes_calculados = []
+            if tipo_esquema == 'meses_fuertes' and cantidad_meses_fuertes and financiamiento.num_mensualidades:
+                meses_fuertes_calculados = calcular_meses_fuertes_inicio(
+                    total_meses=financiamiento.num_mensualidades,
+                    cantidad_meses_fuertes=cantidad_meses_fuertes,
+                    frecuencia=frecuencia_meses_fuertes
+                )
+
+            # ✅ CORREGIDO: Usar self.instance_commeta si existe (edición)
+            if hasattr(self, 'instance_commeta') and self.instance_commeta:
+                detalle_commeta = self.instance_commeta
+                print(f"✅ Editando FinanciamientoCommeta existente ID {detalle_commeta.id}")
+            else:
+                # Crear nuevo FinanciamientoCommeta
+                try:
+                    detalle_commeta = financiamiento.detalle_commeta
+                    print(f"✅ Usando detalle_commeta existente ID {detalle_commeta.id}")
+                except FinanciamientoCommeta.DoesNotExist:
+                    detalle_commeta = FinanciamientoCommeta(financiamiento=financiamiento)
+                    print("✅ Creando nuevo FinanciamientoCommeta")
+            
+            # Actualizar campos
+            detalle_commeta.tipo_esquema = tipo_esquema
+            detalle_commeta.cantidad_meses_fuertes = cantidad_meses_fuertes
+            detalle_commeta.frecuencia_meses_fuertes = frecuencia_meses_fuertes
+            detalle_commeta.monto_mes_fuerte = self.cleaned_data.get('monto_mes_fuerte')
+            detalle_commeta.monto_mensualidad_normal = self.cleaned_data.get('monto_mensualidad_normal')
+            detalle_commeta.meses_fuertes_calculados = meses_fuertes_calculados
+            detalle_commeta.configuracion_original = configuracion
+            
+            detalle_commeta.save()
+            print(f"✅ FinanciamientoCommeta guardado: ID {detalle_commeta.id}")
+        
+        return financiamiento
 
 class CartaIntencionForm(forms.ModelForm):
     financiamiento = forms.ModelChoiceField(
@@ -294,4 +515,5 @@ class CartaIntencionForm(forms.ModelForm):
                 )
         
         return oferta
+
 
