@@ -297,7 +297,7 @@ class FinanciamientoCommetaCreateView(CreateView):
         return response
 
     def get_success_url(self):
-        return reverse_lazy('commeta:commeta_financiamiento_list')
+        return reverse_lazy('commeta:financiamiento_list')
     
 class FinanciamientoCommetaUpdateView(UpdateView):
     model = FinanciamientoCommeta
@@ -392,13 +392,13 @@ class FinanciamientoCommetaUpdateView(UpdateView):
         return response
 
     def get_success_url(self):
-        return reverse_lazy('commeta:commeta_financiamiento_detail', kwargs={'pk': self.object.pk})
+        return reverse_lazy('commeta:financiamiento_detail', kwargs={'pk': self.object.pk})
 
     
 
 class FinanciamientoCommetaDeleteView(DeleteView):
     model = FinanciamientoCommeta
-    success_url = reverse_lazy('commeta:commeta_financiamiento_list')
+    success_url = reverse_lazy('commeta:financiamiento_list')
 
     def get_template_names(self):
         if self.request.headers.get('HX-Request'):
@@ -445,4 +445,5 @@ class FinanciamientoCommetaDeleteView(DeleteView):
         context = super().get_context_data(**kwargs)
         # Asegurarnos de que el objeto esté disponible en el template
         context['object'] = self.object
+
         return context
