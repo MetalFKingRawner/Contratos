@@ -23,7 +23,7 @@
         
         <button type="button" 
                 class="modal-close-btn"
-                hx-get="{% url 'commeta:commeta_financiamiento_detail' object.pk %}"
+                hx-get="{% url 'commeta:financiamiento_detail' object.pk %}"
                 hx-target="#content"
                 hx-swap="innerHTML"
                 title="Cerrar">
@@ -95,7 +95,7 @@
           <!-- Botón cancelar -->
           <button type="button" 
                   class="modal-btn cancel"
-                  hx-get="{% url 'commeta:commeta_financiamiento_detail' object.pk %}"
+                  hx-get="{% url 'commeta:financiamiento_detail' object.pk %}"
                   hx-target="#content"
                   hx-swap="innerHTML">
             <i class="fas fa-arrow-left"></i>
@@ -104,7 +104,7 @@
           
           <!-- Botón eliminar -->
           <form method="post" class="delete-form"
-                hx-post="{% url 'commeta:commeta_financiamiento_delete' object.pk %}"
+                hx-post="{% url 'commeta:financiamiento_delete' object.pk %}"
                 hx-target="#content"
                 hx-swap="innerHTML">
             {% csrf_token %}
@@ -883,4 +883,5 @@ window.addEventListener('beforeunload', function(e) {
     return '';
   }
 });
+
 </script>
