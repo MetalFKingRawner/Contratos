@@ -2,8 +2,8 @@
 from django.views.generic import View
 from django.views.generic import TemplateView, ListView, DetailView, CreateView, UpdateView, DeleteView
 from workflow.models import Tramite  # Ajusta al path real de tu modelo
-from financiamiento.models import Financiamiento  # Ajusta import según tu estructura
-from core.models import Cliente  # o donde tengas definido Cliente
+from financiamiento.models import Financiamiento, CartaIntencion, FinanciamientoCommeta  # Ajusta import según tu estructura
+from core.models import Cliente, ConfiguracionCommeta  # o donde tengas definido Cliente
 from core.models import Vendedor, Propietario
 from core.models import Proyecto, Lote, Beneficiario
 from django.db.models import Prefetch
@@ -131,23 +131,62 @@ class DownloadDocumentView(View):
         tpl_path = os.path.join(settings.BASE_DIR, doc_info['plantilla'])
         tpl = DocxTemplate(tpl_path)
         
-        # Intentar pasar el segundo cliente si el builder lo soporta
-        try:
-            context = builder(
-                fin, cli, ven, 
-                cliente2=cli2,
-                request=request, 
-                tpl=tpl, 
-                firma_data=tramite.firma_cliente, 
-                clausulas_adicionales=clausulas_adicionales,
-                tramite=tramite,
-                fecha=fecha
-            )
-        except TypeError as e:
-            # Si el builder no acepta cliente2, intentar sin él
+        # Manejo especial para el documento de financiamiento
+        if document_type == 'financiamiento':
+            try:
+                if tramite.es_commeta:
+                    # CORRECCIÓN: obtener_detalle_commeta es una propiedad, NO un método
+                    fin_commeta = tramite.obtener_detalle_commeta  # SIN PARÉNTESIS
+                    print(f"📊 Dashboard - Generando financiamiento Commeta, esquema: {fin_commeta.tipo_esquema if fin_commeta else 'N/A'}")
+                    
+                    # Llamar al builder con parámetros Commeta
+                    context = builder(
+                        fin, cli, ven, 
+                        request=request, 
+                        tpl=tpl, 
+                        firma_data=tramite.firma_cliente,
+                        clausulas_adicionales=clausulas_adicionales,
+                        cliente2=cli2,
+                        tramite=tramite,
+                        fecha=fecha,
+                        is_commeta=True,
+                        fin_commeta=fin_commeta
+                    )
+                else:
+                    # Llamar al builder para financiamiento normal
+                    context = builder(
+                        fin, cli, ven, 
+                        request=request, 
+                        tpl=tpl, 
+                        firma_data=tramite.firma_cliente,
+                        clausulas_adicionales=clausulas_adicionales,
+                        cliente2=cli2,
+                        tramite=tramite,
+                        fecha=fecha,
+                        is_commeta=False,
+                        fin_commeta=None
+                    )
+            except Exception as e:
+                print(f"❌ Error en builder de financiamiento (dashboard): {str(e)}")
+                import traceback
+                traceback.print_exc()
+                # Fallback a la versión simple
+                try:
+                    context = builder(
+                        fin, cli, ven, 
+                        request=request, 
+                        tpl=tpl, 
+                        firma_data=tramite.firma_cliente,
+                        fecha=fecha
+                    )
+                except TypeError:
+                    context = builder(fin, cli, ven, request=request, tpl=tpl, firma_data=tramite.firma_cliente)
+        else:
+            # Para los otros documentos, usar el método existente
             try:
                 context = builder(
                     fin, cli, ven, 
+                    cliente2=cli2,
                     request=request, 
                     tpl=tpl, 
                     firma_data=tramite.firma_cliente, 
@@ -155,13 +194,29 @@ class DownloadDocumentView(View):
                     tramite=tramite,
                     fecha=fecha
                 )
-            except TypeError:
+            except TypeError as e:
+                # Si el builder no acepta cliente2, intentar sin él
+                try:
+                    context = builder(
+                        fin, cli, ven, 
+                        request=request, 
+                        tpl=tpl, 
+                        firma_data=tramite.firma_cliente, 
+                        clausulas_adicionales=clausulas_adicionales,
+                        tramite=tramite,
+                        fecha=fecha
+                    )
+                except TypeError:
+                    try:
+                        # Versión mínima con Trámite (Ej. Solicitud de contrato)
+                        context = builder(fin, cli, ven, request=request, tpl=tpl, firma_data=tramite.firma_cliente, tramite=tramite, fecha=fecha)
+                    except TypeError:
                         try:
-                            # Versión mínima con Trámite (Ej. Solicitud de contrato)
-                            context = builder(fin, cli, ven,request=self.request, tpl=tpl,firma_data=tramite.firma_cliente, tramite=tramite)
+                            # Versión con fecha pero sin tramite
+                            context = builder(fin, cli, ven, request=request, tpl=tpl, firma_data=tramite.firma_cliente, fecha=fecha)
                         except TypeError:
-                            #Versión sin Trámite
-                            context = builder(fin, cli, ven,request=self.request, tpl=tpl,firma_data=tramite.firma_cliente)
+                            #Versión sin Trámite ni fecha
+                            context = builder(fin, cli, ven, request=request, tpl=tpl, firma_data=tramite.firma_cliente)
 
         
         # 7. Generar el documento Word
@@ -176,7 +231,16 @@ class DownloadDocumentView(View):
                 output.getvalue(),
                 content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
             )
-            response['Content-Disposition'] = f'attachment; filename="{document_type}.docx"'
+            
+            # Nombre del archivo más descriptivo
+            if document_type == 'financiamiento':
+                cliente_nombre = cli.nombre_completo.replace(' ', '_')
+                tipo = 'commeta' if tramite.es_commeta else 'normal'
+                filename = f"tabla_financiamiento_{tipo}_{cliente_nombre}.docx"
+            else:
+                filename = f"{document_type}.docx"
+                
+            response['Content-Disposition'] = f'attachment; filename="{filename}"'
             return response
         
         # 9. Si el formato es PDF, convertir el Word a PDF y devolverlo
@@ -195,15 +259,37 @@ class DownloadDocumentView(View):
                 # Leer el PDF y devolverlo
                 with open(temp_pdf_path, 'rb') as f:
                     pdf_data = f.read()
+                
+                # Nombre del archivo más descriptivo
+                if document_type == 'financiamiento':
+                    cliente_nombre = cli.nombre_completo.replace(' ', '_')
+                    tipo = 'commeta' if tramite.es_commeta else 'normal'
+                    filename = f"tabla_financiamiento_{tipo}_{cliente_nombre}.pdf"
+                else:
+                    filename = f"{document_type}.pdf"
+                    
                 response = HttpResponse(pdf_data, content_type='application/pdf')
-                response['Content-Disposition'] = f'attachment; filename="{document_type}.pdf"'
+                response['Content-Disposition'] = f'attachment; filename="{filename}"'
+                
+                # Limpiar archivos temporales
+                try:
+                    os.remove(temp_docx_path)
+                    os.remove(temp_pdf_path)
+                except:
+                    pass
+                    
                 return response
             else:
-                return HttpResponse("Error al generar PDF", status=500)
+                # Si falla la conversión, devolver el Word
+                response = HttpResponse(
+                    output.getvalue(),
+                    content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+                )
+                response['Content-Disposition'] = f'attachment; filename="{document_type}.docx"'
+                return response
         
         else:
             return HttpResponse("Formato no válido", status=400)
-
 
 class TramiteListView(ListView):
     """Listado de Trámites."""
@@ -1823,6 +1909,9 @@ def home(request):
       'num_tramites': Tramite.objects.count(),
       'num_beneficiarios': Beneficiario.objects.count(),
       'num_cartas_intencion': CartaIntencion.objects.count(),
+      # Nuevos contadores para Commeta
+        'num_configuraciones_commeta': ConfiguracionCommeta.objects.count(),
+        'num_financiamientos_commeta': FinanciamientoCommeta.objects.count(),
     }
     # Si es petición HTMX, devolvemos _solo_ el partial
     if request.headers.get('HX-Request'):
@@ -1847,5 +1936,6 @@ def health_check(request):
         "message": "Application is alive",
         "app": "dashboard"
     })
+
 
 
