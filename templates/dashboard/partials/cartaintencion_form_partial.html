@@ -153,14 +153,30 @@
                 <i class="fas fa-hand-holding-usd label-icon"></i>
                 {{ form.financiamiento.label }} <span class="required-asterisk">*</span>
               </label>
-              {{ form.financiamiento }}
-              {% if form.financiamiento.errors %}
-                <div class="form-errors">
-                  {% for error in form.financiamiento.errors %}
-                    <span class="error-message"><i class="fas fa-exclamation-circle"></i> {{ error }}</span>
-                  {% endfor %}
-                </div>
-              {% endif %}
+              <select name="financiamiento" 
+                      class="form-control" 
+                      id="id_financiamiento" 
+                      required>
+                <option value="">---------</option>
+                {% for fin in form.financiamiento.field.queryset %}
+                  <option value="{{ fin.pk }}"
+                          data-cliente="{{ fin.nombre_cliente }}"
+                          data-precio="{{ fin.precio_lote }}"
+                          data-lote="{{ fin.lote.identificador }}"
+                          data-proyecto="{{ fin.lote.proyecto.nombre }}"
+                          {% if form.financiamiento.value == fin.pk %}selected{% endif %}>
+                    {{ fin }}
+                  </option>
+                {% endfor %}
+              </select>
+              <div id="financiamiento-help"></div>
+                {% if form.financiamiento.errors %}
+                  <div class="form-errors">
+                    {% for error in form.financiamiento.errors %}
+                      <span class="error-message"><i class="fas fa-exclamation-circle"></i> {{ error }}</span>
+                    {% endfor %}
+                  </div>
+                {% endif %}
             </div>
 
             <div class="form-group carta-form-group">
@@ -820,18 +836,22 @@
 // Script para mejorar la experiencia del formulario
 document.addEventListener('DOMContentLoaded', function() {
   initCartaIntencionForm();
+  initFormAnimations();
 });
 
 // Reinicializar cuando HTMX carga contenido
 document.body.addEventListener('htmx:afterSwap', function(evt) {
   if (evt.detail.target.id === 'content') {
-    setTimeout(initCartaIntencionForm, 50);
+    setTimeout(() => {
+      initCartaIntencionForm();
+      initFormAnimations();
+    }, 50);
   }
 });
 
 function initCartaIntencionForm() {
   // Mostrar/ocultar institución financiera basado en crédito hipotecario
-  const creditoHipotecarioSelect = document.getElementById('{{ form.credito_hipotecario.id_for_label }}');
+  const creditoHipotecarioSelect = document.getElementById('id_credito_hipotecario');
   const institucionFinancieraGroup = document.getElementById('institucion-financiera-group');
 
   function toggleInstitucionFinanciera() {
@@ -915,55 +935,87 @@ function initCartaIntencionForm() {
     });
   }
 
-  // Precargar datos del financiamiento si se proporciona un ID
-  const financiamientoSelect = document.getElementById('{{ form.financiamiento.id_for_label }}');
-  const ofertaInput = document.getElementById('{{ form.oferta.id_for_label }}');
-  const nombreClienteInput = document.getElementById('{{ form.nombre_cliente.id_for_label }}');
+  // Precargar datos del financiamiento
+  const financiamientoSelect = document.getElementById('id_financiamiento');
+  const ofertaInput = document.getElementById('id_oferta');
+  const nombreClienteInput = document.getElementById('id_nombre_cliente');
 
   if (financiamientoSelect && ofertaInput && nombreClienteInput) {
     financiamientoSelect.addEventListener('change', function() {
       const selectedOption = this.options[this.selectedIndex];
-      if (selectedOption.value) {
-        // Los datos están en el atributo data-*
-        const precioLote = selectedOption.getAttribute('data-precio');
-        const nombreCliente = selectedOption.getAttribute('data-cliente');
-
-        if (precioLote && !ofertaInput.value) {
-          ofertaInput.value = precioLote;
-          ofertaInput.classList.add('is-valid');
-        }
-
+      
+      if (selectedOption && selectedOption.value) {
+        // Leer los atributos data-*
+        const nombreCliente = selectedOption.dataset.cliente || '';
+        const precioLote = selectedOption.dataset.precio || '';
+        const loteId = selectedOption.dataset.lote || '';
+        const proyectoNombre = selectedOption.dataset.proyecto || '';
+        
+        // Prellenar nombre del cliente solo si está vacío
         if (nombreCliente && !nombreClienteInput.value) {
           nombreClienteInput.value = nombreCliente;
           nombreClienteInput.classList.add('is-valid');
+          // Animación
+          nombreClienteInput.style.transition = 'all 0.3s ease';
+          nombreClienteInput.style.transform = 'scale(1.02)';
+          setTimeout(() => nombreClienteInput.style.transform = 'scale(1)', 300);
         }
+        
+        // Prellenar oferta solo si está vacía
+        if (precioLote && !ofertaInput.value) {
+          ofertaInput.value = precioLote;
+          ofertaInput.classList.add('is-valid');
+          // Animación
+          ofertaInput.style.transition = 'all 0.3s ease';
+          ofertaInput.style.transform = 'scale(1.02)';
+          setTimeout(() => ofertaInput.style.transform = 'scale(1)', 300);
+        }
+        
+        // Mostrar info del lote
+        const helpDiv = financiamientoSelect.parentElement.querySelector('#financiamiento-help');
+        if (helpDiv && loteId && proyectoNombre) {
+          helpDiv.innerHTML = `<small style="display: block; margin-top: 0.5rem; color: #6b7280; font-size: 0.875rem;">
+            📍 Lote: ${loteId} - ${proyectoNombre}
+          </small>`;
+        }
+      } else {
+        // Limpiar info si se deselecciona
+        const helpDiv = financiamientoSelect.parentElement.querySelector('#financiamiento-help');
+        if (helpDiv) helpDiv.innerHTML = '';
       }
     });
+    
+    // Auto-ejecutar si ya hay selección al cargar
+    if (financiamientoSelect.value && !nombreClienteInput.value && !ofertaInput.value) {
+      financiamientoSelect.dispatchEvent(new Event('change'));
+    }
   }
 }
 
-// Animación de entrada para las secciones
-const observerOptions = {
-  threshold: 0.1,
-  rootMargin: '0px 0px -50px 0px'
-};
+// Animación de entrada para las secciones (ahora dentro de una función)
+function initFormAnimations() {
+  const observerOptions = {
+    threshold: 0.1,
+    rootMargin: '0px 0px -50px 0px'
+  };
 
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach((entry, index) => {
-    if (entry.isIntersecting) {
-      setTimeout(() => {
-        entry.target.style.opacity = '1';
-        entry.target.style.transform = 'translateY(0)';
-      }, index * 100);
-      observer.unobserve(entry.target);
-    }
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, index) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => {
+          entry.target.style.opacity = '1';
+          entry.target.style.transform = 'translateY(0)';
+        }, index * 100);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, observerOptions);
+
+  document.querySelectorAll('.form-section').forEach(section => {
+    section.style.opacity = '0';
+    section.style.transform = 'translateY(20px)';
+    section.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+    observer.observe(section);
   });
-}, observerOptions);
-
-document.querySelectorAll('.form-section').forEach(section => {
-  section.style.opacity = '0';
-  section.style.transform = 'translateY(20px)';
-  section.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-  observer.observe(section);
-});
+}
 </script>
