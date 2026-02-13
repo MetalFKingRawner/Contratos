@@ -52,9 +52,24 @@
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
       <div class="container">
-        <a class="navbar-brand" href="{% url 'inicio' %}">
-          <img src="{% static 'img/logo.webp' %}" alt="Inmobiliaria XYZ" height="40">
-        </a>
+        {% if user.is_authenticated %}
+          {% if user.groups.all.0.name == "Contabilidad"%}
+            <!-- Usuario de Contabilidad: redirige a Pagos -->
+            <a class="navbar-brand" href="{% url 'pagos:dashboard' %}">
+              <img src="{% static 'img/logo.webp' %}" alt="Inmobiliaria XYZ" height="40">
+            </a>
+          {% else %}
+            <!-- Usuario staff u otros: redirige a Inicio -->
+            <a class="navbar-brand" href="{% url 'inicio' %}">
+              <img src="{% static 'img/logo.webp' %}" alt="Inmobiliaria XYZ" height="40">
+            </a>
+          {% endif %}
+        {% else %}
+          <!-- Usuario no autenticado: sin enlace -->
+          <span class="navbar-brand" style="cursor: default;">
+            <img src="{% static 'img/logo.webp' %}" alt="Inmobiliaria XYZ" height="40">
+          </span>
+        {% endif %}
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" 
                 data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" 
                 aria-expanded="false" aria-label="Alternar navegación">
@@ -63,24 +78,48 @@
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
           <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-center">
             <!-- Añade enlaces según necesites -->
+            
+            
+            {% if user.is_authenticated %}
+            <!-- Para Contabilidad y Admin -->
+            {% if user.groups.all.0.name == "Contabilidad" %}
+            <li class="nav-item">
+                <a class="nav-link {% if 'pagos' in request.resolver_match.app_names %}active{% endif %}" 
+                  href="{% url 'pagos:dashboard' %}">
+                    Pagos
+                </a>
+            </li>
+            {% else %}
             <li class="nav-item">
               <a class="nav-link" href="{% url 'inicio' %}">Inicio</a>
             </li>
-            
-            {% if user.is_authenticated %}
-            <!-- Ejemplo: si habrá sección de administración interna -->
-            {% if user.is_staff %}
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'dashboard:home' %}">Panel Admin</a>
-            </li>
+            <!-- Staff y otros usuarios ven todo -->
+                {% if user.is_staff or user.groups.all.0.name == "Contabilidad" %}
+                <li class="nav-item">
+                    <a class="nav-link {% if 'pagos' in request.resolver_match.app_names %}active{% endif %}" 
+                      href="{% url 'pagos:dashboard' %}">
+                        Pagos
+                    </a>
+                </li>
+                {% endif %}
+                
+                {% if user.is_staff %}
+                <li class="nav-item">
+                    <a class="nav-link {% if 'dashboard' in request.resolver_match.app_names %}active{% endif %}" 
+                      href="{% url 'dashboard:home' %}">
+                        Panel Admin
+                    </a>
+                </li>
+                {% endif %}
+                
+                <li class="nav-item">
+                  <a class="nav-link" href="{% url 'financiamiento:list' %}">Financiamiento</a>
+                </li>
+                
+                <li class="nav-item">
+                  <a class="nav-link" href="{% url 'financiamiento:carta_intencion_list' %}">Carta de Intención</a>
+                </li>
             {% endif %}
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'financiamiento:list' %}">Financiamiento</a>
-            </li>
-            <!-- Nuevo ítem para Carta de Intención -->
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'financiamiento:carta_intencion_list' %}">Carta de Intención</a>
-            </li>
             <li class="nav-item">
               <form id="logout-form" method="post" action="{% url 'core:logout' %}">
                 {% csrf_token %}
@@ -147,6 +186,7 @@
     {% block extra_js %}{% endblock %}
 </body>
 </html>
+
 
 
 
