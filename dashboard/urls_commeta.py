@@ -13,10 +13,9 @@ urlpatterns = [
     path('configuraciones/<int:pk>/eliminar/', views_commeta.ConfiguracionCommetaDeleteView.as_view(), name='commeta_configuracion_delete'),
     
     # Financiamientos Commeta CRUD
-    path('financiamientos/', views_commeta.FinanciamientoCommetaListView.as_view(), name='financiamiento_list'),
-    path('financiamientos/crear/', views_commeta.FinanciamientoCommetaCreateView.as_view(), name='financiamiento_create'),
-    path('financiamientos/<int:pk>/', views_commeta.FinanciamientoCommetaDetailView.as_view(), name='financiamiento_detail'),
-    path('financiamientos/<int:pk>/editar/', views_commeta.FinanciamientoCommetaUpdateView.as_view(), name='financiamiento_update'),
-    path('financiamientos/<int:pk>/eliminar/', views_commeta.FinanciamientoCommetaDeleteView.as_view(), name='financiamiento_delete'),
-
+    path('financiamientos/', views_commeta.FinanciamientoCommetaListView.as_view(), name='commeta_financiamiento_list'),
+    path('financiamientos/crear/', views_commeta.FinanciamientoCommetaCreateView.as_view(), name='commeta_financiamiento_create'),
+    path('financiamientos/<int:pk>/', views_commeta.FinanciamientoCommetaDetailView.as_view(), name='commeta_financiamiento_detail'),
+    path('financiamientos/<int:pk>/editar/', views_commeta.FinanciamientoCommetaUpdateView.as_view(), name='commeta_financiamiento_update'),
+    path('financiamientos/<int:pk>/eliminar/', views_commeta.FinanciamientoCommetaDeleteView.as_view(), name='commeta_financiamiento_delete'),
 ]
