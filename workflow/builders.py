@@ -81,33 +81,136 @@ def build_aviso_privacidad_context(fin, cli, ven, request=None, tpl=None,firma_d
 
     return context
 
-def build_financiamiento_context(fin, cli, ven, request=None, tpl=None, firma_data=None):
+def calcular_distribucion_meses_fuertes(total_meses, cantidad_meses_fuertes, frecuencia=None):
     """
-    Context para Tabla de Financiamiento
+    Replica exactamente la lógica de JavaScript para Commeta.
     """
+    # Caso especial: si todos los meses son fuertes
+    if cantidad_meses_fuertes >= total_meses:
+        return list(range(1, total_meses + 1))
+    
+    if frecuencia:
+        # Distribución con frecuencia fija
+        meses_fuertes = []
+        mes_actual = frecuencia
+        while len(meses_fuertes) < cantidad_meses_fuertes and mes_actual <= total_meses:
+            meses_fuertes.append(mes_actual)
+            mes_actual += frecuencia
+        return meses_fuertes
+    else:
+        # Distribución automática (equidistante)
+        if cantidad_meses_fuertes == 0:
+            return []
+        
+        espaciado = max(1, total_meses // cantidad_meses_fuertes)
+        meses_fuertes = []
+        
+        # Comenzar desde el primer mes disponible
+        for i in range(cantidad_meses_fuertes):
+            mes = min((i * espaciado) + 1, total_meses)
+            meses_fuertes.append(mes)
+        
+        # Eliminar duplicados y ordenar
+        meses_unicos = sorted(set(meses_fuertes))
+        meses_filtrados = [mes for mes in meses_unicos if mes <= total_meses]
+        
+        # Si nos faltan meses fuertes, agregar al final
+        meses_finales = list(meses_filtrados)
+        while len(meses_finales) < cantidad_meses_fuertes and meses_finales[-1] < total_meses:
+            nuevo_mes = min(meses_finales[-1] + 1, total_meses)
+            if nuevo_mes not in meses_finales:
+                meses_finales.append(nuevo_mes)
+        
+        return sorted(meses_finales[:cantidad_meses_fuertes])
+        
+def build_financiamiento_context(fin, cli, ven, request=None, tpl=None, firma_data=None, 
+                                 is_commeta=False, fin_commeta=None, **kwargs):
+    """
+    Context para Tabla de Financiamiento - Compatible con Normal y Commeta
+    """
+    clausulas_adicionales = kwargs.get('clausulas_adicionales', {})
+    cliente2 = kwargs.get('cliente2', None)
+    tramite = kwargs.get('tramite', None)
+    
     # 1) Fecha actual
     hoy = date.today()
     meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
              "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
     
-    # 2) Cálculos iniciales
+    # 2) Cálculos iniciales (comunes para ambos)
     resta_apartado = float(fin.precio_lote) - float(fin.apartado)
     resta_enganche = resta_apartado - float(fin.enganche or 0)
     
-    # 3) Generar lista de pagos para las mensualidades
+    # 3) Lógica específica para Commeta - DETERMINAR MESES FUERTES
+    meses_fuertes = []
+    if is_commeta and fin_commeta:
+        if fin_commeta.tipo_esquema == 'meses_fuertes':
+            if fin_commeta.usar_meses_especificos and fin_commeta.meses_fuertes_calculados:
+                meses_fuertes = fin_commeta.meses_fuertes_calculados
+            else:
+                meses_fuertes = calcular_distribucion_meses_fuertes(
+                    total_meses=fin.num_mensualidades,
+                    cantidad_meses_fuertes=fin_commeta.cantidad_meses_fuertes,
+                    frecuencia=fin_commeta.frecuencia_meses_fuertes
+                )
+    
+    # 4) Generar lista de pagos según el tipo
     pagos = []
     saldo_actual = resta_enganche
     
-    if fin.tipo_pago == 'financiado' and fin.num_mensualidades and fin.monto_mensualidad:
+    if fin.tipo_pago == 'financiado' and fin.num_mensualidades:
         fecha_pago = fin.fecha_primer_pago
         
         for i in range(1, fin.num_mensualidades + 1):
-            # Determinar monto de la cuota - CORREGIDO
-            if i == fin.num_mensualidades:
-                # En el último pago, la cuota es el saldo actual (lo que queda por pagar)
-                cuota = saldo_actual
+            cuota = 0
+            
+            if is_commeta and fin_commeta:
+                # ========== LÓGICA COMMETA ==========
+                
+                # Determinar si es el último mes
+                es_ultimo_mes = (i == fin.num_mensualidades)
+                
+                if fin_commeta.tipo_esquema == 'meses_fuertes':
+                    # --- ESQUEMA MESES FUERTES ---
+                    if es_ultimo_mes and fin.monto_pago_final:
+                        # Pago final explícito
+                        cuota = float(fin.monto_pago_final)
+                    elif es_ultimo_mes:
+                        # Último pago = saldo restante
+                        cuota = saldo_actual
+                    elif i in meses_fuertes:
+                        # Mes fuerte
+                        cuota = float(fin_commeta.monto_mes_fuerte)
+                    else:
+                        # Mes normal
+                        cuota = float(fin_commeta.monto_mensualidad_normal or 0)
+                
+                elif fin_commeta.tipo_esquema == 'mensualidades_fijas':
+                    # --- ESQUEMA MENSUALIDADES FIJAS ---
+                    if es_ultimo_mes and fin.monto_pago_final:
+                        cuota = float(fin.monto_pago_final)
+                    elif es_ultimo_mes:
+                        cuota = saldo_actual
+                    else:
+                        cuota = float(fin.monto_mensualidad or 0)
+                
+                else:
+                    # --- ESQUEMA DE GRACIA (caso PROBADON) ---
+                    # Todos los meses tienen cuota 0 excepto el último
+                    if es_ultimo_mes:
+                        # El último pago liquida todo el saldo
+                        cuota = saldo_actual
+                    else:
+                        # Período de gracia: cuota = 0
+                        cuota = 0.0
+            
             else:
-                cuota = float(fin.monto_mensualidad)
+                # ========== LÓGICA FINANCIAMIENTO NORMAL ==========
+                if i == fin.num_mensualidades:
+                    # Último pago = saldo actual
+                    cuota = saldo_actual
+                else:
+                    cuota = float(fin.monto_mensualidad)
             
             # Calcular saldo final
             saldo_final = max(0, saldo_actual - cuota)
@@ -115,59 +218,94 @@ def build_financiamiento_context(fin, cli, ven, request=None, tpl=None, firma_da
             pagos.append({
                 'numero': i,
                 'fecha': fecha_pago.strftime("%d/%m/%Y") if fecha_pago else '',
-                'saldo_inicial': fmt_money(saldo_actual),  # Formateado con comas
-                'cuota': fmt_money(cuota),  # Formateado con comas
-                'saldo_final': fmt_money(saldo_final),  # Formateado con comas
+                'saldo_inicial': fmt_money(saldo_actual),
+                'cuota': fmt_money(cuota),
+                'saldo_final': fmt_money(saldo_final),
             })
             
             # Actualizar para siguiente pago
             saldo_actual = saldo_final
             if fecha_pago:
-                # Avanzar un mes (manejo simple de fecha)
-                if fecha_pago.month == 12:
-                    fecha_pago = fecha_pago.replace(year=fecha_pago.year + 1, month=1)
-                else:
-                    fecha_pago = fecha_pago.replace(month=fecha_pago.month + 1)
+                # Avanzar un mes
+                try:
+                    if fecha_pago.month == 12:
+                        fecha_pago = fecha_pago.replace(year=fecha_pago.year + 1, month=1)
+                    else:
+                        fecha_pago = fecha_pago.replace(month=fecha_pago.month + 1)
+                except:
+                    pass
 
-    # 4) Pronombres según sexo
+    # 5) Pronombres según sexo
     def art(sex, masculino, femenino):
         return masculino if sex == 'M' else femenino
 
     SEXO_COM = art(cli.sexo, 'COMPRADOR', 'COMPRADORA')
     SEXO_VEN = art(ven.sexo, 'VENDEDOR', 'VENDEDORA')
+    
+    if cliente2:
+        SEXO_COM2 = art(cliente2.sexo, 'COMPRADOR', 'COMPRADORA')
 
-    # 5) Construir contexto
+    # 6) Construir contexto base
     context = {
-        # Fechas
         'FECHA': hoy.strftime("%d/%m/%Y"),
         'FECHA_APARTADO': fin.creado_en.strftime("%d/%m/%Y") if fin.creado_en else hoy.strftime("%d/%m/%Y"),
         'FECHA_ENGANCHE': fin.fecha_enganche.strftime("%d/%m/%Y") if fin.fecha_enganche else '',
         
-        # Datos del lote y cliente
         'LOTE': fin.lote.identificador,
         'NOMBRE_CLIENTE': cli.nombre_completo.upper(),
         'NOMBRE_COMPRADOR': cli.nombre_completo.upper(),
         'NOMBRE_VENDEDOR': ven.nombre_completo.upper(),
         
-        # Montos financiamiento - FORMATEADOS CON COMAS
         'PRECIO_LOTE': fmt_money(fin.precio_lote),
         'APARTADO': fmt_money(fin.apartado),
         'ENGANCHE': fmt_money(fin.enganche) if fin.enganche else '',
         'NUM_MENSUALIDADES': fin.num_mensualidades,
         
-        # Cálculos intermedios - FORMATEADOS CON COMAS
         'RESTA_APARTADO': fmt_money(resta_apartado),
         'RESTA_ENGANCHE': fmt_money(resta_enganche),
         
-        # Lista de pagos
         'pagos': pagos,
         
-        # Pronombres
         'SEXO_COM': SEXO_COM,
         'SEXO_VEN': SEXO_VEN,
+        
+        'ES_COMMETA': is_commeta,
     }
-
-    # 6) Firma del cliente (igual al otro builder)
+    
+    # 7) Segundo cliente
+    if cliente2:
+        context.update({
+            'NOMBRE_CLIENTE2': cliente2.nombre_completo.upper(),
+            'NOMBRE_COMPRADOR2': cliente2.nombre_completo.upper(),
+            'SEXO_COM2': SEXO_COM2,
+        })
+    
+    # 8) Campos específicos Commeta
+    if is_commeta and fin_commeta:
+        # Determinar montos según esquema
+        if fin_commeta.tipo_esquema == 'meses_fuertes':
+            abono_normal = float(fin_commeta.monto_mensualidad_normal or 0)
+            abono_fuerte = float(fin_commeta.monto_mes_fuerte or 0)
+            periodo_fuerte = fin_commeta.frecuencia_meses_fuertes
+        elif fin_commeta.tipo_esquema == 'mensualidades_fijas':
+            abono_normal = float(fin.monto_mensualidad or 0)
+            abono_fuerte = 0
+            periodo_fuerte = None
+        else:
+            # Esquema de gracia u otro
+            abono_normal = 0
+            abono_fuerte = 0
+            periodo_fuerte = None
+        
+        context.update({
+            'ABONO_NORMAL': fmt_money(abono_normal),
+            'ABONO_FUERTE': fmt_money(abono_fuerte) if abono_fuerte else '',
+            'PERIODO_FUERTE': periodo_fuerte,
+            'TIPO_ESQUEMA': fin_commeta.tipo_esquema,
+            'CANTIDAD_MESES_FUERTES': fin_commeta.cantidad_meses_fuertes if hasattr(fin_commeta, 'cantidad_meses_fuertes') else '',
+        })
+    
+    # 9) Firma
     if request and tpl:
         data_url = firma_data or (request.session.get('firma_cliente_data') if request else None)
         if data_url:
@@ -176,7 +314,6 @@ def build_financiamiento_context(fin, cli, ven, request=None, tpl=None, firma_da
             fd, tmp = tempfile.mkstemp(suffix='.png')
             with os.fdopen(fd, 'wb') as f:
                 f.write(img_data)
-            # Inserta la imagen de firma
             context['FIRMA_CLIENTE'] = InlineImage(tpl, tmp, width=Mm(40))
         else:
             context['FIRMA_CLIENTE'] = ''
@@ -184,7 +321,7 @@ def build_financiamiento_context(fin, cli, ven, request=None, tpl=None, firma_da
         context['FIRMA_CLIENTE'] = ''
 
     return context
-
+                                     
 def build_carta_intencion_context(fin, cli, ven,request=None, tpl=None, firma_data=None, tramite=None):
     # Aquí generaremos el dict con todos los placeholders de la carta
     # Ejemplo mínimo:
@@ -4181,6 +4318,7 @@ def build_contrato_canario_pagos_varios_context(fin, cli, ven, cliente2=None,req
     })
 
     return context
+
 
 
 
