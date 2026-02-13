@@ -9,38 +9,18 @@ class Migration(migrations.Migration):
     dependencies = [
         ('core', '0012_proyecto_incluir_cesion_derechos_and_more'),
         ('financiamiento', '0004_financiamientocommeta'),
-        ('workflow', '0006_tramite_beneficiario_1_tramite_beneficiario_1_firma_and_more'),
+        ('workflow', '0006_tramite_beneficiario_1_firma_and_more'),
     ]
 
     operations = [
-        # Operaciones de 0007: Remove campos nombre y add ForeignKeys a Beneficiario
-        migrations.RemoveField(
-            model_name='tramite',
-            name='beneficiario_1_nombre',
-        ),
-        migrations.RemoveField(
-            model_name='tramite',
-            name='beneficiario_2_nombre',
-        ),
-        migrations.AddField(
-            model_name='tramite',
-            name='beneficiario_1',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='tramites_beneficiario1', to='core.beneficiario', verbose_name='Beneficiario 1'),
-        ),
-        migrations.AddField(
-            model_name='tramite',
-            name='beneficiario_2',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='tramites_beneficiario2', to='core.beneficiario', verbose_name='Beneficiario 2'),
-        ),
-        
-        # Operaciones de 0008: Add financiamiento_commeta
+        # Operación de 0008: Add financiamiento_commeta
         migrations.AddField(
             model_name='tramite',
             name='financiamiento_commeta',
             field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='tramites_commeta', to='financiamiento.financiamientocommeta', verbose_name='Financiamiento Commeta (si aplica)'),
         ),
         
-        # AlterFields indicados por Render (posiblemente para fix help_text)
+        # AlterFields indicados por Render
         migrations.AlterField(
             model_name='tramite',
             name='firma_cliente2',
@@ -52,4 +32,3 @@ class Migration(migrations.Migration):
             field=models.TextField(blank=True, help_text='Data-URL base64 de la firma del vendedor'),
         ),
     ]
-
