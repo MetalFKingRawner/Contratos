@@ -70,5 +70,3 @@ urlpatterns = [
     path('cartas-intencion/<int:pk>/eliminar/', views.CartaIntencionDeleteView.as_view(), name='cartaintencion_delete'),
     path('cartas-intencion/<int:pk>/descargar/<str:formato>/', views.CartaIntencionDownloadView.as_view(), name='cartaintencion_download'),
 ]
-
-
