@@ -9,7 +9,7 @@ class Migration(migrations.Migration):
     dependencies = [
         ('core', '0012_proyecto_incluir_cesion_derechos_and_more'),
         ('financiamiento', '0004_financiamientocommeta'),
-        ('workflow', '0006_tramite_beneficiario_1_firma_and_more'),
+        ('workflow', '0006_tramite_beneficiario_1_tramite_beneficiario_1_firma_and_more'),
     ]
 
     operations = [
@@ -32,3 +32,4 @@ class Migration(migrations.Migration):
             field=models.TextField(blank=True, help_text='Data-URL base64 de la firma del vendedor'),
         ),
     ]
+
