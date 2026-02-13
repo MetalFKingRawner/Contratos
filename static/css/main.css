@@ -575,3 +575,41 @@ main#content::-webkit-scrollbar-thumb:hover {
   border-top: 1px solid rgba(0,0,0,0.05);
   padding: 0.75rem 1.25rem;
 }
+/* Estilos específicos para Commeta Community */
+.stat-card-commeta {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(218, 165, 32, 0.1));
+    border: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+.stat-card-commeta .stat-icon {
+    background: linear-gradient(135deg, #FFD700, #DAA520);
+    color: #333;
+}
+
+.btn-commeta {
+    background: linear-gradient(135deg, #FFD700, #DAA520);
+    border: none;
+    color: #333;
+    font-weight: 600;
+}
+
+.btn-commeta:hover {
+    background: linear-gradient(135deg, #DAA520, #FFD700);
+    color: #000;
+}
+
+.commeta-badge {
+    background: linear-gradient(135deg, #FFD700, #DAA520);
+    color: #333;
+    font-weight: 600;
+}
+
+/* Estilos para el sidebar Commeta */
+.nav-section-title.commeta {
+    color: #FFD700;
+}
+
+.nav-link.commeta-active {
+    background: rgba(255, 215, 0, 0.1);
+    border-left: 3px solid #FFD700;
+}
