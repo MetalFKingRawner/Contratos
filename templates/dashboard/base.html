@@ -191,6 +191,36 @@
         </li>
       </ul>
     </div>
+    <!-- Después de la sección "Finanzas" -->
+    <div class="nav-section">
+      <div class="nav-section-title">Commeta Community</div>
+      <ul class="nav flex-column">
+        <li class="nav-item">
+          <a href="#" 
+            class="nav-link"
+            hx-get="{% url 'commeta:commeta_configuracion_list' %}"
+            hx-target="#content" 
+            hx-swap="innerHTML"
+            hx-push-url="true">
+            <i class="fas fa-cogs"></i>
+            <span class="nav-link-text">Configuraciones</span>
+            <span class="nav-badge">{{ num_configuraciones_commeta }}</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="#" 
+            class="nav-link"
+            hx-get="{% url 'commeta:commeta_financiamiento_list' %}"
+            hx-target="#content" 
+            hx-swap="innerHTML"
+            hx-push-url="true">
+            <i class="fas fa-file-contract"></i>
+            <span class="nav-link-text">Financiamiento</span>
+            <span class="nav-badge">{{ num_financiamientos_commeta }}</span>
+          </a>
+        </li>
+      </ul>
+    </div>
   </nav>
 
   <!--  ─── CONTENIDO DINÁMICO ───────────────────────────────  -->
@@ -319,4 +349,5 @@
   </script>
 </body>
 </html>
+
 
