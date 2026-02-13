@@ -36,7 +36,7 @@
         </select>
       </div>
       <button class="btn-add-financiamiento btn-commeta" 
-              hx-get="{% url 'commeta:commeta_financiamiento_create' %}" 
+              hx-get="{% url 'commeta:financiamiento_create' %}" 
               hx-target="#content" 
               hx-swap="innerHTML"
               hx-push-url="true">
@@ -182,21 +182,21 @@
             <div class="financiamiento-card-footer">
               <div class="financiamiento-actions">
                 <button class="action-btn view" 
-                        hx-get="{% url 'commeta:commeta_financiamiento_detail' p.pk %}"
+                        hx-get="{% url 'commeta:financiamiento_detail' p.pk %}"
                         hx-target="#content" 
                         hx-swap="innerHTML"
                         title="Ver detalles">
                   <i class="fas fa-eye"></i>
                 </button>
                 <button class="action-btn edit"
-                        hx-get="{% url 'commeta:commeta_financiamiento_update' p.pk %}"
+                        hx-get="{% url 'commeta:financiamiento_update' p.pk %}"
                         hx-target="#content" 
                         hx-swap="innerHTML"
                         title="Editar">
                   <i class="fas fa-edit"></i>
                 </button>
                 <button class="action-btn delete"
-                        hx-get="{% url 'commeta:commeta_financiamiento_delete' p.pk %}"
+                        hx-get="{% url 'commeta:financiamiento_delete' p.pk %}"
                         hx-target="#content" 
                         hx-swap="innerHTML"
                         title="Eliminar">
@@ -220,7 +220,7 @@
             {% if page_obj.has_previous %}
               <li class="pagination-item">
                 <button class="pagination-btn prev"
-                        hx-get="{% url 'dashboard:commeta_financiamiento_list' %}?page={{ page_obj.previous_page_number }}"
+                        hx-get="{% url 'dashboard:financiamiento_list' %}?page={{ page_obj.previous_page_number }}"
                         hx-target="#content" 
                         hx-swap="innerHTML"
                         hx-push-url="true">
@@ -232,7 +232,7 @@
             {% for num in paginator.page_range %}
               <li class="pagination-item">
                 <button class="pagination-btn {% if page_obj.number == num %}active{% endif %}"
-                        hx-get="{% url 'dashboard:commeta_financiamiento_list' %}?page={{ num }}"
+                        hx-get="{% url 'dashboard:financiamiento_list' %}?page={{ num }}"
                         hx-target="#content" 
                         hx-swap="innerHTML"
                         hx-push-url="true">
@@ -244,7 +244,7 @@
             {% if page_obj.has_next %}
               <li class="pagination-item">
                 <button class="pagination-btn next"
-                        hx-get="{% url 'dashboard:commeta_financiamiento_list' %}?page={{ page_obj.next_page_number }}"
+                        hx-get="{% url 'dashboard:financiamiento_list' %}?page={{ page_obj.next_page_number }}"
                         hx-target="#content" 
                         hx-swap="innerHTML"
                         hx-push-url="true">
@@ -265,7 +265,7 @@
         <h3 class="empty-title">No hay financiamientos Commeta registrados</h3>
         <p class="empty-subtitle">Comienza creando tu primer financiamiento Commeta para gestionar proyectos especializados</p>
         <button class="btn-empty-action btn-commeta" 
-                hx-get="{% url 'dashboard:commeta_financiamiento_create' %}" 
+                hx-get="{% url 'dashboard:financiamiento_create' %}" 
                 hx-target="#content" 
                 hx-swap="innerHTML">
           <i class="fas fa-plus"></i>
@@ -1347,3 +1347,4 @@ document.body.addEventListener('htmx:afterSwap', function(evt) {
 });
 
 </script>
+
