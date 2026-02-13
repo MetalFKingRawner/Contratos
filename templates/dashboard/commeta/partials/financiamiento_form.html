@@ -16,7 +16,7 @@
   </div>
 
   <form method="post" 
-        hx-post="{% if action == 'edit' %}{% url 'commeta:commeta_financiamiento_update' object.id %}{% else %}{% url 'commeta:commeta_financiamiento_create' %}{% endif %}"
+        hx-post="{% if action == 'edit' %}{% url 'commeta:financiamiento_update' object.id %}{% else %}{% url 'commeta:financiamiento_create' %}{% endif %}"
         hx-target="#content"
         hx-swap="innerHTML"
         class="financiamiento-form"
@@ -781,7 +781,7 @@
       
       <button type="button" 
               class="form-btn outline"
-              hx-get="{% if action == 'edit' %}{% url 'commeta:commeta_financiamiento_detail' object.id %}{% else %}{% url 'commeta:commeta_financiamiento_list' %}{% endif %}"
+              hx-get="{% if action == 'edit' %}{% url 'commeta:financiamiento_detail' object.id %}{% else %}{% url 'commeta:financiamiento_list' %}{% endif %}"
               hx-target="#content"
               hx-swap="innerHTML">
         <i class="fas fa-times"></i>
@@ -3448,4 +3448,5 @@ if (!window.commetaHtmxScriptLoaded) {
 
     console.log('📦 Script Commeta HTMX mejorado cargado');
 }
+
 </script>
