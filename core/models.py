@@ -4,12 +4,22 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 
 class Proyecto(models.Model):
+    TIPO_PROYECTO_CHOICES = [
+        ('normal', 'Proyecto Normal'),
+        ('commeta', 'Commeta Community'),
+    ]
     nombre = models.CharField(max_length=100)
     tipo_contrato = models.CharField(max_length=50)
     ubicacion = models.TextField()
     fecha_emision_documento = models.TextField(default='')
     autoridad = models.TextField(default='')
     fecha_emision_contrato = models.TextField(default='')
+    # NUEVO CAMPO
+    tipo_proyecto = models.CharField(
+        max_length=20, 
+        choices=TIPO_PROYECTO_CHOICES, 
+        default='normal'
+    )
 
     # NUEVOS CAMPOS PARA DOCUMENTOS ESPECIALES
     incluir_cesion_derechos = models.BooleanField(
@@ -56,6 +66,116 @@ class Lote(models.Model):
 
     def __str__(self):
         return f"{self.proyecto.nombre} – Lote {self.identificador}"
+
+    @property
+    def es_commeta(self):
+        """Propiedad para verificar si el lote pertenece a un proyecto Commeta"""
+        return self.proyecto.tipo_proyecto == 'commeta'
+
+# En core/models.py - ACTUALIZAR ConfiguracionCommeta
+class ConfiguracionCommeta(models.Model):
+    ZONA_CHOICES = [
+        ('ambar', 'Ambar'),
+        ('aqua', 'Aqua'),
+        ('magnetita', 'Magnetita'),
+        ('platino', 'Platino'),
+    ]
+    
+    TIPO_ESQUEMA_CHOICES = [
+        ('mensualidades_fijas', 'Mensualidades Fijas'),
+        ('meses_fuertes', 'Meses Fuertes'),
+    ]
+    
+    lote = models.OneToOneField(
+        Lote, 
+        on_delete=models.CASCADE, 
+        related_name='configuracion_commeta'
+    )
+    zona = models.CharField(max_length=50, choices=ZONA_CHOICES)
+    
+    # NUEVO: Tipo de esquema de pagos
+    tipo_esquema = models.CharField(
+        max_length=20, 
+        choices=TIPO_ESQUEMA_CHOICES,
+        default='meses_fuertes'
+    )
+    
+    precio_base = models.DecimalField(max_digits=12, decimal_places=2)
+    apartado_sugerido = models.DecimalField(max_digits=12, decimal_places=2, default=3500)
+    enganche_sugerido = models.DecimalField(max_digits=12, decimal_places=2)
+    
+    # Para esquema de mensualidades fijas
+    mensualidad_sugerida = models.DecimalField(
+        max_digits=12, 
+        decimal_places=2, 
+        null=True, 
+        blank=True,
+        help_text="Para esquema de mensualidades fijas"
+    )
+    
+    # Para esquema de meses fuertes
+    monto_mensualidad_normal = models.DecimalField(
+        max_digits=12, 
+        decimal_places=2, 
+        null=True, 
+        blank=True,
+        help_text="Monto de mensualidad normal en esquema de meses fuertes"
+    )
+    monto_mes_fuerte = models.DecimalField(
+        max_digits=12, 
+        decimal_places=2, 
+        null=True, 
+        blank=True,
+        help_text="Monto de mes fuerte"
+    )
+    monto_pago_final = models.DecimalField(
+        max_digits=12, 
+        decimal_places=2, 
+        null=True, 
+        blank=True,
+        help_text="Monto del último pago (puede ser diferente al mes fuerte)"
+    )
+    frecuencia_meses_fuertes = models.PositiveIntegerField(
+        null=True, 
+        blank=True,
+        help_text="Cada cuántos meses se repite un mes fuerte"
+    )
+    
+    # NUEVO: Para meses fuertes con distribución específica
+    meses_fuertes_especificos = models.JSONField(
+        default=list,
+        blank=True,
+        null=True,
+        help_text="Lista específica de números de meses que son fuertes (ej: [3,8,15,22,29,36])"
+    )
+    
+    # NUEVO: Para esquemas personalizados futuros
+    esquema_personalizado = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text="Estructura completa de pagos para esquemas personalizados futuros"
+    )
+    
+    # NUEVO: Para desactivar configuraciones obsoletas
+    activo = models.BooleanField(
+        default=True,
+        help_text="Desactivar configuraciones que ya no se usen"
+    )
+    
+    total_meses = models.PositiveIntegerField()
+
+    cantidad_meses_fuertes_sugerida = models.PositiveIntegerField(
+        null=True, 
+        blank=True,
+        help_text="Cantidad sugerida de meses fuertes para esquemas predefinidos"
+    )
+    
+    class Meta:
+        verbose_name = "Configuración Commeta"
+        verbose_name_plural = "Configuraciones Commeta"
+
+    def __str__(self):
+        return f"Config Commeta - {self.lote.identificador} ({self.zona})"
 
 class Propietario(models.Model):
     TIPO_CHOICES = [
@@ -164,5 +284,6 @@ class Beneficiario(models.Model):
 
     def __str__(self):
         return self.nombre_completo
+
 
 
