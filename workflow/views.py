@@ -7,7 +7,7 @@ from .forms import SolicitudContratoForm, Paso1Form
 from django.views.generic import FormView
 from django.http import JsonResponse
 from core.models import Vendedor, Propietario
-from financiamiento.models import Financiamiento
+from financiamiento.models import Financiamiento, FinanciamientoCommeta
 from core.forms import ClienteForm, BeneficiarioForm
 from core.models import Cliente, Beneficiario
 from django.shortcuts import get_object_or_404, redirect
@@ -37,6 +37,8 @@ from pdfs.utils import fill_word_template, convert_docx_to_pdf
 from core.models import Lote
 import time
 from django.views.decorators.csrf import csrf_exempt
+
+from pagos.services import GeneradorCuotasService
 
 @csrf_exempt
 def health_check(request):
@@ -552,29 +554,32 @@ class SeleccionDocumentosView(FormView):
         # Requiere haber aceptado el aviso
         if not request.session.get('privacy_accepted'):
             return redirect('workflow:aviso_privacidad')
-        # Requiere haber seleccionado financiamiento, cliente y persona
-        required_keys = ['financiamiento_id', 'cliente_id', 'persona_tipo', 'persona_id']
-        for key in required_keys:
-            if not request.session.get(key):
-                return redirect('workflow:paso1_financiamiento')
+        # NUEVO: Requiere tener tramite_id en sesión (ya que ahora se crea en aviso)
+        if not request.session.get('tramite_id'):
+            print("⚠️ No hay tramite_id en sesión, redirigiendo a inicio")
+            return redirect('workflow:paso1_financiamiento')
         return super().dispatch(request, *args, **kwargs)
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
-        fin = get_object_or_404(Financiamiento, id=self.request.session['financiamiento_id'])
         tramite_id = self.request.session.get('tramite_id')
-        tramite = get_object_or_404(Tramite, id=tramite_id) if tramite_id else None
+        if not tramite_id:
+            raise Http404("No se encontró el trámite")
+            
+        tramite = get_object_or_404(Tramite, id=tramite_id)
+        fin = tramite.financiamiento
 
         # 1) Empezamos con los documentos que siempre queremos mostrar
         slugs = ['aviso_privacidad']
         slugs += ['carta_intencion', 'solicitud_contrato']
+    
+        # 2) Solo agregar el documento de financiamiento si el tipo de pago es 'financiado'
+        if fin.tipo_pago == 'financiado':
+            slugs.append('financiamiento')
 
         # 2) Ahora, agregamos el contrato correspondiente según régimen y tipo de pago
         regime = fin.lote.proyecto.tipo_contrato.lower()
         pago   = fin.tipo_pago
-
-        if pago == 'financiado':
-            slugs.append('financiamiento')
 
         # Verificar si hay segundo cliente
         has_second_client = tramite and tramite.cliente_2 is not None
@@ -631,22 +636,12 @@ class SeleccionDocumentosView(FormView):
     
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        fin = get_object_or_404(Financiamiento, id=self.request.session['financiamiento_id'])
-        cli = get_object_or_404(Cliente, id=self.request.session['cliente_id'])
-        
-        # Obtener la persona (vendedor o propietario) desde la sesión
-        persona_tipo = self.request.session.get('persona_tipo')
-        persona_id = self.request.session.get('persona_id')
-        
-        # Determinar si es vendedor o propietario
-        if persona_tipo == 'vendedor':
-            ven = get_object_or_404(Vendedor, id=persona_id)
-        else:
-            ven = get_object_or_404(Propietario, id=persona_id)
-        
+        # Obtener trámite desde la sesión
         tramite_id = self.request.session.get('tramite_id')
-        tramite = get_object_or_404(Tramite, id=tramite_id) if tramite_id else None
-
+        if not tramite_id:
+            raise Http404("No se encontró el trámite")
+            
+        tramite = get_object_or_404(Tramite, id=tramite_id)
         # ✅ GENERAR LOS LINKS SI NO EXISTEN
         if not tramite.link_firma_cliente:  # Si no hay links generados
             print("⚠️ Links no generados - generando ahora...")
@@ -668,14 +663,29 @@ class SeleccionDocumentosView(FormView):
         ctx['available_docs'] = available_docs
 
         # Pasar segundo cliente al contexto si existe
-        if tramite and tramite.cliente_2:
+        if tramite.cliente_2:
             ctx['cliente2'] = tramite.cliente_2
+        
+        # NUEVO: Pasar información de Commeta al contexto si aplica
+        if tramite.es_commeta:
+            ctx['es_commeta'] = True
+            ctx['detalle_commeta'] = tramite.obtener_detalle_commeta
+            ctx['configuracion_commeta'] = tramite.obtener_configuracion_commeta
+            print(f"✅ Trámite {tramite.id} es Commeta. Zona: {tramite.zona_commeta}")
+        else:
+            ctx['es_commeta'] = False
+            print(f"✅ Trámite {tramite.id} es financiamiento normal")
 
         return ctx
 
     def form_valid(self, form):
         # 1) Carga el trámite
-        tramite = get_object_or_404(Tramite, id=self.request.session.get('tramite_id'))
+        tramite_id = self.request.session.get('tramite_id')
+        if not tramite_id:
+            raise Http404("No se encontró el trámite")
+            
+        tramite = get_object_or_404(Tramite, id=tramite_id)
+        print(f"📄 Generando documentos para trámite {tramite.id}, tipo: {'Commeta' if tramite.es_commeta else 'Normal'}")
 
         fin = tramite.financiamiento
         cli = tramite.cliente
@@ -702,6 +712,7 @@ class SeleccionDocumentosView(FormView):
             clausulas_adicionales = self.request.session.get('clausulas_especiales', {})
 
         selected = form.cleaned_data['documentos']
+        print(f"📋 Documentos seleccionados: {selected}")
 
         buffer = io.BytesIO()
         with zipfile.ZipFile(buffer, 'w') as zf:
@@ -712,36 +723,91 @@ class SeleccionDocumentosView(FormView):
                 # 1) generar contexto
                 tpl = DocxTemplate(tpl_path)
                 
-                # Determinar qué builder usar basado en el tipo de persona
-                try:
-                    # Intenta pasar el segundo cliente si el builder lo soporta
-                    context = doc_info['builder'](
-                        fin, cli, ven, 
-                        request=self.request, 
-                        tpl=tpl, 
-                        firma_data=tramite.firma_cliente, 
-                        clausulas_adicionales=clausulas_adicionales,
-                        cliente2=cli2,
-                        tramite = tramite
-                    )
-                except TypeError:
+                # Manejo especial para el documento de financiamiento
+                if slug == 'financiamiento':
+                    # Para financiamiento, usar el builder unificado con parámetros Commeta si aplica
                     try:
-                        # Versión sin cliente2
+                        if tramite.es_commeta:
+                            # Obtener el detalle de Commeta
+                            fin_commeta = tramite.obtener_detalle_commeta
+                            print(f"📊 Usando builder unificado para Commeta, esquema: {fin_commeta.tipo_esquema}")
+                            
+                            # Llamar al builder unificado con parámetros Commeta
+                            context = doc_info['builder'](
+                                fin, cli, ven, 
+                                request=self.request, 
+                                tpl=tpl, 
+                                firma_data=tramite.firma_cliente,
+                                clausulas_adicionales=clausulas_adicionales,
+                                cliente2=cli2,
+                                tramite=tramite,
+                                is_commeta=True,
+                                fin_commeta=fin_commeta
+                            )
+                        else:
+                            # Llamar al builder unificado para financiamiento normal
+                            context = doc_info['builder'](
+                                fin, cli, ven, 
+                                request=self.request, 
+                                tpl=tpl, 
+                                firma_data=tramite.firma_cliente,
+                                clausulas_adicionales=clausulas_adicionales,
+                                cliente2=cli2,
+                                tramite=tramite,
+                                is_commeta=False,
+                                fin_commeta=None
+                            )
+                    except Exception as e:
+                        print(f"❌ Error en builder de financiamiento: {str(e)}")
+                        # Fallback a la versión simple
+                        context = doc_info['builder'](
+                            fin, cli, ven, 
+                            request=self.request, 
+                            tpl=tpl, 
+                            firma_data=tramite.firma_cliente
+                        )
+                else:
+                    # Para los otros documentos, usar el método existente
+                    try:
+                        # Intenta pasar el segundo cliente si el builder lo soporta
                         context = doc_info['builder'](
                             fin, cli, ven, 
                             request=self.request, 
                             tpl=tpl, 
                             firma_data=tramite.firma_cliente, 
                             clausulas_adicionales=clausulas_adicionales,
-                            tramite = tramite
+                            cliente2=cli2,
+                            tramite=tramite
                         )
                     except TypeError:
                         try:
-                            # Versión mínima con Trámite (Ej. Solicitud de contrato)
-                            context = doc_info['builder'](fin, cli, ven,request=self.request, tpl=tpl,firma_data=tramite.firma_cliente, tramite=tramite)
+                            # Versión sin cliente2
+                            context = doc_info['builder'](
+                                fin, cli, ven, 
+                                request=self.request, 
+                                tpl=tpl, 
+                                firma_data=tramite.firma_cliente, 
+                                clausulas_adicionales=clausulas_adicionales,
+                                tramite=tramite
+                            )
                         except TypeError:
-                            #Versión sin Trámite
-                            context = doc_info['builder'](fin, cli, ven,request=self.request, tpl=tpl,firma_data=tramite.firma_cliente)
+                            try:
+                                # Versión mínima con Trámite (Ej. Solicitud de contrato)
+                                context = doc_info['builder'](
+                                    fin, cli, ven,
+                                    request=self.request, 
+                                    tpl=tpl,
+                                    firma_data=tramite.firma_cliente, 
+                                    tramite=tramite
+                                )
+                            except TypeError:
+                                #Versión sin Trámite
+                                context = doc_info['builder'](
+                                    fin, cli, ven,
+                                    request=self.request, 
+                                    tpl=tpl,
+                                    firma_data=tramite.firma_cliente
+                                )
 
                 # 2) rellenar plantilla Word
                 tmp_docx = os.path.join(settings.MEDIA_ROOT, 'temp', f"{slug}.docx")
@@ -877,6 +943,8 @@ class AvisoPrivacidadView(FormView):
             tramite = get_object_or_404(Tramite, id=tramite_id)
             print(f"Actualizando trámite existente: {tramite.id}")
             tramite.financiamiento = financiamiento
+            # NUEVO: Actualizar financiamiento_commeta
+            tramite.financiamiento_commeta = financiamiento_commeta
             tramite.cliente = cliente
             tramite.vendedor = vendedor
             tramite.propietario = propietario
@@ -921,6 +989,8 @@ class AvisoPrivacidadView(FormView):
 
             tramite = Tramite.objects.create(
                 financiamiento=financiamiento,
+                # NUEVO: Asignar financiamiento_commeta (puede ser None)
+                financiamiento_commeta=financiamiento_commeta,
                 cliente=cliente,
                 vendedor=vendedor,
                 propietario=propietario,
@@ -935,6 +1005,9 @@ class AvisoPrivacidadView(FormView):
                 # NUEVO: Asignar beneficiario (puede ser None)
                 beneficiario_1=beneficiario
             )
+            if tramite.financiamiento.tipo_pago == 'PAGOS':
+                GeneradorCuotasService.generar_cuotas(tramite)
+            
             self.request.session['tramite_id'] = tramite.id
 
         # 5) Generar los links de firma para todos los involucrados
@@ -960,8 +1033,28 @@ class Paso1FinanciamientoView(TemplateView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        # Trae TODOS los planes de financiamiento (o filtra si lo necesitas)
-        ctx['financiamientos'] = Financiamiento.objects.select_related('lote__proyecto').all()
+        
+        # Obtener financiamientos normales activos
+        financiamientos_normales = Financiamiento.objects.select_related(
+            'lote__proyecto'
+        ).filter(
+            activo=True,
+            es_cotizacion=False,
+            lote__proyecto__tipo_proyecto='normal'  # Solo proyectos normales
+        )
+        
+        # Obtener financiamientos Commeta activos
+        financiamientos_commeta = Financiamiento.objects.select_related(
+            'lote__proyecto'
+        ).filter(
+            activo=True,
+            es_cotizacion=False,
+            lote__proyecto__tipo_proyecto='commeta'  # Solo proyectos Commeta
+        ).prefetch_related('detalle_commeta')  # Incluir detalle Commeta
+        
+        ctx['financiamientos_normales'] = financiamientos_normales
+        ctx['financiamientos_commeta'] = financiamientos_commeta
+        
         return ctx
 
     def post(self, request, *args, **kwargs):
@@ -974,6 +1067,8 @@ class Paso1FinanciamientoView(TemplateView):
         # Limpiar todos los datos de sesión relacionados con trámites anteriores
         session_keys_to_clear = [
             'financiamiento_id',  # aunque lo vamos a reemplazar, es bueno limpiarlo primero
+            'financiamiento_commeta_id',  # NUEVO: para commeta
+            'tipo_financiamiento',        # NUEVO: para identificar tipo
             'cliente_id',
             'vendedor_id',
             'tramite_id',
@@ -989,6 +1084,27 @@ class Paso1FinanciamientoView(TemplateView):
 
         # Guardar en sesión para los pasos siguientes
         request.session['financiamiento_id'] = int(plan_id)
+
+        # Determinar si es Commeta o normal
+        try:
+            fin = Financiamiento.objects.select_related('lote__proyecto').get(id=plan_id)
+            
+            if fin.lote.proyecto.tipo_proyecto == 'commeta':
+                # Es Commeta - guardar tipo y detalle
+                request.session['tipo_financiamiento'] = 'commeta'
+                # Guardar ID del FinanciamientoCommeta si existe
+                if hasattr(fin, 'detalle_commeta'):
+                    request.session['financiamiento_commeta_id'] = fin.detalle_commeta.id
+                    print(f"✅ Financiamiento Commeta detectado. ID detalle: {fin.detalle_commeta.id}")
+            else:
+                # Es normal
+                request.session['tipo_financiamiento'] = 'normal'
+                
+        except Financiamiento.DoesNotExist:
+            from django.contrib import messages
+            messages.error(request, "El financiamiento seleccionado no existe.")
+            return self.get(request, *args, **kwargs)
+        
         return redirect('workflow:paso2_cliente')
 
 # Vista base para todas las firmas
@@ -1113,6 +1229,7 @@ class FirmaTestigo2View(FirmaBaseView):
 # Vista de éxito después de firmar
 class FirmaExitosaView(TemplateView):
     template_name = 'workflow/firma_exitosa.html'
+
 
 
 
