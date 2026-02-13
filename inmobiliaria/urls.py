@@ -13,7 +13,10 @@ urlpatterns = [
     path("reviews/", include("reviews.urls")),
     path('financiamiento/', include('financiamiento.urls', namespace='financiamiento')),
     path('dashboard/', include('dashboard.urls', namespace='dashboard')),
+    path('dashboard/commeta/', include('dashboard.urls_commeta', namespace='commeta')),
+    path('pagos/', include('pagos.urls')),
 ]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
 
 
