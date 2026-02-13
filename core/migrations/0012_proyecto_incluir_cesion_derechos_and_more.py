@@ -35,22 +35,6 @@ class Migration(migrations.Migration):
             field=models.CharField(choices=[('normal', 'Proyecto Normal'), ('commeta', 'Commeta Community')], default='normal', max_length=20),
         ),
         
-        # Operaciones de 0018: Add campos de documentos especiales a Proyecto
-        migrations.AddField(
-            model_name='proyecto',
-            name='incluir_cesion_derechos',
-            field=models.BooleanField(default=False, help_text='Indica si el proyecto cuenta con documento de Cesión de Derechos', verbose_name='Incluir Cesión de Derechos'),
-        ),
-        migrations.AddField(
-            model_name='proyecto',
-            name='incluir_constancia_cesion',
-            field=models.BooleanField(default=False, help_text='Indica si el proyecto cuenta con Constancia de Cesión de Derechos', verbose_name='Incluir Constancia de Cesión'),
-        ),
-        migrations.AddField(
-            model_name='proyecto',
-            name='incluir_constancia_posesion',
-            field=models.BooleanField(default=False, help_text='Indica si el proyecto cuenta con Constancia de Posesión', verbose_name='Incluir Constancia de Posesión'),
-        ),
         
         # Operaciones de 0015, 0016, 0017: Create ConfiguracionCommeta (modelo completo)
         migrations.CreateModel(
@@ -80,3 +64,4 @@ class Migration(migrations.Migration):
             },
         ),
     ]
+
