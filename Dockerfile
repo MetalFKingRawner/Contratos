@@ -31,8 +31,7 @@ COPY . .
 
 # Comandos para aplicar migraciones directamente
 #python manage.py makemigrations && \
-RUN python manage.py makemigrations && \
-    python manage.py migrate && \
+RUN python manage.py migrate && \
     python manage.py collectstatic --noinput
  
 # 5. Variables de entorno (opcionalmente puedes moverlas a Render)
