@@ -1,10 +1,9 @@
 # dashboard/forms.py
 from django import forms
-from core.models import Propietario, Proyecto, Lote, Cliente, Vendedor, Beneficiario
+from core.models import Propietario, Proyecto, Lote, Cliente, Vendedor, Beneficiario, ConfiguracionCommeta
 
 from workflow.models import Tramite, ClausulasEspeciales
 from financiamiento.models import Financiamiento
-
 
 class PropietarioForm(forms.ModelForm):
     class Meta:
@@ -338,4 +337,102 @@ class TramiteForm(forms.ModelForm):
             
         return tramite
 
+class ConfiguracionCommetaForm(forms.ModelForm):
+    """Formulario para Configuraciones Commeta con lógica condicional"""
+    
+    class Meta:
+        model = ConfiguracionCommeta
+        fields = [
+            'lote', 'zona', 'tipo_esquema', 'precio_base', 
+            'apartado_sugerido', 'enganche_sugerido', 'total_meses',
+            'mensualidad_sugerida', 'monto_mensualidad_normal',
+            'monto_mes_fuerte', 'monto_pago_final',
+            'frecuencia_meses_fuertes', 'meses_fuertes_especificos',
+            'cantidad_meses_fuertes_sugerida', 'activo'
+        ]
+        widgets = {
+            'meses_fuertes_especificos': forms.TextInput(attrs={
+                'placeholder': 'Ej: [3,8,15,22,29,36]'
+            }),
+            'precio_base': forms.TextInput(attrs={'class': 'money-field'}),
+            'apartado_sugerido': forms.TextInput(attrs={'class': 'money-field'}),
+            'enganche_sugerido': forms.TextInput(attrs={'class': 'money-field'}),
+            'mensualidad_sugerida': forms.TextInput(attrs={'class': 'money-field'}),
+            'monto_mensualidad_normal': forms.TextInput(attrs={'class': 'money-field'}),
+            'monto_mes_fuerte': forms.TextInput(attrs={'class': 'money-field'}),
+            'monto_pago_final': forms.TextInput(attrs={'class': 'money-field'}),
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # Filtrar solo lotes de proyectos Commeta que no tengan configuración
+        proyectos_commeta = Proyecto.objects.filter(tipo_proyecto='commeta')
+        lotes_commeta = Lote.objects.filter(
+            proyecto__in=proyectos_commeta, 
+            activo=True
+        )
+        
+        # Excluir lotes que ya tienen configuración (excepto en edición)
+        if self.instance and self.instance.pk:
+            # En edición, permitir el lote actual
+            lotes_configurados = ConfiguracionCommeta.objects.exclude(
+                pk=self.instance.pk
+            ).values_list('lote_id', flat=True)
+        else:
+            # En creación, excluir todos los lotes con configuración
+            lotes_configurados = ConfiguracionCommeta.objects.values_list('lote_id', flat=True)
+        
+        self.fields['lote'].queryset = lotes_commeta.exclude(id__in=lotes_configurados)
+        
+        # Agregar clases CSS a los campos
+        for field_name, field in self.fields.items():
+            field.widget.attrs['class'] = 'form-control'
+            if field.required:
+                field.widget.attrs['required'] = 'required'
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        tipo_esquema = cleaned_data.get('tipo_esquema')
+        
+        # Validaciones para esquema de mensualidades fijas
+        if tipo_esquema == 'mensualidades_fijas':
+            if not cleaned_data.get('mensualidad_sugerida'):
+                self.add_error('mensualidad_sugerida', 
+                             'Este campo es requerido para el esquema de mensualidades fijas')
+        
+        # Validaciones para esquema de meses fuertes
+        elif tipo_esquema == 'meses_fuertes':
+            if not cleaned_data.get('monto_mensualidad_normal'):
+                self.add_error('monto_mensualidad_normal',
+                             'Este campo es requerido para el esquema de meses fuertes')
+            
+            if not cleaned_data.get('monto_mes_fuerte'):
+                self.add_error('monto_mes_fuerte',
+                             'Este campo es requerido para el esquema de meses fuertes')
+            
+            # Validar que al menos un método de distribución esté definido
+            frecuencia = cleaned_data.get('frecuencia_meses_fuertes')
+            meses_especificos = cleaned_data.get('meses_fuertes_especificos')
+            
+            if not frecuencia and not meses_especificos:
+                self.add_error('frecuencia_meses_fuertes',
+                             'Debe especificar la frecuencia o los meses específicos')
+                self.add_error('meses_fuertes_especificos',
+                             'Debe especificar la frecuencia o los meses específicos')
+            
+            # Si se especifican meses específicos, validar formato
+            if meses_especificos:
+                try:
+                    if not isinstance(meses_especificos, list):
+                        # Intentar convertir string a lista
+                        import ast
+                        meses_especificos = ast.literal_eval(meses_especificos)
+                        if not isinstance(meses_especificos, list):
+                            raise ValueError
+                except (ValueError, SyntaxError):
+                    self.add_error('meses_fuertes_especificos',
+                                 'Formato inválido. Use formato de lista: [3,8,15,22,29,36]')
+        
+        return cleaned_data
 
