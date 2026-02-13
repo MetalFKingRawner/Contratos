@@ -528,13 +528,26 @@
               
               <!-- Botón Descargar (solo para cotizaciones) -->
               {% if p.es_cotizacion %}
-                <button class="btn-accion btn-descargar" onclick="descargarCotizacion({{ p.pk }})">
-                  <i class="fas fa-download"></i>Descargar
-                </button>
+                  <!-- Detecta automáticamente si es Commeta o normal -->
+                  {% if p.lote.proyecto.tipo_proyecto == 'commeta' and p.detalle_commeta %}
+                      <a href="{% url 'financiamiento:financiamiento_commeta_descargar_cotiza_pdf' p.detalle_commeta.pk %}" 
+                          class="btn btn-success" 
+                          target="_blank"
+                          title="Descargar cotización PDF Commeta">
+                          <i class="fas fa-download"></i>Descargar
+                      </a>
+                  {% else %}
+                      <a href="{% url 'financiamiento:financiamiento_descargar_cotiza_pdf' p.pk %}" 
+                          class="btn btn-success" 
+                          target="_blank"
+                          title="Descargar cotización PDF">
+                          <i class="fas fa-download"></i>Descargar
+                      </a>
+                  {% endif %}
               {% else %}
-                <button class="btn-accion btn-descargar" disabled title="Solo disponible para cotizaciones">
-                  <i class="fas fa-download"></i>Descargar
-                </button>
+                  <button class="btn-accion btn-descargar" disabled title="Solo disponible para cotizaciones">
+                      <i class="fas fa-download"></i>Descargar
+                  </button>
               {% endif %}
             </div>
           </td>
@@ -577,3 +590,4 @@ function descargarCotizacion(pk) {
 </script>
 
 {% endblock %}
+
