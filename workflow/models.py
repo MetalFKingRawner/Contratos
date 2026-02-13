@@ -6,6 +6,14 @@ from django.contrib.auth.models import User
 
 class Tramite(models.Model):
     financiamiento = models.ForeignKey(Financiamiento, on_delete=models.PROTECT)
+    financiamiento_commeta = models.ForeignKey(
+        'financiamiento.FinanciamientoCommeta',  # Referencia al modelo
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='tramites_commeta',
+        verbose_name="Financiamiento Commeta (si aplica)"
+    )
     cliente = models.ForeignKey(Cliente, on_delete=models.PROTECT)
     
     # Campos para la persona que atendió (puede ser vendedor o propietario)
@@ -87,6 +95,43 @@ class Tramite(models.Model):
 
     def __str__(self):
         return f"Trámite #{self.pk} – {self.cliente.nombre_completo}"
+
+    # En la misma clase Tramite, agregar estas propiedades:
+
+    @property
+    def es_commeta(self):
+        """Devuelve True si el trámite usa financiamiento Commeta"""
+        return self.financiamiento_commeta is not None
+
+    @property
+    def obtener_detalle_commeta(self):
+        """Devuelve el detalle Commeta si existe, de forma segura"""
+        if self.es_commeta:
+            return self.financiamiento_commeta
+        # Fallback: intentar obtenerlo desde financiamiento base
+        return getattr(self.financiamiento, 'detalle_commeta', None)
+
+    @property
+    def obtener_configuracion_commeta(self):
+        """Obtiene la configuración Commeta si existe"""
+        if self.es_commeta and hasattr(self.financiamiento_commeta, 'configuracion_original'):
+            return self.financiamiento_commeta.configuracion_original
+        return None
+
+    @property
+    def zona_commeta(self):
+        """Devuelve la zona Commeta si aplica"""
+        config = self.obtener_configuracion_commeta
+        if config:
+            return config.get_zona_display()
+        return None
+
+    @property
+    def tipo_esquema_commeta(self):
+        """Devuelve el tipo de esquema Commeta si aplica"""
+        if self.es_commeta:
+            return self.financiamiento_commeta.get_tipo_esquema_display()
+        return None
     
     @property
     def persona(self):
@@ -306,6 +351,14 @@ class Tramite(models.Model):
     def tiene_firmas_pendientes(self):
         """Verifica si hay firmas pendientes"""
         return len(self.firmas_pendientes) > 0
+
+    @property
+    def saldo_a_favor_disponible(self):
+        """Retorna el saldo a favor total disponible"""
+        from pagos.models import SaldoAFavor
+        saldos = SaldoAFavor.objects.filter(tramite=self, utilizado=False)
+        total = saldos.aggregate(total=models.Sum('monto'))['total']
+        return total if total else 0
     
     def obtener_urls_firma_completas(self, request):
         """Retorna las URLs completas para cada tipo de firmante usando las URLs de workflow"""
@@ -365,3 +418,4 @@ class ClausulasEspeciales(models.Model):
 
     def __str__(self):
         return f"Cláusulas especiales - Trámite #{self.tramite.id}"
+
