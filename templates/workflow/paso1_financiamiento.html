@@ -5,18 +5,30 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 <style>
-/* Estilos adicionales específicos para financiamiento */
+:root {
+  --primary-gradient: linear-gradient(135deg, #2e8fcc 0%, #1e5f8c 100%);
+  --accent-gradient: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+  --commeta-gradient: linear-gradient(135deg, #6f42c1 0%, #5a32a3 100%);
+  --text-primary: #2c3e50;
+  --text-secondary: #6c757d;
+  --shadow-primary: 0 15px 35px rgba(46, 143, 204, 0.15);
+  --shadow-hover: 0 25px 50px rgba(46, 143, 204, 0.25);
+  --glass-bg: rgba(255, 255, 255, 0.1);
+  --glass-border: rgba(255, 255, 255, 0.2);
+}
+
 .financing-container {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--glass-bg);
   border-radius: 30px;
   backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid var(--glass-border);
   box-shadow: 0 25px 45px rgba(0, 0, 0, 0.1);
   padding: 3rem 2rem;
   margin: 2rem auto;
-  max-width: 900px;
+  max-width: 1200px;
   position: relative;
   overflow: hidden;
+  animation: containerSlideIn 1s ease-out;
 }
 
 .financing-container::before {
@@ -31,11 +43,6 @@
   z-index: -1;
 }
 
-@keyframes rotateBackground {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
 .financing-title {
   font-size: clamp(2rem, 5vw, 3rem) !important;
   font-weight: 700 !important;
@@ -44,7 +51,7 @@
   -webkit-text-fill-color: transparent;
   background-clip: text;
   text-align: center;
-  margin-bottom: 2rem !important;
+  margin-bottom: 1rem !important;
   position: relative;
   animation: titleFloat 3s ease-in-out infinite alternate;
 }
@@ -66,236 +73,12 @@
   font-size: 1.1rem;
   color: var(--text-secondary);
   text-align: center;
-  margin-bottom: 3rem;
+  margin-bottom: 2rem;
   font-weight: 300;
   opacity: 0;
   animation: fadeInUp 1s ease 0.5s forwards;
 }
 
-.plan-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-}
-
-.plan-card {
-  position: relative;
-  border-radius: 15px;
-  padding: 1.5rem;
-  background: rgba(255,255,255,0.9);
-  border: 2px solid rgba(46,143,204,0.2);
-  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-  cursor: pointer;
-  transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
-}
-.plan-card:hover {
-  transform: translateY(-5px);
-  border-color: var(--bs-primary);
-  box-shadow: 0 15px 35px rgba(46,143,204,0.2);
-}
-.plan-card input[type="radio"] {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  width: 1.2rem;
-  height: 1.2rem;
-}
-.plan-card h5 {
-  margin-top: 0;
-  margin-bottom: 0.5rem;
-  font-weight: 600;
-}
-.plan-card .meta {
-  font-size: 0.9rem;
-  color: var(--text-secondary);
-  margin-bottom: 1rem;
-}
-.plan-card .detail {
-  font-size: 1rem;
-  color: var(--text-primary);
-}
-.form-field-wrapper {
-  position: relative;
-  margin-bottom: 1.5rem;
-}
-
-.form-field-wrapper label {
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 0.5rem;
-  display: block;
-  font-size: 1.1rem;
-}
-
-.form-field-wrapper .form-control,
-.form-field-wrapper select {
-  border-radius: 15px;
-  border: 2px solid rgba(46, 143, 204, 0.2);
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  padding: 0.75rem 1rem;
-  font-size: 1rem;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-}
-
-.form-field-wrapper .form-control:focus,
-.form-field-wrapper select:focus {
-  border-color: var(--bs-primary);
-  box-shadow: 0 0 0 0.2rem rgba(46, 143, 204, 0.25);
-  background: rgba(255, 255, 255, 1);
-  outline: none;
-}
-
-.form-field-wrapper .form-control:hover,
-.form-field-wrapper select:hover {
-  border-color: var(--bs-primary);
-  transform: translateY(-2px);
-}
-
-.submit-section {
-  text-align: center;
-  margin-top: 3rem;
-  padding-top: 2rem;
-  border-top: 1px solid rgba(46, 143, 204, 0.1);
-  opacity: 0;
-  animation: slideInUp 1s ease 1s forwards;
-}
-
-.btn-continue {
-  background: var(--primary-gradient) !important;
-  border: none !important;
-  color: white !important;
-  padding: 1rem 3rem !important;
-  font-size: 1.1rem;
-  font-weight: 600;
-  border-radius: 50px !important;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  position: relative;
-  overflow: hidden;
-  box-shadow: var(--shadow-primary);
-  min-width: 200px;
-}
-
-.btn-continue::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-  transition: left 0.5s;
-}
-
-.btn-continue:hover::before {
-  left: 100%;
-}
-
-.btn-continue:hover {
-  transform: translateY(-3px) scale(1.05);
-  box-shadow: var(--shadow-hover);
-  color: white !important;
-}
-
-.btn-continue i {
-  margin-left: 0.5rem;
-  transition: transform 0.3s ease;
-}
-
-.btn-continue:hover i {
-  transform: translateX(3px);
-}
-
-.info-card {
-  background: rgba(46, 143, 204, 0.05);
-  border: 1px solid rgba(46, 143, 204, 0.1);
-  border-radius: 15px;
-  padding: 1.5rem;
-  margin-bottom: 2rem;
-  position: relative;
-}
-
-.info-card::before {
-  content: '\f05a';
-  font-family: 'Font Awesome 6 Free';
-  font-weight: 900;
-  position: absolute;
-  top: 1rem;
-  left: 1rem;
-  color: var(--bs-primary);
-  font-size: 1.2rem;
-}
-
-.info-card-content {
-  margin-left: 2rem;
-}
-
-.info-card h5 {
-  color: var(--text-primary);
-  margin-bottom: 0.5rem;
-  font-weight: 600;
-}
-
-.info-card p {
-  color: var(--text-secondary);
-  margin-bottom: 0;
-  font-size: 0.95rem;
-}
-
-/* Animaciones de entrada */
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes slideInUp {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes titleFloat {
-  0% { transform: translateY(0px); }
-  100% { transform: translateY(-10px); }
-}
-
-@keyframes lineGlow {
-  0% { box-shadow: 0 0 5px rgba(46, 143, 204, 0.5); }
-  100% { box-shadow: 0 0 20px rgba(46, 143, 204, 0.8), 0 0 30px rgba(46, 143, 204, 0.4); }
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .financing-container {
-    margin: 1rem;
-    padding: 2rem 1rem;
-  }
-  
-  .financing-title {
-    font-size: 2rem !important;
-  }
-  
-  .btn-continue {
-    width: 100%;
-    margin-top: 1rem;
-  }
-  
-  .plan-selection {
-    padding: 1.5rem;
-  }
-}
-/* Indicador de progreso */
 .progress-indicator {
   display: flex;
   justify-content: center;
@@ -349,6 +132,318 @@
   font-family: 'Font Awesome 6 Free';
   font-weight: 900;
 }
+
+.section-title {
+  margin-top: 2rem;
+  margin-bottom: 1.5rem;
+  color: var(--text-primary);
+  font-size: 1.5rem;
+  font-weight: 600;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid rgba(46, 143, 204, 0.2);
+  position: relative;
+  opacity: 0;
+  animation: fadeInUp 1s ease 0.7s forwards;
+}
+
+.section-title::before {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100px;
+  height: 2px;
+  background: var(--primary-gradient);
+}
+
+.section-title.commeta-section::before {
+  background: var(--commeta-gradient);
+}
+
+.plan-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.plan-card {
+  position: relative;
+  border-radius: 15px;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(240,248,255,0.95) 100%);
+  border: 2px solid rgba(46,143,204,0.3);
+  box-shadow: 
+    0 8px 20px rgba(46, 143, 204, 0.12),
+    0 4px 8px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  cursor: pointer;
+  transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+}
+
+.plan-card:hover {
+  transform: translateY(-8px);
+  border-color: rgba(46, 143, 204, 0.6);
+  box-shadow: 
+    0 15px 40px rgba(46, 143, 204, 0.25),
+    0 8px 16px rgba(0, 0, 0, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.plan-card.selected {
+  border-color: #4128a7;
+  background: linear-gradient(135deg, rgba(232, 228, 255, 0.95) 0%, rgba(245, 243, 255, 0.95) 100%);
+  box-shadow: 
+    0 12px 35px rgba(65, 40, 167, 0.2),
+    0 6px 12px rgba(65, 40, 167, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.plan-card.selected::before {
+  content: '\f00c';
+  font-family: 'Font Awesome 6 Free';
+  font-weight: 900;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 30px;
+  height: 30px;
+  background: #4128a7;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+.plan-card-commeta {
+  border-left: 4px solid #6f42c1;
+  background: linear-gradient(135deg, rgba(248, 245, 255, 0.95) 0%, rgba(252, 250, 255, 0.95) 100%);
+}
+
+.plan-card-commeta:hover {
+  border-color: rgba(111, 66, 193, 0.6);
+  box-shadow: 
+    0 15px 40px rgba(111, 66, 193, 0.25),
+    0 8px 16px rgba(111, 66, 193, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.plan-card-commeta.selected {
+  border-color: #6f42c1;
+  background: linear-gradient(135deg, rgba(237, 230, 250, 0.95) 0%, rgba(245, 240, 255, 0.95) 100%);
+  box-shadow: 
+    0 12px 35px rgba(111, 66, 193, 0.25),
+    0 6px 12px rgba(111, 66, 193, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.plan-card-commeta.selected::before {
+  background: #6f42c1;
+}
+
+.commeta-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: var(--commeta-gradient);
+  color: white;
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 15px rgba(111, 66, 193, 0.3);
+  z-index: 1;
+}
+
+.plan-card input[type="radio"] {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 1.2rem;
+  height: 1.2rem;
+  z-index: 1;
+  opacity: 0;
+}
+
+.plan-header {
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+.plan-card h5 {
+  margin: 0;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 1.25rem;
+}
+
+.plan-card .meta {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.plan-card .meta i {
+  color: var(--bs-primary);
+}
+
+.plan-details {
+  margin-top: 1rem;
+}
+
+.plan-detail-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+}
+
+.plan-detail-item i {
+  color: var(--bs-primary);
+  min-width: 20px;
+  margin-top: 3px;
+}
+
+.plan-card-commeta .plan-detail-item i,
+.plan-card-commeta .meta i {
+  color: #6f42c1;
+}
+
+.plan-price {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(0,0,0,0.05);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-align: center;
+}
+
+.plan-price small {
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: var(--text-secondary);
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.submit-section {
+  text-align: center;
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(46, 143, 204, 0.1);
+}
+
+.btn-continue {
+  background: var(--primary-gradient) !important;
+  border: none !important;
+  color: white !important;
+  padding: 1.2rem 3.5rem !important;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-radius: 50px !important;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-primary);
+  min-width: 250px;
+}
+
+.btn-continue::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  transition: left 0.5s;
+}
+
+.btn-continue:hover::before {
+  left: 100%;
+}
+
+.btn-continue:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: var(--shadow-hover);
+  color: white !important;
+}
+
+.btn-continue i {
+  margin-left: 0.75rem;
+  transition: transform 0.3s ease;
+}
+
+.btn-continue:hover i {
+  transform: translateX(5px);
+}
+
+.btn-continue:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.no-plans-message {
+  text-align: center;
+  padding: 4rem 2rem;
+  opacity: 0;
+  animation: fadeInUp 1s ease 0.5s forwards;
+}
+
+.no-plans-message i {
+  font-size: 4rem;
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+  opacity: 0.5;
+}
+
+.no-plans-message h3 {
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+}
+
+.no-plans-message p {
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+}
+
+@media (max-width: 768px) {
+  .financing-container {
+    margin: 1rem;
+    padding: 2rem 1rem;
+  }
+  
+  .financing-title {
+    font-size: 2rem !important;
+  }
+  
+  .plan-cards {
+    grid-template-columns: 1fr;
+  }
+  
+  .btn-continue {
+    width: 100%;
+    min-width: auto;
+  }
+}
+
 @media (max-width: 480px) {
   .progress-step {
     width: 30px;
@@ -360,45 +455,17 @@
   .progress-step::after {
     width: 40px;
   }
+  
+  .section-title {
+    font-size: 1.25rem;
+  }
 }
+
 /* Animaciones */
 @keyframes containerSlideIn {
   from {
     opacity: 0;
     transform: translateY(50px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes cardSlideIn {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes formSlideIn {
-  from {
-    opacity: 0;
-    transform: translateY(40px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes submitSlideIn {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
   }
   to {
     opacity: 1;
@@ -432,11 +499,6 @@
   100% { transform: rotate(360deg); }
 }
 
-@keyframes shimmer {
-  0%, 100% { transform: translateX(-100%); }
-  50% { transform: translateX(100%); }
-}
-
 @keyframes pulse {
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.1); }
@@ -453,25 +515,22 @@
     <div class="progress-step">4</div>
     <div class="progress-step">5</div>
   </div>
+  
   <h1 class="financing-title">Selecciona tu Plan de Financiamiento</h1>
   <p class="financing-subtitle">
     Elige tu plan de financiamiento elaborado especialmente para ti
   </p>
+  
+  <form method="post" id="financingForm">
+    {% csrf_token %}
 
-  <!--<div class="info-card">
-    <div class="info-card-content">
-      <h5>¿Necesitas ayuda para decidir?</h5>
-      <p>Nuestros asesores financieros están disponibles para guiarte en la elección del plan más conveniente según tu perfil económico.</p>
-    </div>
-  </div> -->
-
-  <div class="plan-selection">
-    <form method="post">
-      {% csrf_token %}
-
+    {% if financiamientos_normales %}
+      <h2 class="section-title">
+        <i class="fas fa-file-invoice-dollar me-2"></i>
+        Financiamientos Normales
+      </h2>
       <div class="plan-cards">
-        {% for plan in financiamientos %}
-        {% if plan.activo and not plan.es_cotizacion %}
+        {% for plan in financiamientos_normales %}
         <label class="plan-card" for="fin_{{ plan.id }}">
           <input 
             type="radio" 
@@ -480,44 +539,187 @@
             value="{{ plan.id }}"
             {% if plan.id == form.initial.financiamiento %}checked{% endif %}
             required>
-          <h5>Plan: {{ plan.tipo_pago }}</h5>
-          <div class="meta">
-            Lote: {{ plan.lote.identificador }} — {{ plan.lote.proyecto.nombre }}
+          
+          <div class="plan-header">
+            <h5>
+              <i class="fas fa-calendar-alt me-2"></i>
+              {{ plan.tipo_pago }}
+            </h5>
+            <div class="meta">
+              <i class="fas fa-map-marked-alt"></i>
+              <span>Lote {{ plan.lote.identificador }} • {{ plan.lote.proyecto.nombre }}</span>
+            </div>
           </div>
-          <div class="detail">
-            Cliente: {{ plan.nombre_cliente }}<br><br>
-            Ubicación: {{ plan.lote.proyecto.ubicacion }}<br>
+          
+          <div class="plan-details">
+            <div class="plan-detail-item">
+              <i class="fas fa-user"></i>
+              <div>
+                <strong>Cliente:</strong><br>
+                {{ plan.nombre_cliente }}
+              </div>
+            </div>
+            
+            <div class="plan-detail-item">
+              <i class="fas fa-location-dot"></i>
+              <div>
+                <strong>Ubicación:</strong><br>
+                {{ plan.lote.proyecto.ubicacion }}
+              </div>
+            </div>
+          </div>
+          
+          <div class="plan-price">
+            <small>Precio del lote</small>
+            ${{ plan.precio_lote|floatformat:2 }}
           </div>
         </label>
-        {% endif %}
-        {% empty %}
-        <p>No hay planes disponibles por el momento.</p>
         {% endfor %}
       </div>
+    {% endif %}
 
-      <div class="submit-section">
-        <button type="submit" class="btn btn-continue">
-          Continuar con mi selección
-          <i class="fas fa-arrow-right"></i>
-        </button>
+    {% if financiamientos_commeta %}
+      <h2 class="section-title commeta-section">
+        <i class="fas fa-star me-2"></i>
+        Financiamientos Commeta Community
+      </h2>
+      <div class="plan-cards">
+        {% for plan in financiamientos_commeta %}
+        <label class="plan-card plan-card-commeta" for="fin_{{ plan.id }}">
+          <div class="commeta-badge">
+            <i class="fas fa-gem me-1"></i>
+            Commeta
+          </div>
+          
+          <input 
+            type="radio" 
+            id="fin_{{ plan.id }}" 
+            name="financiamiento" 
+            value="{{ plan.id }}"
+            {% if plan.id == form.initial.financiamiento %}checked{% endif %}
+            required>
+          
+          <div class="plan-header">
+            <h5>
+              <i class="fas fa-calendar-alt me-2"></i>
+              {{ plan.tipo_pago }}
+            </h5>
+            <div class="meta">
+              <i class="fas fa-map-marked-alt"></i>
+              <span>Lote {{ plan.lote.identificador }} • {{ plan.lote.proyecto.nombre }}</span>
+            </div>
+          </div>
+          
+          <div class="plan-details">
+            <div class="plan-detail-item">
+              <i class="fas fa-user"></i>
+              <div>
+                <strong>Cliente:</strong><br>
+                {{ plan.nombre_cliente }}
+              </div>
+            </div>
+            
+            <div class="plan-detail-item">
+              <i class="fas fa-location-dot"></i>
+              <div>
+                <strong>Ubicación:</strong><br>
+                {{ plan.lote.proyecto.ubicacion }}
+              </div>
+            </div>
+            
+            {% if plan.detalle_commeta %}
+            <div class="plan-detail-item">
+              <i class="fas fa-layer-group"></i>
+              <div>
+                <strong>Zona:</strong><br>
+                {{ plan.detalle_commeta.configuracion_original.get_zona_display }}
+              </div>
+            </div>
+            {% endif %}
+          </div>
+          
+          <div class="plan-price">
+            <small>Precio del lote</small>
+            ${{ plan.precio_lote|floatformat:2 }}
+          </div>
+        </label>
+        {% endfor %}
       </div>
-    </form>
-  </div>
+    {% endif %}
+
+    {% if not financiamientos_normales and not financiamientos_commeta %}
+    <div class="no-plans-message">
+      <i class="fas fa-inbox"></i>
+      <h3>No hay planes disponibles</h3>
+      <p>No se encontraron planes de financiamiento en este momento.<br>Por favor, contacta con un asesor.</p>
+    </div>
+    {% endif %}
+
+    {% if financiamientos_normales or financiamientos_commeta %}
+    <div class="submit-section">
+      <button type="submit" class="btn btn-continue" id="submitBtn">
+        <i class="fas fa-check-circle"></i>
+        Continuar con mi selección
+        <i class="fas fa-arrow-right"></i>
+      </button>
+    </div>
+    {% endif %}
+  </form>
 </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  // Resaltar tarjeta seleccionada
+  // Selección de tarjetas
   const cards = document.querySelectorAll('.plan-card');
   cards.forEach(card => {
     const radio = card.querySelector('input[type=radio]');
-    radio.addEventListener('change', () => {
-      cards.forEach(c => c.classList.remove('selected'));
-      if (radio.checked) card.classList.add('selected');
-    });
-    // click anywhere en la tarjeta activa el radio
-    card.addEventListener('click', () => radio.checked = true);
+    
+    // Marcar como seleccionada si ya estaba seleccionada
+    if (radio && radio.checked) {
+      card.classList.add('selected');
+    }
+    
+    if (radio) {
+      radio.addEventListener('change', () => {
+        cards.forEach(c => c.classList.remove('selected'));
+        if (radio.checked) card.classList.add('selected');
+      });
+      
+      // Click en cualquier parte de la tarjeta selecciona el plan
+      card.addEventListener('click', function(e) {
+        if (e.target.tagName !== 'INPUT') {
+          radio.checked = true;
+          radio.dispatchEvent(new Event('change'));
+        }
+      });
+    }
   });
+  
+  // Animación de entrada para las tarjetas
+  const planCards = document.querySelectorAll('.plan-card');
+  planCards.forEach((card, index) => {
+    card.style.opacity = '0';
+    card.style.transform = 'translateY(30px)';
+    setTimeout(() => {
+      card.style.transition = 'all 0.6s ease';
+      card.style.opacity = '1';
+      card.style.transform = 'translateY(0)';
+    }, 150 * index);
+  });
+  
+  // Efecto de carga para el botón
+  const form = document.getElementById('financingForm');
+  if (form) {
+    form.addEventListener('submit', function(e) {
+      const button = document.getElementById('submitBtn');
+      if (button) {
+        const originalHtml = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+        button.disabled = true;
+      }
+    });
+  }
 });
 </script>
 {% endblock %}
+
