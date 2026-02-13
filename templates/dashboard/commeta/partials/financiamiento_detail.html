@@ -382,7 +382,7 @@
   <div class="tramite-actions-section">
     <div class="actions-container">
       <button class="action-btn primary" 
-              hx-get="{% url 'commeta:commeta_financiamiento_update' plan.id %}" 
+              hx-get="{% url 'commeta:financiamiento_update' plan.id %}" 
               hx-target="#content" 
               hx-swap="innerHTML">
         <i class="fas fa-edit"></i>
@@ -390,7 +390,7 @@
       </button>
       
       <button class="action-btn secondary"
-              hx-get="{% url 'commeta:commeta_financiamiento_list' %}" 
+              hx-get="{% url 'commeta:financiamiento_list' %}" 
               hx-target="#content" 
               hx-swap="innerHTML">
         <i class="fas fa-arrow-left"></i>
@@ -398,7 +398,7 @@
       </button>
       
       <button class="action-btn danger"
-              hx-get="{% url 'commeta:commeta_financiamiento_delete' plan.id %}" 
+              hx-get="{% url 'commeta:financiamiento_delete' plan.id %}" 
               hx-target="#content" 
               hx-swap="innerHTML">
         <i class="fas fa-trash"></i>
@@ -880,4 +880,5 @@ document.body.addEventListener('htmx:afterSwap', function(event) {
         setTimeout(applyCurrencyFormatting, 50);
     }
 });
+
 </script>
