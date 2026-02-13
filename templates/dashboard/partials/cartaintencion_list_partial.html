@@ -128,16 +128,6 @@
                         title="Editar">
                   <i class="fas fa-edit"></i>
                 </button>
-                <button class="action-btn download"
-                        hx-get="{% url 'dashboard:cartaintencion_download' carta.pk 'pdf' %}"
-                        title="Descargar PDF">
-                <i class="fas fa-file-pdf"></i>
-                </button>
-                <button class="action-btn download"
-                        hx-get="{% url 'dashboard:cartaintencion_download' carta.pk 'word' %}"
-                        title="Descargar Word">
-                <i class="fas fa-file-word"></i>
-                </button>
                 <button class="action-btn delete"
                         hx-get="{% url 'dashboard:cartaintencion_delete' carta.pk %}"
                         hx-target="#content" 
