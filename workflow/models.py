@@ -65,6 +65,26 @@ class Tramite(models.Model):
     testigo_2_firma = models.TextField(blank=True, help_text="Firma del testigo 2")
     link_firma_testigo1 = models.CharField(max_length=255, blank=True, help_text="Link único para firma de testigo")
     link_firma_testigo2 = models.CharField(max_length=255, blank=True, help_text="Link único para firma del segundo testigo")
+
+    # IDMEX de testigos
+    testigo_1_idmex = models.CharField(
+        max_length=50,
+        blank=True,
+        null=True,
+        help_text="Número de identificación (IDMEX) del testigo 1"
+    )
+    testigo_2_idmex = models.CharField(
+        max_length=50,
+        blank=True,
+        null=True,
+        help_text="Número de identificación (IDMEX) del testigo 2"
+    )
+
+    # Lugar de firma del contrato
+    es_tonameca = models.BooleanField(
+        default=False,
+        help_text="Si True: Santa María Tonameca. Si False: San Antonio de la Cal"
+    )
     
     # Beneficiarios (máximo 2)
     # BENEFICIARIOS - CAMBIO: ahora son ForeignKey
@@ -89,6 +109,32 @@ class Tramite(models.Model):
     beneficiario_2_firma = models.TextField(blank=True, help_text="Firma del beneficiario 2")
     link_firma_beneficiario1 = models.CharField(max_length=255, blank=True)
     link_firma_beneficiario2 = models.CharField(max_length=255, blank=True)
+
+    vecino = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text="Referencia de ubicación cercana al domicilio del cliente (para contratos que lo requieran)"
+    )
+
+    vecino_2 = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text="Referencia de ubicación cercana al domicilio del cliente (para contratos que lo requieran)"
+    )
+
+    edad_cliente_1 = models.PositiveSmallIntegerField(
+        blank=True,
+        null=True,
+        help_text="Edad del cliente al momento del contrato (solo aplica para contratos que lo requieran)"
+    )
+
+    edad_cliente_2 = models.PositiveSmallIntegerField(
+        blank=True,
+        null=True,
+        help_text="Edad del segundo cliente al momento del contrato (solo aplica para contratos que lo requieran)"
+    )
 
     creado_en = models.DateTimeField(auto_now_add=True)
     actualizado_en = models.DateTimeField(auto_now=True)
@@ -418,4 +464,5 @@ class ClausulasEspeciales(models.Model):
 
     def __str__(self):
         return f"Cláusulas especiales - Trámite #{self.tramite.id}"
+
 
