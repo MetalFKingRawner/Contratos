@@ -4319,7 +4319,559 @@ def build_contrato_canario_pagos_varios_context(fin, cli, ven, cliente2=None,req
 
     return context
 
+def calcular_porcentaje_moratorio(monto_vencido: float) -> int:
+    """
+    Calcula el porcentaje de interés moratorio mensual basado en el monto del pago vencido.
 
+    Lógica derivada del ejemplo del cliente:
+      - Pago de $4,500 → 23% → interés = $1,035 (dentro del rango $1,000–$1,100)
+
+    Para pagos variables (meses fuertes), el porcentaje escala inversamente
+    para mantener el monto del interés en un rango proporcional y razonable.
+
+    Retorna un número entero (%).
+
+    NOTE: Esta función es una aproximación basada en información incompleta del cliente.
+          Ajustar los parámetros TASA_BASE, MONTO_BASE y RANGO_* según se aclare.
+    """
+    # ── Parámetros base (derivados del ejemplo del cliente) ──────────────────
+    TASA_BASE   = 23      # % que aplica al monto de referencia
+    MONTO_BASE  = 4_500   # monto de mensualidad "normal" de referencia
+    INTERES_OBJ = round(MONTO_BASE * TASA_BASE / 100, 2)  # ~$1,035 objetivo
+
+    # ── Límites de seguridad para el porcentaje resultante ───────────────────
+    TASA_MINIMA = 5   # nunca bajar de este % (evita que meses fuertes sean irrisorios)
+    TASA_MAXIMA = 30  # nunca superar este % (evita mora abusiva en meses normales bajos)
+
+    if monto_vencido <= 0:
+        return 0
+
+    # Porcentaje que produciría el mismo monto de interés que en el caso base
+    # Escala inversamente: a mayor monto, menor tasa (pero el peso en pesos sube igual)
+    porcentaje = (INTERES_OBJ / monto_vencido) * 100
+
+    # Clampear dentro de los límites y redondear a entero
+    porcentaje = max(TASA_MINIMA, min(TASA_MAXIMA, porcentaje))
+
+    return round(porcentaje)
+
+
+def calcular_interes_moratorio(monto_vencido: float) -> dict:
+    """
+    Calcula el interés moratorio completo para un pago vencido.
+
+    Retorna un dict con:
+      - porcentaje: tasa aplicada (int, %)
+      - interes:    monto del interés en pesos (float)
+      - total:      monto_vencido + interes (float)
+      - porcentaje_letras: tasa en texto para cláusula del contrato
+      - interes_letras:    monto de interés en letras (usa tu numero_a_letras)
+      - total_letras:      total en letras
+    """
+    porcentaje = calcular_porcentaje_moratorio(monto_vencido)
+    interes    = round(monto_vencido * porcentaje / 100, 2)
+    total      = round(monto_vencido + interes, 2)
+
+    return {
+        "porcentaje":         porcentaje,
+        "interes":            interes,
+        "total":              total,
+        "porcentaje_letras":  numero_a_letras(porcentaje, apocopado=False),
+        "interes_letras":     numero_a_letras(interes),
+        "total_letras":       numero_a_letras(total),
+    }
+
+def get_monto_mensualidad_normal(fin) -> float:
+    """
+    Obtiene el monto de la mensualidad base según el esquema de pagos.
+    - Si no es Commeta o no tiene detalle → fin.monto_mensualidad
+    - Si es Commeta con meses fuertes     → fin.detalle_commeta.monto_mensualidad_normal
+    - Si es Commeta con mensualidades fijas → fin.monto_mensualidad
+    """
+    if not fin.es_commeta:
+        return float(fin.monto_mensualidad or 0)
+
+    # Es Commeta: verificar si tiene detalle y qué esquema usa
+    try:
+        detalle = fin.detalle_commeta
+    except Exception:
+        # Es Commeta pero aún no tiene detalle_commeta creado
+        return float(fin.monto_mensualidad or 0)
+
+    if detalle.tipo_esquema == 'meses_fuertes':
+        return float(detalle.monto_mensualidad_normal or 0)
+
+    # tipo_esquema == 'mensualidades_fijas'
+    return float(fin.monto_mensualidad or 0)
+
+def build_contrato_commeta_pagos_context(fin, cli, ven, request=None, tpl=None, firma_data=None, clausulas_adicionales=None, tramite=None, fecha=None):
+
+    print("Entré al build de commeta a pagos de un comprador")
+    
+    if clausulas_adicionales is None:
+        clausulas_adicionales = {}
+
+    # 1) Pronombres según sexo (necesitarás un campo sexo en Cliente y Vendedor)
+    def art(sex, masculino, femenino):
+        return masculino if sex == 'M' else femenino
+
+    SEXO_1 = art(cli.sexo, 'EL', 'LA')               # cedente (vendedor)
+    SEXO_2 = art(cli.sexo, 'O', 'A')                # letra
+    SEXO_4 = art(cli.sexo, "AL", "A LA")
+    SEXO_5 = art(cli.sexo, 'DEL "', 'DE "LA ')
+    
+    SEXO_6 = art(tramite.beneficiario_1.sexo, 'O', 'A')  #SEXO REFERENTE AL BENEFICIARIO
+    SEXO_7 = art(tramite.beneficiario_1.sexo, 'EL', 'LA') #EL/LA REFERENTE AL BENEFICIARIO
+
+    # 2) Fecha de cesión (hoy, o fin.fecha_enganche)
+    if fecha == None:
+        cesion = date.today()
+    else:
+        cesion = fecha
+    meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio",
+             "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]
+    DIA = numero_a_letras(float(cesion.day),apocopado=False)
+    MES = meses[cesion.month-1].upper()
+    ANIO = numero_a_letras(float(cesion.year),apocopado=False)
+
+    fecha_inicio = fin.fecha_primer_pago
+
+    dia_ini = numero_a_letras(float(fecha_inicio.day), apocopado=False)
+    mes_ini = meses[fecha_inicio.month-1].upper()
+    anio_ini = numero_a_letras(float(fecha_inicio.year),apocopado=False)
+
+    # 3) Coordenadas (igual)
+    def _parse_coord(text):
+        try:
+            medios, cola = text.split('|',1)
+            m = float(medios.strip().split()[0])
+            c = cola.strip()
+        except:
+            try: m = float(text.split()[0])
+            except: m=0.0
+            c=''
+        return m, c
+
+    coords = {}
+    for lado in ('norte','sur','este','oeste'):
+        raw = getattr(fin.lote, lado, '')
+        m, c = _parse_coord(raw)
+        coords[f'NUMERO_METROS_{lado.upper()}'] = m
+        coords[f'COLINDANCIA_LOTE_{lado.upper()}'] = c
+
+    # 4) Esquema de pagos
+    eng_dia = fin.fecha_enganche.day if fin.fecha_enganche else ''
+    eng_mes = meses[fin.fecha_enganche.month-1].upper() if fin.fecha_enganche else ''
+    eng_anio= fin.fecha_enganche.year if fin.fecha_enganche else ''
+    cant_eng = fin.enganche
+    letra_eng = numero_a_letras(float(cant_eng)) if cant_eng else ''
+    monto_fija = get_monto_mensualidad_normal(fin)
+    moratorio  = calcular_interes_moratorio(monto_fija)
+
+    email1 = (cli.email or '')        # convierte None -> ''
+    email1 = email1.strip()            # quita espacios en blanco
+    if email1:
+        correo_comprador1 = email1.upper()
+    else:
+        correo_comprador1 = 'NO PROPORCIONADO'
+
+    testigo1 = (tramite.testigo_1_nombre or '')        # convierte None -> ''
+    if testigo1:
+        test1 = testigo1.upper()
+    else:
+        test1 = testigo1
+    
+    testigo2 = (tramite.testigo_2_nombre or '')        # convierte None -> ''
+    if testigo2:
+        test2 = testigo2.upper()
+    else:
+        test2 = testigo2
+
+    bene = (tramite.beneficiario_1.nombre_completo or '')        # convierte None -> ''
+    if bene:
+        benef = bene.upper()
+    else:
+        benef = bene
+
+    bene_numero = (tramite.beneficiario_1.telefono or '')
+    if bene_numero:
+        bene_numero1 = bene_numero
+    else:
+        bene_numero1 = 'NO ESPECIFICADO'
+
+    bene_correo = (tramite.beneficiario_1.email or '')
+    if bene_correo:
+        bene_correo1 = bene_correo.upper()
+    else:
+        bene_correo1 = 'NO ESPECIFICADO'
+
+    vecino = (tramite.vecino or '')
+    if vecino:
+        vecin = vecino.upper()
+    else:
+        vecin = 'NO ESPECIFICADO'
+
+    LUGAR_FIRMA_OPCIONES = {
+        False: "EN LA COMUNIDAD DE SAN ANTONIO DE LA CAL, MUNICIPIO DE SU MISMO NOMBRE, OAXACA DE JUÁREZ",
+        True:  "EN LA COMUNIDAD SANTA MARIA TONAMECA, MUNICIPIO DE SU MISMO NOMBRE, DISTRITO DE POCHUTLA, ESTADO DE OAXACA",
+    }
+
+    # 5) Construcción del context
+    context = {
+        'LUGAR_FIRMA': LUGAR_FIRMA_OPCIONES[tramite.es_tonameca],
+        'DIA' : DIA,
+        'MES' : MES,
+        'ANIO': ANIO,
+        'SEXO_1': SEXO_1,
+        'SEXO_2': SEXO_2,
+        'SEXO_4': SEXO_4,
+        'SEXO_5': SEXO_5,
+        'SEXO_6': SEXO_6,
+        'SEXO_7': SEXO_7,
+
+        'NOMBRE_CEDA':   cli.nombre_completo.upper(),
+
+        'ID_LOTE': fin.lote.identificador,
+        'MANZ': fin.lote.manzana,
+        
+        'DOMICILIO':cli.domicilio.upper(),
+        'ID_CESA':   cli.numero_id,
+        'LUGAR_ORIGEN':       cli.originario.upper(),
+        'ESTADO_CIVIL':       cli.estado_civil.upper(),
+        'TELEFONO': cli.telefono,
+        'OCUPACION':cli.ocupacion.upper(),
+        'CORREO':   correo_comprador1,
+        'VECINO': vecin,
+        'EDAD': tramite.edad_cliente_1,
+
+        **coords,
+
+        'PRECIO_LOTE_FINANCIAMIENTO': fmt_money(fin.precio_lote),
+        'LETRA_PRECIO_LOTE':          numero_a_letras(float(fin.precio_lote)),
+        'APARTADO':    fmt_money(fin.apartado),
+        'LETRA_APARTADO':             numero_a_letras(float(fin.apartado)),
+
+        'DIA_ENGANCHE':               eng_dia,
+        'MES_ENGANCHE':               eng_mes,
+        'ANIO_ENGANCHE':              eng_anio,
+        'CANTIDAD_ENGANCHE_FINANCIAMIENTO': fmt_money(cant_eng),
+        'LETRA_ENGANCHE':                  letra_eng,
+
+        'FECHA_INICIO': f'{dia_ini} DE {mes_ini} DEL {anio_ini}',
+        'DIA_PAGO': dia_ini,
+        'METROS_CUADRADOS': calcular_superficie(fin.lote.norte, fin.lote.sur, fin.lote.este, fin.lote.oeste),
+        'PORCENTAJE':          moratorio['porcentaje'],
+
+        'NOMBRE_TEST2': test2,
+        'NOMBRE_TEST1': test1,
+        'ID_TEST2': tramite.testigo_2_idmex or '',
+        'ID_TEST1': tramite.testigo_1_idmex or '',
+        'NOMBRE_BENE': benef,
+        'ID_BENE': tramite.beneficiario_1.numero_id,
+        'NUMERO_BENE': bene_numero1,
+        'CORREO_BENE': bene_correo1,
+    }
+
+    # 6) Firma
+    if request and tpl:
+        # Tamaño consistente para TODAS las firmas
+        FIRMA_ANCHO = 40  # 40mm de ancho
+        FIRMA_ALTO = 15   # 15mm de alto
+        
+        # Función reutilizable para procesar firmas
+        def crear_firma_unificada(data_url, prueba=None):
+            if not data_url:
+                return ''
+            ancho = FIRMA_ANCHO
+            alto = FIRMA_ALTO
+            if prueba == 'si':
+                ancho = 20  # 40mm de ancho
+                alto = 9.25   # 15mm de alto
+            
+            try:
+                # Decodificar base64
+                header, b64 = data_url.split(',', 1)
+                img_data = base64.b64decode(b64)
+                
+                # Crear archivo temporal
+                fd, temp_path = tempfile.mkstemp(suffix='.png')
+                with os.fdopen(fd, 'wb') as f:
+                    f.write(img_data)
+                # ✅ MISMO TAMAÑO para todas las firmas
+                return InlineImage(tpl, temp_path, width=Mm(ancho), height=Mm(alto))
+                
+            except Exception as e:
+                print(f"Error al procesar firma: {e}")
+                return ''
+        
+        # Procesar cada firma con el mismo tamaño
+        context['FIRMA_CLIENTE'] = crear_firma_unificada(firma_data)
+        context['FIRMA_VENDEDOR'] = crear_firma_unificada(tramite.firma_vendedor)
+        context['FIRMA_TESTIGO1'] = crear_firma_unificada(tramite.testigo_1_firma)
+        context['FIRMA_TESTIGO2'] = crear_firma_unificada(tramite.testigo_2_firma)
+        context['FIRMA_BENE'] = crear_firma_unificada(tramite.beneficiario_1_firma)
+        
+    else:
+        # Valores por defecto si no hay template
+        context['FIRMA_CLIENTE'] = ''
+        context['FIRMA_VENDEDOR'] = ''
+        context['FIRMA_TESTIGO1'] = ''
+        context['FIRMA_TESTIGO2'] = ''
+        context['FIRMA_BENE'] = ''
+
+    return context
+
+def build_contrato_commeta_pagos_varios_context(fin, cli, ven, cliente2=None, request=None, tpl=None, firma_data=None, clausulas_adicionales=None, tramite=None, fecha=None):
+
+    print("Entré al build de commeta a pagos de un comprador")
+    
+    if clausulas_adicionales is None:
+        clausulas_adicionales = {}
+
+    # 1) Pronombres según sexo (necesitarás un campo sexo en Cliente y Vendedor)
+    def art(sex, masculino, femenino):
+        return masculino if sex == 'M' else femenino
+
+    SEXO_6 = art(tramite.beneficiario_1.sexo, 'O', 'A')  #SEXO REFERENTE AL BENEFICIARIO
+    SEXO_7 = art(tramite.beneficiario_1.sexo, 'EL', 'LA') #EL/LA REFERENTE AL BENEFICIARIO
+
+    if cliente2:
+        if cli.sexo == 'M' or cliente2.sexo == 'M':
+            # Si al menos uno es masculino -> masculino plural
+            
+            SEXO_1 = 'LOS'               # cedatario (comprador)
+            SEXO_5 = 'DE "LOS '
+            SEXO_4 = 'A "LOS '
+            SEXO_2 = 'O'
+        else:
+            # Ambos femeninos -> femenino plural
+            SEXO_1 = 'LAS'               # cedatario (comprador)
+            SEXO_5 = 'DE "LAS '
+            SEXO_4 = 'A "LAS '
+            SEXO_2 = 'A'
+    else:
+        # Por si acaso (aunque esta función es para varios)
+        SEXO_1 = 'LOS'               # cedatario (comprador)
+        SEXO_5 = 'DE "LOS '
+        SEXO_4 = 'A "LOS '
+        SEXO_2 = 'O'
+
+    # 2) Fecha de cesión (hoy, o fin.fecha_enganche)
+    if fecha == None:
+        cesion = date.today()
+    else:
+        cesion = fecha
+    meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio",
+             "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]
+    DIA = numero_a_letras(float(cesion.day),apocopado=False)
+    MES = meses[cesion.month-1].upper()
+    ANIO = numero_a_letras(float(cesion.year),apocopado=False)
+
+    fecha_inicio = fin.fecha_primer_pago
+
+    dia_ini = numero_a_letras(float(fecha_inicio.day), apocopado=False)
+    mes_ini = meses[fecha_inicio.month-1].upper()
+    anio_ini = numero_a_letras(float(fecha_inicio.year),apocopado=False)
+
+    # 3) Coordenadas (igual)
+    def _parse_coord(text):
+        try:
+            medios, cola = text.split('|',1)
+            m = float(medios.strip().split()[0])
+            c = cola.strip()
+        except:
+            try: m = float(text.split()[0])
+            except: m=0.0
+            c=''
+        return m, c
+
+    coords = {}
+    for lado in ('norte','sur','este','oeste'):
+        raw = getattr(fin.lote, lado, '')
+        m, c = _parse_coord(raw)
+        coords[f'NUMERO_METROS_{lado.upper()}'] = m
+        coords[f'COLINDANCIA_LOTE_{lado.upper()}'] = c
+
+    # 4) Esquema de pagos
+    eng_dia = fin.fecha_enganche.day if fin.fecha_enganche else ''
+    eng_mes = meses[fin.fecha_enganche.month-1].upper() if fin.fecha_enganche else ''
+    eng_anio= fin.fecha_enganche.year if fin.fecha_enganche else ''
+    cant_eng = fin.enganche
+    letra_eng = numero_a_letras(float(cant_eng)) if cant_eng else ''
+    monto_fija = get_monto_mensualidad_normal(fin)
+    moratorio  = calcular_interes_moratorio(monto_fija)
+
+    email1 = (cli.email or '')        # convierte None -> ''
+    email1 = email1.strip()            # quita espacios en blanco
+    if email1:
+        correo_comprador1 = email1.upper()
+    else:
+        correo_comprador1 = 'NO PROPORCIONADO'
+
+    email2 = (cliente2.email or '')        # convierte None -> ''
+    email2 = email2.strip()            # quita espacios en blanco
+    if email2:
+        correo_comprador2 = email2.upper()
+    else:
+        correo_comprador2 = 'NO PROPORCIONADO'
+
+    testigo1 = (tramite.testigo_1_nombre or '')        # convierte None -> ''
+    if testigo1:
+        test1 = testigo1.upper()
+    else:
+        test1 = testigo1
+    
+    testigo2 = (tramite.testigo_2_nombre or '')        # convierte None -> ''
+    if testigo2:
+        test2 = testigo2.upper()
+    else:
+        test2 = testigo2
+
+    bene = (tramite.beneficiario_1.nombre_completo or '')        # convierte None -> ''
+    if bene:
+        benef = bene.upper()
+    else:
+        benef = bene
+
+    bene_numero = (tramite.beneficiario_1.telefono or '')
+    if bene_numero:
+        bene_numero1 = bene_numero
+    else:
+        bene_numero1 = 'NO ESPECIFICADO'
+
+    bene_correo = (tramite.beneficiario_1.email or '')
+    if bene_correo:
+        bene_correo1 = bene_correo.upper()
+    else:
+        bene_correo1 = 'NO ESPECIFICADO'
+
+    vecino = (tramite.vecino or '')
+    if vecino:
+        vecin = vecino.upper()
+    else:
+        vecin = 'NO ESPECIFICADO'
+
+    LUGAR_FIRMA_OPCIONES = {
+        False: "EN LA COMUNIDAD DE SAN ANTONIO DE LA CAL, MUNICIPIO DE SU MISMO NOMBRE, OAXACA DE JUÁREZ",
+        True:  "EN LA COMUNIDAD SANTA MARIA TONAMECA, MUNICIPIO DE SU MISMO NOMBRE, DISTRITO DE POCHUTLA, ESTADO DE OAXACA",
+    }
+
+    # 5) Construcción del context
+    context = {
+        'LUGAR_FIRMA': LUGAR_FIRMA_OPCIONES[tramite.es_tonameca],
+        'DIA' : DIA,
+        'MES' : MES,
+        'ANIO': ANIO,
+        'SEXO_1': SEXO_1,
+        'SEXO_2': SEXO_2,
+        'SEXO_4': SEXO_4,
+        'SEXO_5': SEXO_5,
+        'SEXO_6': SEXO_6,
+        'SEXO_7': SEXO_7,
+
+        'NOMBRE_CEDA':   cli.nombre_completo.upper(),
+
+        'ID_LOTE': fin.lote.identificador,
+        'MANZ': fin.lote.manzana,
+        
+        'DOMICILIO':cli.domicilio.upper(),
+        'ID_CESA':   cli.numero_id,
+        'LUGAR_ORIGEN':       cli.originario.upper(),
+        'ESTADO_CIVIL':       cli.estado_civil.upper(),
+        'TELEFONO': cli.telefono,
+        'OCUPACION':cli.ocupacion.upper(),
+        'CORREO':   correo_comprador1,
+        'VECINO': vecin,
+        'EDAD': tramite.edad_cliente_1,
+
+        # Segundo Cliente/Comprador
+        'NOMBRE_CEDA_2':   cliente2.nombre_completo.upper() if cliente2 else '',
+        'DOMICILIO_2':cliente2.domicilio.upper() if cliente2 else '',
+        'ID_CESA_2':   cliente2.numero_id.upper() if cliente2 else '',
+        'LUGAR_ORIGEN_2':       cliente2.originario.upper() if cliente2 else '',
+        'ESTADO_CIVIL_2':       cliente2.estado_civil.upper() if cliente2 else '',
+        'TELEFONO_2': cliente2.telefono.upper() if cliente2 else '',
+        'OCUPACION_2':cliente2.ocupacion.upper() if cliente2 else '',
+        'CORREO_2':   correo_comprador2 if cliente2 else '',
+        'VECINO_2': vecin,
+        'EDAD_2': tramite.edad_cliente_2,
+
+        **coords,
+
+        'PRECIO_LOTE_FINANCIAMIENTO': fmt_money(fin.precio_lote),
+        'LETRA_PRECIO_LOTE':          numero_a_letras(float(fin.precio_lote)),
+        'APARTADO':    fmt_money(fin.apartado),
+        'LETRA_APARTADO':             numero_a_letras(float(fin.apartado)),
+
+        'DIA_ENGANCHE':               eng_dia,
+        'MES_ENGANCHE':               eng_mes,
+        'ANIO_ENGANCHE':              eng_anio,
+        'CANTIDAD_ENGANCHE_FINANCIAMIENTO': fmt_money(cant_eng),
+        'LETRA_ENGANCHE':                  letra_eng,
+
+        'FECHA_INICIO': f'{dia_ini} DE {mes_ini} DEL {anio_ini}',
+        'DIA_PAGO': dia_ini,
+        'METROS_CUADRADOS': calcular_superficie(fin.lote.norte, fin.lote.sur, fin.lote.este, fin.lote.oeste),
+        'PORCENTAJE':          moratorio['porcentaje'],
+
+        'NOMBRE_TEST2': test2,
+        'NOMBRE_TEST1': test1,
+        'ID_TEST2': tramite.testigo_2_idmex or '',
+        'ID_TEST1': tramite.testigo_1_idmex or '',
+        'NOMBRE_BENE': benef,
+        'ID_BENE': tramite.beneficiario_1.numero_id,
+        'NUMERO_BENE': bene_numero1,
+        'CORREO_BENE': bene_correo1,
+    }
+
+    # 6) Firma
+    if request and tpl:
+        # Tamaño consistente para TODAS las firmas
+        FIRMA_ANCHO = 40  # 40mm de ancho
+        FIRMA_ALTO = 15   # 15mm de alto
+        
+        # Función reutilizable para procesar firmas
+        def crear_firma_unificada(data_url, prueba=None):
+            if not data_url:
+                return ''
+            ancho = FIRMA_ANCHO
+            alto = FIRMA_ALTO
+            if prueba == 'si':
+                ancho = 20  # 40mm de ancho
+                alto = 9.25   # 15mm de alto
+            
+            try:
+                # Decodificar base64
+                header, b64 = data_url.split(',', 1)
+                img_data = base64.b64decode(b64)
+                
+                # Crear archivo temporal
+                fd, temp_path = tempfile.mkstemp(suffix='.png')
+                with os.fdopen(fd, 'wb') as f:
+                    f.write(img_data)
+                # ✅ MISMO TAMAÑO para todas las firmas
+                return InlineImage(tpl, temp_path, width=Mm(ancho), height=Mm(alto))
+                
+            except Exception as e:
+                print(f"Error al procesar firma: {e}")
+                return ''
+        
+        # Procesar cada firma con el mismo tamaño
+        context['FIRMA_CLIENTE'] = crear_firma_unificada(firma_data)
+        context['FIRMA_VENDEDOR'] = crear_firma_unificada(tramite.firma_vendedor)
+        context['FIRMA_TESTIGO1'] = crear_firma_unificada(tramite.testigo_1_firma)
+        context['FIRMA_TESTIGO2'] = crear_firma_unificada(tramite.testigo_2_firma)
+        context['FIRMA_BENE'] = crear_firma_unificada(tramite.beneficiario_1_firma)
+        
+    else:
+        # Valores por defecto si no hay template
+        context['FIRMA_CLIENTE'] = ''
+        context['FIRMA_VENDEDOR'] = ''
+        context['FIRMA_TESTIGO1'] = ''
+        context['FIRMA_TESTIGO2'] = ''
+        context['FIRMA_BENE'] = ''
+
+    return context
 
 
 
