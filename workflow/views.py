@@ -368,6 +368,20 @@ class ClienteDataView(FormView):
         cliente = main_form.save()
         self.request.session['cliente_id'] = cliente.id
 
+        # ----------------------------------------------------------------
+        # Campos extra (Edad y Vecino) — no pertenecen al modelo Cliente,
+        # se guardan en sesión como un dict identificado por cliente.
+        # ----------------------------------------------------------------
+        extra_fields = {}
+
+        edad_c1 = request.POST.get('edad_cliente_1', '').strip()
+        if edad_c1:
+            extra_fields['edad_cliente_1'] = edad_c1
+
+        vecino_c1 = request.POST.get('vecino_cliente_1', '').strip()
+        if vecino_c1:
+            extra_fields['vecino_cliente_1'] = vecino_c1
+
         # Manejar segundo cliente (si solicitado)
         if add_second:
             if not segundo_form.is_valid():
@@ -392,9 +406,22 @@ class ClienteDataView(FormView):
                 'numero_id': cd2.get('numero_id', ''),
             }
             self.request.session['cliente2_data'] = cliente2_data
+
+            # Campos extra del segundo cliente
+            edad_c2 = request.POST.get('edad_cliente_2', '').strip()
+            if edad_c2:
+                extra_fields['edad_cliente_2'] = edad_c2
+
+            vecino_c2 = request.POST.get('vecino_cliente_2', '').strip()
+            if vecino_c2:
+                extra_fields['vecino_cliente_2'] = vecino_c2
+                
         else:
             # si no lo seleccionó, nos aseguramos de limpiar la sesión
             self.request.session.pop('cliente2_data', None)
+
+        # Guardar campos extra en sesión (vacío si no se proporcionaron)
+        self.request.session['extra_fields'] = extra_fields
 
         # Manejar testigos (opcionales)
         testigos_data = {}
@@ -620,16 +647,28 @@ class SeleccionDocumentosView(FormView):
                 else:
                     slugs.append('contrato_ejidal_pagos')
         else:
-            if has_second_client:
-                if pago == 'contado':
-                    slugs.append('contrato_canario_contado_varios')
+            if fin.es_commeta:
+                if has_second_client:
+                    if pago == 'contado':
+                        slugs.append('contrato_canario_contado_varios')
+                    else:
+                        slugs.append('contrato_commeta_pagos_varios')
                 else:
-                    slugs.append('contrato_canario_pagos_varios')
+                    if pago == 'contado':
+                        slugs.append('contrato_canario_contado')
+                    else:
+                        slugs.append('contrato_commeta_pagos')
             else:
-                if pago == 'contado':
-                    slugs.append('contrato_canario_contado')
+                if has_second_client:
+                    if pago == 'contado':
+                        slugs.append('contrato_canario_contado_varios')
+                    else:
+                        slugs.append('contrato_canario_pagos_varios')
                 else:
-                    slugs.append('contrato_canario_pagos')
+                    if pago == 'contado':
+                        slugs.append('contrato_canario_contado')
+                    else:
+                        slugs.append('contrato_canario_pagos')
 
         kwargs['available_slugs'] = slugs
         return kwargs
@@ -904,7 +943,15 @@ class AvisoPrivacidadView(FormView):
         testigos_data = self.request.session.get('testigos_data', {})
         beneficiario_data = self.request.session.get('beneficiario_data', {})  # CAMBIO: ahora es beneficiario_data (singular)
 
+        # Campos extra (Edad y Vecino — no pertenecen al modelo Cliente)
+        extra_fields = self.request.session.get('extra_fields', {})
+
+        # NUEVO: Recuperar información de tipo de financiamiento y detalle Commeta
+        tipo_financiamiento = self.request.session.get('tipo_financiamiento', 'normal')
+        fin_commeta_id = self.request.session.get('financiamiento_commeta_id')
+
         print(f"Datos sesión - fin_id: {fin_id}, cli_id: {cli_id}, persona_tipo: {persona_tipo}")
+        print(f"Tipo financiamiento: {tipo_financiamiento}, Fin Commeta ID: {fin_commeta_id}")  # NUEVO
 
         # Si falta alguno, aborta o redirige al inicio
         if not (fin_id and cli_id and persona_tipo and persona_id):
@@ -913,6 +960,22 @@ class AvisoPrivacidadView(FormView):
         # 3) Obtén las instancias reales
         financiamiento = get_object_or_404(Financiamiento, id=fin_id)
         cliente = get_object_or_404(Cliente, id=cli_id)
+
+        # En form_valid, recuperar la selección de lugar
+        lugar_firma = self.request.POST.get('lugar_firma', '')
+        es_tonameca = (lugar_firma == 'puerto_escondido')
+
+        # NUEVO: Obtener instancia de FinanciamientoCommeta si existe
+        financiamiento_commeta = None
+        if tipo_financiamiento == 'commeta' and fin_commeta_id:
+            financiamiento_commeta = get_object_or_404(
+                FinanciamientoCommeta, 
+                id=fin_commeta_id
+            )
+            # Verificar que corresponde al financiamiento base
+            if financiamiento_commeta.financiamiento != financiamiento:
+                raise ValueError("El financiamiento Commeta no corresponde al financiamiento base")
+            print(f"✅ Financiamiento Commeta obtenido: {financiamiento_commeta.id}")
 
         # 3.1) Obtener la instancia correcta según el tipo
         vendedor = None
@@ -933,6 +996,26 @@ class AvisoPrivacidadView(FormView):
         if beneficiario_data:
             beneficiario = Beneficiario.objects.create(**beneficiario_data)
             print(f"Beneficiario creado: {beneficiario.nombre_completo}")
+
+        # 3.4) Parsear campos extra — convertir edad a int si está presente
+        edad_cliente_1 = None
+        edad_cliente_2 = None
+        vecino_cliente_1 = None
+        vecino_cliente_2 = None
+
+        if extra_fields:
+            try:
+                edad_cliente_1 = int(extra_fields['edad_cliente_1']) if extra_fields.get('edad_cliente_1') else None
+            except (ValueError, TypeError):
+                edad_cliente_1 = None
+
+            try:
+                edad_cliente_2 = int(extra_fields['edad_cliente_2']) if extra_fields.get('edad_cliente_2') else None
+            except (ValueError, TypeError):
+                edad_cliente_2 = None
+
+            vecino_cliente_1 = extra_fields.get('vecino_cliente_1') or None
+            vecino_cliente_2 = extra_fields.get('vecino_cliente_2') or None
 
         # 4) Crea o actualiza el Tramite
         tramite_id = self.request.session.get('tramite_id')
@@ -973,6 +1056,18 @@ class AvisoPrivacidadView(FormView):
             if beneficiario:
                 tramite.beneficiario_1 = beneficiario
 
+            # Asignar campos extra (solo sobreescribe si hay valor; preserva lo anterior si es None)
+            if edad_cliente_1 is not None:
+                tramite.edad_cliente_1 = edad_cliente_1
+            if edad_cliente_2 is not None:
+                tramite.edad_cliente_2 = edad_cliente_2
+            if vecino_cliente_1 is not None:
+                tramite.vecino = vecino_cliente_1
+            if vecino_cliente_2 is not None:
+                tramite.vecino_2 = vecino_cliente_2
+
+            tramite.es_tonameca = es_tonameca  # ← añadir antes del tramite.save()
+
             tramite.save()
             print(f"Trámite {tramite.id} actualizado correctamente")
         else:
@@ -1003,7 +1098,13 @@ class AvisoPrivacidadView(FormView):
                 testigo_1_nombre=testigos_data.get('testigo1_nombre', ''),  # <-- Usa testigos_data
                 testigo_2_nombre=testigos_data.get('testigo2_nombre', ''),
                 # NUEVO: Asignar beneficiario (puede ser None)
-                beneficiario_1=beneficiario
+                beneficiario_1=beneficiario,
+                es_tonameca=es_tonameca,  # ← añadir esta línea
+                # Campos extra Commeta Community
+                edad_cliente_1=edad_cliente_1,
+                edad_cliente_2=edad_cliente_2,
+                vecino=vecino_cliente_1,
+                vecino_2=vecino_cliente_2,
             )
             if tramite.financiamiento.tipo_pago == 'PAGOS':
                 GeneradorCuotasService.generar_cuotas(tramite)
@@ -1014,7 +1115,7 @@ class AvisoPrivacidadView(FormView):
         tramite.generar_links_firma()
 
         # Limpiar datos temporales de la sesión
-        session_keys = ['cliente2_data', 'testigos_data', 'beneficiario_data']  # CAMBIO: beneficiarios_data -> beneficiario_data
+        session_keys = ['cliente2_data', 'testigos_data', 'beneficiario_data', 'extra_fields']  # CAMBIO: beneficiarios_data -> beneficiario_data
         for key in session_keys:
             if key in self.request.session:
                 del self.request.session[key]
@@ -1223,12 +1324,32 @@ class FirmaBeneficiarioView(FirmaBaseView):
 class FirmaTestigo1View(FirmaBaseView):
     template_name = 'workflow/firma_testigo.html'
 
+    def form_valid(self, form):
+        token = self.kwargs['token']
+        tramite, _ = self.get_tramite_desde_token(token)
+        idmex = self.request.POST.get('idmex_testigo', '').strip()
+        if idmex:
+            tramite.testigo_1_idmex = idmex
+            tramite.save(update_fields=['testigo_1_idmex'])
+        return super().form_valid(form)
+
+
 class FirmaTestigo2View(FirmaBaseView):
     template_name = 'workflow/firma_testigo.html'
 
+    def form_valid(self, form):
+        token = self.kwargs['token']
+        tramite, _ = self.get_tramite_desde_token(token)
+        idmex = self.request.POST.get('idmex_testigo', '').strip()
+        if idmex:
+            tramite.testigo_2_idmex = idmex
+            tramite.save(update_fields=['testigo_2_idmex'])
+        return super().form_valid(form)
+        
 # Vista de éxito después de firmar
 class FirmaExitosaView(TemplateView):
     template_name = 'workflow/firma_exitosa.html'
+
 
 
 
