@@ -83,16 +83,28 @@ class DownloadDocumentView(View):
                     else:
                         document_type = 'contrato_ejidal_pagos'
             else:
-                if has_second_client:
-                    if pago == 'contado':
-                        document_type = 'contrato_canario_contado_varios'
+                if fin.es_commeta:
+                    if has_second_client:
+                        if pago == 'contado':
+                            document_type = 'contrato_canario_contado_varios'
+                        else:
+                            document_type = 'contrato_commeta_pagos_varios'
                     else:
-                        document_type = 'contrato_canario_pagos_varios'
+                        if pago == 'contado':
+                            document_type = 'contrato_canario_contado'
+                        else:
+                            document_type = 'contrato_commeta_pagos'
                 else:
-                    if pago == 'contado':
-                        document_type = 'contrato_canario_contado'
+                    if has_second_client:
+                        if pago == 'contado':
+                            document_type = 'contrato_canario_contado_varios'
+                        else:
+                            document_type = 'contrato_canario_pagos_varios'
                     else:
-                        document_type = 'contrato_canario_pagos'
+                        if pago == 'contado':
+                            document_type = 'contrato_canario_contado'
+                        else:
+                            document_type = 'contrato_canario_pagos'
         
         # 3. Para plan_financiamiento, si no existe en DOCUMENTOS, usar uno por defecto
         if document_type == 'plan_financiamiento' and document_type not in DOCUMENTOS:
@@ -1936,6 +1948,7 @@ def health_check(request):
         "message": "Application is alive",
         "app": "dashboard"
     })
+
 
 
 
