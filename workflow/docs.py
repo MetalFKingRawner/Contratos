@@ -18,7 +18,9 @@ from workflow.builders import (
     build_contrato_canario_contado_varios_context,
     build_contrato_canario_pagos_context,
     build_contrato_canario_pagos_varios_context,
-    build_financiamiento_context
+    build_financiamiento_context,
+    build_contrato_commeta_pagos_context,
+    build_contrato_commeta_pagos_varios_context
 )
 
 DOCUMENTOS = {
@@ -151,5 +153,20 @@ DOCUMENTOS = {
         "plantilla":  "pdfs/templates/pdfs/casa_canario_pagos_varios.docx",
         "builder":    build_contrato_canario_pagos_varios_context,
     },
+    
+    # Contratos commeta
+    "contrato_commeta_pagos": {
+        "titulo":     "Contrato Commeta Community (Pagos)",
+        "descripcion":"Contrato con plan de pagos.",
+        "plantilla":  "pdfs/templates/pdfs/contrato_commeta_pagos.docx",
+        "builder":    build_contrato_commeta_pagos_context,
+    },
+    "contrato_commeta_pagos_varios": {
+        "titulo":     "Contrato Commeta Community varios compradores (Pagos)",
+        "descripcion":"Contrato con plan de pagos de varios compradores.",
+        "plantilla":  "pdfs/templates/pdfs/contrato_commeta_pagos_varios.docx",
+        "builder":    build_contrato_commeta_pagos_varios_context,
+    },
 }
+
 
