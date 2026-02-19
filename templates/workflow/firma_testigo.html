@@ -53,6 +53,27 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Campo IDMEX -->
+            <div class="idmex-field-wrapper">
+                <label for="idmex_testigo" class="idmex-label">
+                    <i class="fas fa-id-card"></i>
+                    <span>Número de Identificación (IDMEX) <span class="required">*</span></span>
+                </label>
+                <input 
+                    type="text" 
+                    id="idmex_testigo" 
+                    name="idmex_testigo"
+                    class="idmex-input"
+                    value="{% if tipo_firmante == 'testigo1' %}{{ tramite.testigo_1_idmex }}{% else %}{{ tramite.testigo_2_idmex }}{% endif %}"
+                    placeholder="Ej. IDMEX1234567890"
+                    required
+                    autocomplete="off"
+                >
+                <small class="idmex-hint">
+                    Debe empezar por "IDMEX" seguido de los 10 dígitos, según la parte trasera de tu identificación oficial.
+                </small>
+            </div>
         </div>
         
         <!-- Canvas para firma -->
@@ -123,6 +144,10 @@
     
     <!-- Indicador de estado -->
     <div class="status-indicator" id="status-indicator">
+        <div class="status-item" id="status-idmex">
+            <i class="fas fa-circle"></i>
+            <span>IDMEX ingresado</span>
+        </div>
         <div class="status-item" id="status-signature">
             <i class="fas fa-circle"></i>
             <span>Firma proporcionada</span>
@@ -288,6 +313,73 @@
     font-size: 1.1rem;
     color: var(--text-primary);
     font-weight: 600;
+}
+
+/* Campo IDMEX */
+.idmex-field-wrapper {
+    padding: 1.5rem;
+    background: rgba(255, 255, 255, 0.9);
+    border-top: 1px solid rgba(206, 147, 216, 0.4);
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.idmex-label {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.9rem;
+    color: #4a0e6e;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 0;
+}
+
+.idmex-label i {
+    color: #4444ad;
+    font-size: 1.1rem;
+}
+
+.idmex-label .required {
+    color: #e74c3c;
+    font-size: 1rem;
+}
+
+.idmex-input {
+    width: 100%;
+    padding: 0.875rem 1rem;
+    border: 2px solid #ce93d8;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    background: white;
+    transition: all 0.3s ease;
+    letter-spacing: 0.5px;
+    outline: none;
+}
+
+.idmex-input:focus {
+    border-color: #4447ad;
+    box-shadow: 0 0 0 4px rgba(68, 71, 173, 0.12);
+}
+
+.idmex-input.valid {
+    border-color: #27ae60;
+    box-shadow: 0 0 0 3px rgba(39, 174, 96, 0.1);
+}
+
+.idmex-input.invalid {
+    border-color: #e74c3c;
+    box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1);
+}
+
+.idmex-hint {
+    font-size: 0.82rem;
+    color: #6c757d;
+    line-height: 1.4;
 }
 
 /* Canvas mejorado */
@@ -753,6 +845,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const submitBtn = document.getElementById('submit-btn');
     const termsCheckbox = document.getElementById('aceptar_terminos');
     const canvasHint = document.getElementById('canvas-hint');
+    const idmexInput = document.getElementById('idmex_testigo');
+    const statusIdmex = document.getElementById('status-idmex');
     const statusSignature = document.getElementById('status-signature');
     const statusDeclaration = document.getElementById('status-declaration');
     
@@ -780,8 +874,21 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateSubmitButton() {
         const hasSignature = !signaturePad.isEmpty();
         const declarationAccepted = termsCheckbox.checked;
+        const idmexValue = idmexInput.value.trim();
+        const idmexValid = idmexValue.length > 0;
         
         // Actualizar estados visuales
+        if (idmexValid) {
+            statusIdmex.classList.add('active');
+            idmexInput.classList.remove('invalid');
+            if (idmexValue.toUpperCase().startsWith('IDMEX')) {
+                idmexInput.classList.add('valid');
+            }
+        } else {
+            statusIdmex.classList.remove('active');
+            idmexInput.classList.remove('valid');
+        }
+        
         if (hasSignature) {
             statusSignature.classList.add('active');
             canvas.classList.add('has-signature');
@@ -797,7 +904,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         // Habilitar/deshabilitar botón
-        submitBtn.disabled = !(hasSignature && declarationAccepted);
+        submitBtn.disabled = !(hasSignature && declarationAccepted && idmexValid);
     }
     
     // Event listeners para el canvas
@@ -815,6 +922,22 @@ document.addEventListener('DOMContentLoaded', function() {
     // Event listener para declaración
     termsCheckbox.addEventListener('change', updateSubmitButton);
     
+    // Event listener para IDMEX
+    idmexInput.addEventListener('input', updateSubmitButton);
+    idmexInput.addEventListener('blur', function() {
+        const val = this.value.trim();
+        if (val && !val.toUpperCase().startsWith('IDMEX')) {
+            this.classList.add('invalid');
+            this.classList.remove('valid');
+        } else if (val) {
+            this.classList.remove('invalid');
+            this.classList.add('valid');
+        }
+    });
+    idmexInput.addEventListener('focus', function() {
+        this.classList.remove('invalid');
+    });
+    
     // Botón limpiar
     clearBtn.addEventListener('click', () => {
         signaturePad.clear();
@@ -831,6 +954,15 @@ document.addEventListener('DOMContentLoaded', function() {
             alert('⚠️ Por favor, proporciona tu firma antes de continuar.');
             canvas.style.borderColor = "#dc3545";
             canvas.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            return;
+        }
+        
+        const idmexValue = idmexInput.value.trim();
+        if (!idmexValue) {
+            alert('⚠️ Por favor, ingresa tu número de identificación (IDMEX).');
+            idmexInput.classList.add('invalid');
+            idmexInput.focus();
+            idmexInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
             return;
         }
         
