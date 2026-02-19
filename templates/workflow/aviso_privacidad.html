@@ -491,6 +491,105 @@
   }
 }
 
+/* Sección de lugar de firma */
+.location-section {
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 20px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.3);
+}
+
+.location-cards {
+  display: flex;
+  gap: 1.25rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+.location-card {
+  flex: 1;
+  min-width: 200px;
+  position: relative;
+  cursor: pointer;
+}
+
+.location-card input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.location-card-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 1.5rem 1rem;
+  border-radius: 16px;
+  border: 2px solid rgba(46, 143, 204, 0.2);
+  background: white;
+  transition: all 0.3s ease;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+}
+
+.location-card-inner i {
+  font-size: 2rem;
+  color: var(--text-secondary);
+  transition: color 0.3s;
+}
+
+.location-card-inner span {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  transition: color 0.3s;
+}
+
+.location-card-inner small {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  transition: color 0.3s;
+}
+
+.location-card input[type="radio"]:checked + .location-card-inner {
+  border-color: #2e8fcc;
+  background: linear-gradient(135deg, rgba(46,143,204,0.08) 0%, rgba(30,95,140,0.06) 100%);
+  box-shadow: 0 6px 20px rgba(46,143,204,0.2);
+}
+
+.location-card input[type="radio"]:checked + .location-card-inner i {
+  color: #2e8fcc;
+}
+
+.location-card input[type="radio"]:checked + .location-card-inner span {
+  color: #2e8fcc;
+}
+
+.location-card:hover .location-card-inner {
+  border-color: rgba(46,143,204,0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(46,143,204,0.12);
+}
+
+.location-error {
+  display: none;
+  color: #dc3545;
+  font-size: 0.875rem;
+  margin-top: 0.75rem;
+}
+
+.location-error.visible {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
 /* Animaciones */
 @keyframes containerSlideIn {
   from {
@@ -716,6 +815,42 @@
       </div>
     </div>
 
+    <!-- Sección de lugar de firma -->
+    <div class="location-section">
+      <h3 class="section-title">
+        <i class="fas fa-map-marker-alt"></i>
+        Lugar de firma del contrato
+      </h3>
+      <p class="text-muted small mb-0">Selecciona la oficina donde se llevará a cabo la firma:</p>
+
+      <div class="location-cards">
+        <!-- Opción 1: San Antonio de la Cal -->
+        <label class="location-card">
+          <input type="radio" name="lugar_firma" value="san_antonio">
+          <div class="location-card-inner">
+            <i class="fas fa-building"></i>
+            <span>Oficina de San Antonio de la Cal</span>
+            <small>Oaxaca</small>
+          </div>
+        </label>
+
+        <!-- Opción 2: Puerto Escondido -->
+        <label class="location-card">
+          <input type="radio" name="lugar_firma" value="puerto_escondido">
+          <div class="location-card-inner">
+            <i class="fas fa-umbrella-beach"></i>
+            <span>Oficina de Puerto Escondido</span>
+            <small>Oaxaca</small>
+          </div>
+        </label>
+      </div>
+
+      <div class="location-error" id="locationError">
+        <i class="fas fa-exclamation-circle"></i>
+        Por favor selecciona el lugar de firma del contrato.
+      </div>
+    </div>
+
     <button type="submit" class="btn-submit">
       <i class="fas fa-file-contract"></i>
       Aceptar y continuar
@@ -825,6 +960,17 @@ document.addEventListener('DOMContentLoaded', function() {
       console.log('✅ Usuario optó por firma física - omitiendo validación de canvas');
       hiddenInput.value = ''; // Limpiar el campo por si acaso
     }
+    // Validar lugar de firma
+    const lugarSeleccionado = form.querySelector('input[name="lugar_firma"]:checked');
+    const locationError = document.getElementById('locationError');
+    if (!lugarSeleccionado) {
+        locationError.classList.add('visible');
+        e.preventDefault();
+        locationError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+    } else {
+        locationError.classList.remove('visible');
+    }
     console.log('✅ Formulario listo para enviar');
     // El formulario se enviará normalmente
   });
@@ -857,3 +1003,4 @@ if (document.querySelector('input[name="firmar"]:checked')?.value !== 'sí') {
 }
 </script>
 {% endblock %}
+
