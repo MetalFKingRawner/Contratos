@@ -7,3 +7,6 @@ for lote in lotes:
     lote.save()
 print(f'{count} lotes actualizados.')
 "
+
+echo "Iniciando servidor..."
+exec gunicorn inmobiliaria.wsgi:application --bind 0.0.0.0:8000
