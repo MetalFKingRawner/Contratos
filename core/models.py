@@ -2,6 +2,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
+from workflow.utils import calcular_superficie
 
 class Proyecto(models.Model):
     TIPO_PROYECTO_CHOICES = [
@@ -64,14 +65,31 @@ class Lote(models.Model):
     manzana = models.CharField(max_length=20, blank=True, null=True)  # Solo para algunos proyectos
     activo      = models.BooleanField(default=True)  # ← NUEVO campo
 
+    superficie_m2 = models.DecimalField(
+        max_digits=10, decimal_places=2,
+        blank=True, null=True,
+        help_text="Si se deja vacío, se calcula automáticamente a partir de las medidas."
+    )
+
+    def save(self, *args, **kwargs):
+        if self.superficie_m2 is None:
+            self.superficie_m2 = calcular_superficie(self.norte, self.sur, self.este, self.oeste)
+        super().save(*args, **kwargs)
+
+    @property
+    def superficie(self):
+        if self.superficie_m2 is not None:
+            return float(self.superficie_m2)
+        return calcular_superficie(self.norte, self.sur, self.este, self.oeste)
+
+    
     def __str__(self):
         return f"{self.proyecto.nombre} – Lote {self.identificador}"
-
+    
     @property
     def es_commeta(self):
         """Propiedad para verificar si el lote pertenece a un proyecto Commeta"""
         return self.proyecto.tipo_proyecto == 'commeta'
-
 # En core/models.py - ACTUALIZAR ConfiguracionCommeta
 class ConfiguracionCommeta(models.Model):
     ZONA_CHOICES = [
@@ -284,6 +302,7 @@ class Beneficiario(models.Model):
 
     def __str__(self):
         return self.nombre_completo
+
 
 
 
