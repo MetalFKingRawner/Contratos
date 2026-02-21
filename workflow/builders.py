@@ -4558,7 +4558,7 @@ def build_contrato_commeta_pagos_context(fin, cli, ven, request=None, tpl=None, 
         'LETRA_ENGANCHE':                  letra_eng,
 
         'DIA_PAGO': dia_ini,
-        'DIA_PAGO_2': float(dia_ini + 3),
+        'DIA_PAGO_2': dia_ini,
         'METROS_CUADRADOS': calcular_superficie(fin.lote.norte, fin.lote.sur, fin.lote.este, fin.lote.oeste),
         'PORCENTAJE':          moratorio['porcentaje'],
 
@@ -4872,6 +4872,7 @@ def build_contrato_commeta_pagos_varios_context(fin, cli, ven, cliente2=None, re
         context['FIRMA_BENE'] = ''
 
     return context
+
 
 
 
