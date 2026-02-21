@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0018_proyecto_incluir_cesion_derechos_and_more'),
+        ('core', '0012_proyecto_incluir_cesion_derechos_and_more'),
     ]
 
     operations = [
@@ -16,3 +16,4 @@ class Migration(migrations.Migration):
             field=models.DecimalField(blank=True, decimal_places=2, help_text='Si se deja vacío, se calcula automáticamente a partir de las medidas.', max_digits=10, null=True),
         ),
     ]
+
