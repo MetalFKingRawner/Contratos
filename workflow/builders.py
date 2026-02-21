@@ -323,7 +323,7 @@ def build_financiamiento_context(fin, cli, ven, request=None, tpl=None, firma_da
 
     return context
                                      
-def build_carta_intencion_context(fin, cli, ven,request=None, tpl=None, firma_data=None, tramite=None):
+def build_carta_intencion_context(fin, cli, ven,request=None, tpl=None, firma_data=None, tramite=None, fecha=None):
     # Aquí generaremos el dict con todos los placeholders de la carta
     # Ejemplo mínimo:
     print("BUILDER recibe request:", type(request), hasattr(request, 'session'))
@@ -354,7 +354,7 @@ def build_carta_intencion_context(fin, cli, ven,request=None, tpl=None, firma_da
             #'LETRA_IDENTIFICADOR':   fin.lote.identificador,  # o formateo
             'DIRECCION_INMUEBLE':    fin.lote.proyecto.ubicacion,
             'NUMERO_LOTE':           fin.lote.identificador,
-            'SUPERFICIE':            superficie,
+            'SUPERFICIE':            fin.lote.superficie_m2,
             'REGIMEN':               fin.lote.proyecto.tipo_contrato,
 
             # Datos del vendedor
@@ -488,7 +488,7 @@ def build_solicitud_contrato_context(fin, cli, ven, request=None, tpl=None, firm
         'NOMBRE_LOTE':        str(fin.lote.proyecto.nombre).upper(),
         'NUMERO_LOTE':        fin.lote.identificador,
         **coords,
-        'METROS_CUAD': calcular_superficie(fin.lote.norte, fin.lote.sur, fin.lote.este, fin.lote.oeste),
+        'METROS_CUAD': fin.lote.superficie_m2,
         # Vendedor
         'NOMBRE_VENDEDOR':    ven.nombre_completo.upper(),
     }
@@ -4405,6 +4405,40 @@ def get_monto_mensualidad_normal(fin) -> float:
     # tipo_esquema == 'mensualidades_fijas'
     return float(fin.monto_mensualidad or 0)
 
+def get_porcentaje_cometa(lotes):
+
+    lote = int(lotes)
+
+    # AMBAR: L2, L8, L9
+    if lote in [2, 8, 9]:
+        return 5
+
+    # AQUA: L4,L5,L6,L10,L11,L13,L14,L15,L40,L41,L42,L43,L44,L45,L46,L47,L48,L49,L50
+    if lote in [4, 5, 6, 10, 11, 13, 14, 15, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50]:
+        return 18
+
+    # AQUA: L12
+    if lote == 12:
+        return 8
+
+    # AQUA: L16
+    if lote == 16:
+        return 7
+
+    # MAGNETITA: L17,L18,L19,L29,L30,L31,L32,L34,L52,L53
+    if lote in [17, 18, 19, 29, 30, 31, 32, 34, 52, 53]:
+        return 23
+
+    # PLATINO: L20,L21,L22,L24,L25,L26,L27,L28,L35,L36,L37,L38,L39,L54,L55,L56,L57,L58
+    if lote in [20, 21, 22, 24, 25, 26, 27, 28, 35, 36, 37, 38, 39, 54, 55, 56, 57, 58]:
+        return 29
+
+    # PLATINO: L23
+    if lote == 23:
+        return 9
+
+    return 0
+
 def build_contrato_commeta_pagos_context(fin, cli, ven, request=None, tpl=None, firma_data=None, clausulas_adicionales=None, tramite=None, fecha=None):
 
     print("Entré al build de commeta a pagos de un comprador")
@@ -4560,8 +4594,8 @@ def build_contrato_commeta_pagos_context(fin, cli, ven, request=None, tpl=None, 
 
         'FECHA_INICIO': fecha_inicio.day,
         'DIA_PAGO': (fecha_inicio + timedelta(days=3)).day,
-        'METROS_CUADRADOS': calcular_superficie(fin.lote.norte, fin.lote.sur, fin.lote.este, fin.lote.oeste),
-        'PORCENTAJE':          moratorio['porcentaje'],
+        'METROS_CUADRADOS': fin.lote.superficie_m2,
+        'PORCENTAJE': get_porcentaje_cometa(fin.lote.identificador),
 
         'NOMBRE_TEST2': test2,
         'NOMBRE_TEST1': test1,
@@ -4812,8 +4846,8 @@ def build_contrato_commeta_pagos_varios_context(fin, cli, ven, cliente2=None, re
 
         'FECHA_INICIO': fecha_inicio.day,
         'DIA_PAGO': (fecha_inicio + timedelta(days=3)).day,
-        'METROS_CUADRADOS': calcular_superficie(fin.lote.norte, fin.lote.sur, fin.lote.este, fin.lote.oeste),
-        'PORCENTAJE':          moratorio['porcentaje'],
+        'METROS_CUADRADOS': fin.lote.superficie_m2,
+        'PORCENTAJE': get_porcentaje_cometa(fin.lote.identificador),
 
         'NOMBRE_TEST2': test2,
         'NOMBRE_TEST1': test1,
@@ -4873,3 +4907,4 @@ def build_contrato_commeta_pagos_varios_context(fin, cli, ven, cliente2=None, re
         context['FIRMA_BENE'] = ''
 
     return context
+
