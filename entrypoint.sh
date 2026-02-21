@@ -1,3 +1,6 @@
+#!/bin/bash
+set -e
+
 echo "Recalculando superficies nulas..."
 python manage.py shell -c "
 from core.models import Lote
