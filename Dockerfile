@@ -44,7 +44,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 # 6. Expone puerto y comando de arranque
 EXPOSE 8000
-CMD ["gunicorn", "inmobiliaria.wsgi:application", "--bind", "0.0.0.0:8000"]
+#CMD ["gunicorn", "inmobiliaria.wsgi:application", "--bind", "0.0.0.0:8000"]
 # 8. Entrypoint en lugar de CMD directo
 CMD ["./entrypoint.sh"]
 # ─────────────────────────────────────────────────
