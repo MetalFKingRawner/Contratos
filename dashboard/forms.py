@@ -89,7 +89,7 @@ class ProyectoForm(forms.ModelForm):
 class LoteForm(forms.ModelForm):
     class Meta:
         model = Lote
-        fields = ["proyecto", "identificador", "norte", "sur", "este", "oeste", "manzana", "activo"]
+        fields = ["proyecto", "identificador", "norte", "sur", "este", "oeste", "manzana", "activo","superficie_m2"]
         widgets = {
             "proyecto": forms.Select(attrs={"class": "form-select"}),
             "identificador": forms.TextInput(attrs={"class": "form-control"}),
@@ -99,6 +99,11 @@ class LoteForm(forms.ModelForm):
             "oeste": forms.TextInput(attrs={"class": "form-control"}),
             "manzana": forms.TextInput(attrs={"class": "form-control"}),
             "activo": forms.CheckboxInput(attrs={"class": "form-check-input"}),
+            "superficie_m2": forms.NumberInput(attrs={
+                "class": "form-control",
+                "placeholder": "Se calcula automáticamente si se deja vacío",
+                "step": "0.01",
+            }), 
         }
 
 class ClausulasEspecialesForm(forms.ModelForm):
@@ -435,4 +440,5 @@ class ConfiguracionCommetaForm(forms.ModelForm):
                                  'Formato inválido. Use formato de lista: [3,8,15,22,29,36]')
         
         return cleaned_data
+
 
