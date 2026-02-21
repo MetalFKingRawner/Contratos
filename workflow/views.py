@@ -429,11 +429,18 @@ class ClienteDataView(FormView):
             # Ahora ambos testigos son opcionales
             testigo1_nombre = request.POST.get('testigo1_nombre', '').strip()
             testigo2_nombre = request.POST.get('testigo2_nombre', '').strip()
+            testigo1_idmex  = request.POST.get('testigo1_idmex', '').strip()
+            testigo2_idmex  = request.POST.get('testigo2_idmex', '').strip()
             
             if testigo1_nombre:
                 testigos_data['testigo1_nombre'] = testigo1_nombre
             if testigo2_nombre:
                 testigos_data['testigo2_nombre'] = testigo2_nombre
+
+            if testigo1_idmex:
+                testigos_data['testigo1_idmex'] = testigo1_idmex
+            if testigo2_idmex:
+                testigos_data['testigo2_idmex'] = testigo2_idmex
         
         self.request.session['testigos_data'] = testigos_data
 
@@ -1051,6 +1058,8 @@ class AvisoPrivacidadView(FormView):
                 # Ahora ambos testigos son opcionales
                 tramite.testigo_1_nombre = testigos_data.get('testigo1_nombre', '')
                 tramite.testigo_2_nombre = testigos_data.get('testigo2_nombre', '')
+                tramite.testigo_1_idmex  = testigos_data.get('testigo1_idmex', '')   # ← añadir
+                tramite.testigo_2_idmex  = testigos_data.get('testigo2_idmex', '')   # ← añadir
             
             # NUEVO: Actualizar beneficiario si existe
             if beneficiario:
@@ -1097,6 +1106,8 @@ class AvisoPrivacidadView(FormView):
                 # Asignar testigos
                 testigo_1_nombre=testigos_data.get('testigo1_nombre', ''),  # <-- Usa testigos_data
                 testigo_2_nombre=testigos_data.get('testigo2_nombre', ''),
+                testigo_1_idmex=testigos_data.get('testigo1_idmex', ''),   # ← añadir
+                testigo_2_idmex=testigos_data.get('testigo2_idmex', ''),   # ← añadir
                 # NUEVO: Asignar beneficiario (puede ser None)
                 beneficiario_1=beneficiario,
                 es_tonameca=es_tonameca,  # ← añadir esta línea
@@ -1349,6 +1360,7 @@ class FirmaTestigo2View(FirmaBaseView):
 # Vista de éxito después de firmar
 class FirmaExitosaView(TemplateView):
     template_name = 'workflow/firma_exitosa.html'
+
 
 
 
