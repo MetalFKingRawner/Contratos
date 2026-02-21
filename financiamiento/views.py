@@ -527,7 +527,7 @@ def build_carta_intencion_from_instance(carta, request=None, tpl=None):
     
     fin = carta.financiamiento
     lote = fin.lote
-    superficie = calcular_superficie(lote.norte, lote.sur, lote.este, lote.oeste)
+    superficie = fin.lote.superficie_m2
     
     # Determinar forma de pago para el documento
     forma_pago_doc = 'Contado' if fin.tipo_pago == 'contado' else 'Financiado'
@@ -729,7 +729,7 @@ def build_financiamiento_cotiza_context(fin, request=None):
 
     fecha_inicio = fin.fecha_primer_pago
     fecha_final = fin.fecha_ultimo_pago
-    superfici = calcular_superficie(fin.lote.norte, fin.lote.sur, fin.lote.este, fin.lote.oeste)
+    superfici = fin.lote.superficie_m2
 
     # 5) Construir contexto
     context = {
@@ -997,7 +997,7 @@ def build_financiamiento_commeta_cotiza_context(fin_commeta, request=None):
             nombre_vendedor = request.user.username
         nombre_vendedor = nombre_vendedor.upper()
 
-    superfici = calcular_superficie(fin.lote.norte, fin.lote.sur, fin.lote.este, fin.lote.oeste)
+    superfici = fin.lote.superficie_m2
     
     # Obtener zona de Commeta - Asegurar que sea string
     zona_display = ""
@@ -1158,3 +1158,4 @@ def descargar_financiamiento_commeta_cotiza_pdf(request, pk):
         error_details = traceback.format_exc()
         print(f"📋 Traceback completo:\n{error_details}")
         return HttpResponse(f"Error al generar el documento: {str(e)}", status=500)
+
