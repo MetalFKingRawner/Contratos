@@ -293,6 +293,47 @@
           </div>
         </div>
       </div>
+
+      <!-- Superficie -->
+      <div class="form-section">
+        <div class="section-header">
+          <div class="section-icon accent">
+            <i class="fas fa-ruler-combined"></i>
+          </div>
+          <h3 class="section-title">Superficie</h3>
+        </div>
+        
+        <div class="form-grid">
+          <!-- Superficie m2 -->
+          <div class="form-group">
+            <label class="form-label">
+              {{ form.superficie_m2.label }}
+              {% if form.superficie_m2.field.required %}
+                <span class="required-indicator">*</span>
+              {% endif %}
+            </label>
+            <div class="input-wrapper">
+              {{ form.superficie_m2 }}
+              <div class="input-icon">
+                <i class="fas fa-vector-square"></i>
+              </div>
+            </div>
+            {% if form.superficie_m2.help_text %}
+              <small class="form-help-text">{{ form.superficie_m2.help_text }}</small>
+            {% endif %}
+            {% if form.superficie_m2.errors %}
+              <div class="field-errors">
+                {% for error in form.superficie_m2.errors %}
+                  <span class="field-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    {{ error }}
+                  </span>
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Botones de acción -->
