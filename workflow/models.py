@@ -46,6 +46,11 @@ class Tramite(models.Model):
     firma_vendedor = models.TextField(
         blank=True, help_text="Data‑URL base64 de la firma del vendedor"
     )
+    link_firma_vendedor = models.CharField(
+        max_length=255, 
+        blank=True, 
+        help_text="Link único para firma del vendedor"
+    )
     
     firma_cliente = models.TextField(
         blank=True, help_text="Data‑URL base64 de la firma del cliente"
@@ -238,6 +243,11 @@ class Tramite(models.Model):
             self.link_firma_testigo2 = generar_token()
             links_generados.append('testigo_2')
             print(f"✅ Link generado para testigo 2: {self.link_firma_testigo2[:20]}...")
+
+        if not self.link_firma_vendedor:
+            self.link_firma_vendedor = generar_token()
+            links_generados.append('vendedor')
+            print(f"✅ Link generado para vendedor: {self.link_firma_vendedor[:20]}...")
         
         # NOTA: Eliminamos la generación para beneficiario_2 ya que ahora solo tenemos uno
         
@@ -273,6 +283,9 @@ class Tramite(models.Model):
         
         if self.testigo_2_nombre and self.link_firma_testigo2:
             activos['testigo_2'] = self.link_firma_testigo2
+
+        if self.link_firma_vendedor:                          # ← NUEVO
+            activos['vendedor'] = self.link_firma_vendedor
         
         return activos
 
@@ -300,6 +313,9 @@ class Tramite(models.Model):
         
         if 'testigo_2' in activos:
             urls['testigo_2'] = f"{base_url}{reverse('firma_testigo2', args=[activos['testigo_2']])}"
+
+        if 'vendedor' in activos:
+            urls['vendedor'] = f"{base_url}{reverse('firma_vendedor', args=[activos['vendedor']])}"
         
         return urls
 
@@ -336,6 +352,11 @@ class Tramite(models.Model):
             firmas_totales += 1
             if self.testigo_2_firma:
                 firmas_completadas += 1
+
+        # Vendedor - siempre cuenta               # ← NUEVO
+        firmas_totales += 1
+        if self.firma_vendedor:
+            firmas_completadas += 1
         
         if firmas_totales == 0:
             return "sin_firmas"
@@ -374,6 +395,10 @@ class Tramite(models.Model):
         if self.testigo_2_nombre:
             firmas_totales += 1
             if self.testigo_2_firma: firmas_completadas += 1
+
+        # Vendedor - siempre cuenta               # ← NUEVO
+        firmas_totales += 1
+        if self.firma_vendedor: firmas_completadas += 1
         
         return int((firmas_completadas / firmas_totales) * 100) if firmas_totales > 0 else 0
 
@@ -391,6 +416,8 @@ class Tramite(models.Model):
             pendientes.append("Testigo 1")
         if self.testigo_2_nombre and not self.testigo_2_firma:
             pendientes.append("Testigo 2")
+        if not self.firma_vendedor:                           # ← NUEVO
+            pendientes.append("Vendedor")
         return pendientes
 
     @property
@@ -423,6 +450,7 @@ class Tramite(models.Model):
             'beneficiario': 'workflow:firma_beneficiario',
             'testigo_1': 'workflow:firma_testigo1', 
             'testigo_2': 'workflow:firma_testigo2',
+            'vendedor':        'workflow:firma_vendedor',
         }
         
         for tipo, token in activos.items():
@@ -464,5 +492,6 @@ class ClausulasEspeciales(models.Model):
 
     def __str__(self):
         return f"Cláusulas especiales - Trámite #{self.tramite.id}"
+
 
 
