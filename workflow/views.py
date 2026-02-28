@@ -1232,7 +1232,8 @@ class FirmaBaseView(FormView):
             ('link_firma_cliente2', 'segundo_cliente'),
             ('link_firma_beneficiario1', 'beneficiario'),
             ('link_firma_testigo1', 'testigo1'),
-            ('link_firma_testigo2', 'testigo2')
+            ('link_firma_testigo2', 'testigo2'),
+            ('link_firma_vendedor', 'vendedor'),
         ]
         
         for campo, tipo in campos_busqueda:
@@ -1259,6 +1260,7 @@ class FirmaBaseView(FormView):
             'beneficiario': ('Firma - Beneficiario', 'Completa tus datos y proporciona tu firma'),
             'testigo1': ('Firma - Testigo 1', 'Certifica la autenticidad del documento'),
             'testigo2': ('Firma - Testigo 2', 'Certifica la autenticidad del documento'),
+            'vendedor': ('Firma - Vendedor', 'Proporciona tu firma como asesor del trámite'),
         }
         
         titulo, subtitulo = titulos.get(tipo_firmante, ('Firma Digital', 'Complete el proceso de firma'))
@@ -1288,6 +1290,8 @@ class FirmaBaseView(FormView):
             tramite.testigo_1_firma = firma_data
         elif tipo_firmante == 'testigo2':
             tramite.testigo_2_firma = firma_data
+        elif tipo_firmante == 'vendedor':
+            tramite.firma_vendedor = firma_data
         
         tramite.save()
         
@@ -1300,6 +1304,9 @@ class FirmaClienteView(FirmaBaseView):
 
 class FirmaSegundoClienteView(FirmaBaseView):
     template_name = 'workflow/firma_segundo_cliente.html'
+
+class FirmaVendedorView(FirmaBaseView):
+    template_name = 'workflow/firma_vendedor.html'
 
 class FirmaBeneficiarioView(FirmaBaseView):
     template_name = 'workflow/firma_beneficiario.html'
@@ -1360,6 +1367,7 @@ class FirmaTestigo2View(FirmaBaseView):
 # Vista de éxito después de firmar
 class FirmaExitosaView(TemplateView):
     template_name = 'workflow/firma_exitosa.html'
+
 
 
 
