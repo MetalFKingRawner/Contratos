@@ -51,10 +51,14 @@ urlpatterns = [
     path('firma-exitosa/', 
          views.FirmaExitosaView.as_view(), 
          name='firma_exitosa'),
+    path('firmar/vendedor/<str:token>/', 
+          views.FirmaVendedorView.as_view(), 
+          name='firma_vendedor'),
 ]
 
 class SeleccionDocumentoView(TemplateView):
     template_name = "inicio.html"
+
 
 
 
