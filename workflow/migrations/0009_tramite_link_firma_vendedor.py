@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('workflow', '0008_tramite_edad_cliente_1_tramite_edad_cliente_2_and_more.py'),
+        ('workflow', '0008_tramite_edad_cliente_1_tramite_edad_cliente_2_and_more'),
     ]
 
     operations = [
@@ -16,4 +16,5 @@ class Migration(migrations.Migration):
             field=models.CharField(blank=True, help_text='Link único para firma del vendedor', max_length=255),
         ),
     ]
+
 
