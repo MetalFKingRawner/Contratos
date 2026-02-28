@@ -4893,6 +4893,7 @@ def build_contrato_commeta_pagos_varios_context(fin, cli, ven, cliente2=None, re
         
         # Procesar cada firma con el mismo tamaño
         context['FIRMA_CLIENTE'] = crear_firma_unificada(firma_data)
+        context['FIRMA_CLIENTE2'] = crear_firma_unificada(tramite.firma_cliente2)
         context['FIRMA_VENDEDOR'] = crear_firma_unificada(tramite.firma_vendedor)
         context['FIRMA_TESTIGO1'] = crear_firma_unificada(tramite.testigo_1_firma)
         context['FIRMA_TESTIGO2'] = crear_firma_unificada(tramite.testigo_2_firma)
@@ -4901,10 +4902,12 @@ def build_contrato_commeta_pagos_varios_context(fin, cli, ven, cliente2=None, re
     else:
         # Valores por defecto si no hay template
         context['FIRMA_CLIENTE'] = ''
+        context['FIRMA_CLIENTE2'] = ''
         context['FIRMA_VENDEDOR'] = ''
         context['FIRMA_TESTIGO1'] = ''
         context['FIRMA_TESTIGO2'] = ''
         context['FIRMA_BENE'] = ''
 
     return context
+
 
