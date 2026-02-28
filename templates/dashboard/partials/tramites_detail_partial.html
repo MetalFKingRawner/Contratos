@@ -348,6 +348,26 @@
             </div>
           </div>
           {% endif %}
+
+          <!-- AGREGAR AQUÍ: Vendedor / Propietario -->
+          <div class="signature-item {% if tramite.firma_vendedor %}completed{% else %}pending{% endif %}">
+            <div class="signature-icon">
+              <i class="fas fa-handshake"></i>
+            </div>
+            <div class="signature-info">
+              <span class="signature-name">Vendedor / Asesor</span>
+              <span class="signature-details">{{ nombre_vendedor }}</span>
+            </div>
+            <div class="signature-status">
+              {% if tramite.firma_vendedor %}
+                <i class="fas fa-check-circle"></i>
+                <span>Completado</span>
+              {% else %}
+                <i class="fas fa-clock"></i>
+                <span>Pendiente</span>
+              {% endif %}
+            </div>
+          </div>
         </div>
       </div>
 
@@ -359,7 +379,16 @@
           {% for tipo, url_completa in urls_firma_completas.items %}
           <div class="link-item">
             <div class="link-info">
-              <span class="link-type">{{ tipo|title }}</span>
+              <span class="link-type">
+                {% if tipo == 'cliente' %}Cliente Principal
+                {% elif tipo == 'segundo_cliente' %}Segundo Cliente
+                {% elif tipo == 'beneficiario' %}Beneficiario
+                {% elif tipo == 'testigo_1' %}Testigo 1
+                {% elif tipo == 'testigo_2' %}Testigo 2
+                {% elif tipo == 'vendedor' %}Vendedor / Asesor
+                {% else %}{{ tipo|title }}
+                {% endif %}
+              </span>
               <span class="link-token">{{ url_completa|truncatechars:50 }}</span>
             </div>
             <button class="action-btn secondary small copy-link" 
@@ -1657,3 +1686,4 @@
   }, 200);
 })();
 </script>
+
