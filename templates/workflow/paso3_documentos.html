@@ -1289,6 +1289,27 @@
               {% endif %}
           </div>
 
+          <!-- AGREGAR AQUÍ: Vendedor - SIEMPRE EXISTE Y TIENE TOKEN -->
+          {% if tramite.link_firma_vendedor %}
+          <div class="link-category">
+              <h3><i class="fas fa-handshake"></i> Vendedor / Asesor</h3>
+              <div class="link-card">
+                  <div class="link-header">
+                      <i class="fas fa-handshake"></i>
+                      <div class="link-info">
+                          <strong> Vendedor </strong>
+                      </div>
+                  </div>
+                  <div class="link-url">
+                      {{ request.scheme }}://{{ request.get_host }}{% url 'workflow:firma_vendedor' tramite.link_firma_vendedor %}
+                  </div>
+                  <button class="btn-copy" data-link="{{ request.scheme }}://{{ request.get_host }}{% url 'workflow:firma_vendedor' tramite.link_firma_vendedor %}">
+                      <i class="fas fa-copy"></i> Copiar
+                  </button>
+              </div>
+          </div>
+          {% endif %}
+
           <!-- Beneficiario - SOLO SI EXISTE Y TIENE TOKEN -->
           {% if tramite.beneficiario_1 and tramite.link_firma_beneficiario1 %}
           <div class="link-category">
@@ -1489,3 +1510,4 @@ function previewDocument(slug) {
 }
 </script>
 {% endblock %}
+
