@@ -308,18 +308,40 @@ def build_financiamiento_context(fin, cli, ven, request=None, tpl=None, firma_da
     
     # 9) Firma
     if request and tpl:
-        data_url = firma_data or (request.session.get('firma_cliente_data') if request else None)
-        if data_url:
-            header, b64 = data_url.split(',', 1)
-            img_data = base64.b64decode(b64)
-            fd, tmp = tempfile.mkstemp(suffix='.png')
-            with os.fdopen(fd, 'wb') as f:
-                f.write(img_data)
-            context['FIRMA_CLIENTE'] = InlineImage(tpl, tmp, width=Mm(40))
-        else:
-            context['FIRMA_CLIENTE'] = ''
+        # Tamaño consistente para TODAS las firmas
+        FIRMA_ANCHO = 40  # 40mm de ancho
+        FIRMA_ALTO = 15   # 15mm de alto
+        
+        # Función reutilizable para procesar firmas
+        def crear_firma_unificada(data_url):
+            if not data_url:
+                return ''
+            
+            try:
+                # Decodificar base64
+                header, b64 = data_url.split(',', 1)
+                img_data = base64.b64decode(b64)
+                
+                # Crear archivo temporal
+                fd, temp_path = tempfile.mkstemp(suffix='.png')
+                with os.fdopen(fd, 'wb') as f:
+                    f.write(img_data)
+                
+                # ✅ MISMO TAMAÑO para todas las firmas
+                return InlineImage(tpl, temp_path, width=Mm(FIRMA_ANCHO), height=Mm(FIRMA_ALTO))
+                
+            except Exception as e:
+                print(f"Error al procesar firma: {e}")
+                return ''
+        
+        # Procesar cada firma con el mismo tamaño
+        context['FIRMA_CLIENTE'] = crear_firma_unificada(firma_data)
+        context['FIRMA_VENDEDOR'] = crear_firma_unificada(tramite.firma_vendedor)
+        
     else:
+        # Valores por defecto si no hay template
         context['FIRMA_CLIENTE'] = ''
+        context['FIRMA_VENDEDOR'] = ''
 
     return context
                                      
@@ -4909,5 +4931,6 @@ def build_contrato_commeta_pagos_varios_context(fin, cli, ven, cliente2=None, re
         context['FIRMA_BENE'] = ''
 
     return context
+
 
 
