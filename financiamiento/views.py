@@ -893,6 +893,7 @@ def calcular_distribucion_meses_fuertes(total_meses, cantidad_meses_fuertes, fre
 def build_financiamiento_commeta_cotiza_context(fin_commeta, request=None):
     """
     Context para Tabla de Financiamiento Commeta (cotización)
+    Soporta meses fuertes personalizados y montos especiales.
     """
     # Obtenemos el financiamiento base
     fin = fin_commeta.financiamiento
@@ -906,18 +907,20 @@ def build_financiamiento_commeta_cotiza_context(fin_commeta, request=None):
     resta_apartado = float(fin.precio_lote) - float(fin.apartado)
     resta_enganche = resta_apartado - float(fin.enganche or 0)
     
-    # 3) Determinar meses fuertes si aplica
-    meses_fuertes = []
+    # 3) Determinar meses fuertes y montos especiales si aplica
+    meses_fuertes_lista = []
+    montos_especiales = {}
     if fin_commeta.tipo_esquema == 'meses_fuertes':
-        if fin_commeta.usar_meses_especificos and fin_commeta.meses_fuertes_calculados:
-            meses_fuertes = fin_commeta.meses_fuertes_calculados
+        if fin_commeta.meses_fuertes_personalizados:
+            meses_fuertes_lista = fin_commeta.meses_fuertes_personalizados
+            montos_especiales = fin_commeta.montos_fuertes_personalizados or {}
         else:
-            meses_fuertes = calcular_distribucion_meses_fuertes(
+            meses_fuertes_lista = calcular_distribucion_meses_fuertes(
                 total_meses=fin.num_mensualidades,
                 cantidad_meses_fuertes=fin_commeta.cantidad_meses_fuertes,
                 frecuencia=fin_commeta.frecuencia_meses_fuertes
             )
-
+    
     # 4) Determinar montos según esquema
     es_meses_fuertes = fin_commeta.tipo_esquema == 'meses_fuertes'
     
@@ -941,33 +944,37 @@ def build_financiamiento_commeta_cotiza_context(fin_commeta, request=None):
     else:
         periodo_fuerte = None
     
-    # 4) Generar lista de pagos según esquema
+    # 5) Generar lista de pagos según esquema
     pagos = []
     saldo_actual = resta_enganche
     fecha_pago = fin.fecha_primer_pago
     
     for i in range(1, fin.num_mensualidades + 1):
-        es_mes_fuerte = i in meses_fuertes
+        es_mes_fuerte = i in meses_fuertes_lista
+        es_ultimo_mes = (i == fin.num_mensualidades)
         
         # Determinar monto de la cuota según esquema
         if fin_commeta.tipo_esquema == 'mensualidades_fijas':
-            if i == fin.num_mensualidades and fin.monto_pago_final:
+            if es_ultimo_mes and fin.monto_pago_final:
                 cuota = float(fin.monto_pago_final)
-            elif i == fin.num_mensualidades and not fin.monto_pago_final:
+            elif es_ultimo_mes and not fin.monto_pago_final:
                 cuota = saldo_actual
             else:
                 cuota = float(fin.monto_mensualidad)
         else:  # meses_fuertes
-            if i == fin.num_mensualidades and fin.monto_pago_final:
+            if es_ultimo_mes and fin.monto_pago_final:
                 cuota = float(fin.monto_pago_final)
             elif es_mes_fuerte:
-                cuota = float(fin_commeta.monto_mes_fuerte)
+                # Verificar si tiene monto especial para este mes
+                if str(i) in montos_especiales:
+                    cuota = float(montos_especiales[str(i)])
+                else:
+                    cuota = float(fin_commeta.monto_mes_fuerte)
             else:
                 cuota = float(fin_commeta.monto_mensualidad_normal)
         
         saldo_final = max(0, saldo_actual - cuota)
         
-        # Asegurarnos de que todos los valores sean strings válidos
         pagos.append({
             'numero': str(i),  # Convertir a string
             'fecha': fecha_pago.strftime("%d/%m/%Y") if fecha_pago else '',
@@ -986,7 +993,7 @@ def build_financiamiento_commeta_cotiza_context(fin_commeta, request=None):
             except:
                 pass
     
-    # 5) Obtener nombre del vendedor
+    # 6) Obtener nombre del vendedor
     nombre_vendedor = "Administración"
     if request and request.user.is_authenticated:
         if request.user.first_name and request.user.last_name:
@@ -1011,7 +1018,7 @@ def build_financiamiento_commeta_cotiza_context(fin_commeta, request=None):
     else:
         precio_metro_str = '0.00'
     
-    # 6) Construir contexto con validación de tipos
+    # 7) Construir contexto con validación de tipos
     context = {
         # Fechas (asegurar strings)
         'FECHA_FINANCIAMIENTO': f"{hoy.day} de {meses[hoy.month-1]} de {hoy.year}",
@@ -1036,7 +1043,7 @@ def build_financiamiento_commeta_cotiza_context(fin_commeta, request=None):
         
         # Datos específicos Commeta
         'ABONO_FUERTE': fmt_money(abono_fuerte) if es_meses_fuertes else '0.00',
-        'PERIODO_FUERTE': fin.num_mensualidades,
+        'PERIODO_FUERTE': fin.num_mensualidades,  # Nota: ajusta si tu template espera la frecuencia
         'ABONO_NORMAL': fmt_money(abono_normal),
         
         # Cálculos intermedios
@@ -1158,4 +1165,5 @@ def descargar_financiamiento_commeta_cotiza_pdf(request, pk):
         error_details = traceback.format_exc()
         print(f"📋 Traceback completo:\n{error_details}")
         return HttpResponse(f"Error al generar el documento: {str(e)}", status=500)
+
 
