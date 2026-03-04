@@ -501,6 +501,109 @@
             {% endif %}
           </div>
         </div>
+
+        <!-- Sección de Personalización de Meses Fuertes -->
+        <div class="personalizacion-section" id="personalizacion-section-wrapper">
+          <div class="personalizacion-section-title">
+            <i class="fas fa-sliders-h"></i>
+            Personalización Avanzada
+          </div>
+
+          <!-- Checkbox usar_personalizado (con estilo toggle igual al resto del form) -->
+          <div class="form-group" style="margin-bottom: 0;">
+            <div class="toggle-wrapper">
+              <div class="toggle-container personalizacion-toggle">
+                {{ form.usar_personalizado }}
+                <label for="{{ form.usar_personalizado.id_for_label }}" class="toggle-switch">
+                  <span class="toggle-slider">
+                    <span class="toggle-icon-off">
+                      <i class="fas fa-times"></i>
+                    </span>
+                    <span class="toggle-icon-on">
+                      <i class="fas fa-check"></i>
+                    </span>
+                  </span>
+                </label>
+                <span class="toggle-label">
+                  <span class="toggle-status">
+                    <i class="fas fa-magic"></i>
+                    {{ form.usar_personalizado.label }}
+                  </span>
+                </span>
+              </div>
+            </div>
+            {% if form.usar_personalizado.help_text %}
+              <small class="form-help-text">{{ form.usar_personalizado.help_text }}</small>
+            {% endif %}
+            {% if form.usar_personalizado.errors %}
+              <div class="field-errors">
+                {% for error in form.usar_personalizado.errors %}
+                  <span class="field-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    {{ error }}
+                  </span>
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
+
+          <!-- Campos de personalización (ocultos por defecto) -->
+          <div class="personalizacion-campos" id="personalizacion-campos" style="display: none;">
+            <div class="form-grid">
+              <!-- Meses personalizados -->
+              <div class="form-group">
+                <label class="form-label">
+                  {{ form.meses_personalizados_input.label }}
+                </label>
+                <div class="input-wrapper">
+                  {{ form.meses_personalizados_input }}
+                  <div class="input-icon">
+                    <i class="fas fa-list-ol"></i>
+                  </div>
+                </div>
+                {% if form.meses_personalizados_input.help_text %}
+                  <small class="form-help-text">{{ form.meses_personalizados_input.help_text }}</small>
+                {% endif %}
+                {% if form.meses_personalizados_input.errors %}
+                  <div class="field-errors">
+                    {% for error in form.meses_personalizados_input.errors %}
+                      <span class="field-error">
+                        <i class="fas fa-exclamation-circle"></i>
+                        {{ error }}
+                      </span>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+
+              <!-- Montos personalizados -->
+              <div class="form-group">
+                <label class="form-label">
+                  {{ form.montos_personalizados_input.label }}
+                </label>
+                <div class="input-wrapper">
+                  {{ form.montos_personalizados_input }}
+                  <div class="input-icon">
+                    <i class="fas fa-dollar-sign"></i>
+                  </div>
+                </div>
+                {% if form.montos_personalizados_input.help_text %}
+                  <small class="form-help-text">{{ form.montos_personalizados_input.help_text }}</small>
+                {% endif %}
+                {% if form.montos_personalizados_input.errors %}
+                  <div class="field-errors">
+                    {% for error in form.montos_personalizados_input.errors %}
+                      <span class="field-error">
+                        <i class="fas fa-exclamation-circle"></i>
+                        {{ error }}
+                      </span>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Sección de Pago de Contado -->
@@ -1630,6 +1733,50 @@ input[type="checkbox"]:checked + .toggle-switch {
   transform: none !important;
 }
 
+/* ==== SECCIÓN DE PERSONALIZACIÓN DE MESES FUERTES ==== */
+.personalizacion-section {
+  margin-top: 1.5rem;
+  padding: 1.25rem;
+  background: rgba(16, 185, 129, 0.04);
+  border: 2px dashed rgba(16, 185, 129, 0.35);
+  border-radius: 12px;
+  transition: var(--transition);
+}
+
+.personalizacion-section:hover {
+  border-color: rgba(16, 185, 129, 0.55);
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.08);
+}
+
+.personalizacion-section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--commeta-dark);
+  margin-bottom: 0.75rem;
+}
+
+.personalizacion-section-title i {
+  color: var(--commeta-primary);
+}
+
+.personalizacion-toggle {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.personalizacion-campos {
+  margin-top: 1rem;
+  padding: 1.25rem;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 10px;
+  border: 1px solid rgba(16, 185, 129, 0.15);
+  animation: fadeInDown 0.3s ease both;
+}
+
 .form-btn.loading {
   pointer-events: none;
 }
@@ -1762,6 +1909,12 @@ if (!window.commetaHtmxScriptLoaded) {
         const validacionResultado = document.getElementById('validacion-resultado');
         const validacionContenido = document.getElementById('validacion-contenido');
         const validacionTitulo = document.getElementById('validacion-titulo');
+
+        // Elementos de personalización de meses fuertes
+        const usarPersonalizadoCheck = document.getElementById('id_usar_personalizado');
+        const personalizacionCampos = document.getElementById('personalizacion-campos');
+        const mesesPersonalizadosInput = document.getElementById('id_meses_personalizados_input');
+        const montosPersonalizadosInput = document.getElementById('id_montos_personalizados_input');
 
         // =============================================
         // CONFIGURACIÓN DE AUTONUMERIC
@@ -2060,7 +2213,8 @@ if (!window.commetaHtmxScriptLoaded) {
                     campoModificado === 'precio_lote' || 
                     campoModificado === 'num_mensualidades' ||
                     campoModificado === 'cantidad_meses_fuertes' ||
-                    campoModificado === 'frecuencia_meses_fuertes') {
+                    campoModificado === 'frecuencia_meses_fuertes' ||
+                    campoModificado === 'personalizado') { // ✅ NUEVO: campos de personalización
                 // Si cambió enganche, precio, mensualidades o configuración de meses fuertes, recalcular
                 recalcularMensualidades(totalAFinanciar, numMensualidades, tipoEsquema);
             }
@@ -2239,7 +2393,122 @@ if (!window.commetaHtmxScriptLoaded) {
             console.log('✅ Mensualidades fijas recalculadas completamente');
         }
 
+        // =============================================
+        // FUNCIÓN COORDINADORA: decide qué modo usar
+        // =============================================
         function recalcularMesesFuertes(totalAFinanciar, numMensualidades) {
+            if (usarPersonalizadoCheck && usarPersonalizadoCheck.checked) {
+                recalcularMesesFuertesPersonalizados(totalAFinanciar, numMensualidades);
+            } else {
+                recalcularMesesFuertesConFrecuencia(totalAFinanciar, numMensualidades);
+            }
+        }
+
+        // =============================================
+        // PERSONALIZACIÓN: meses y montos específicos
+        // =============================================
+        function recalcularMesesFuertesPersonalizados(totalAFinanciar, numMensualidades) {
+            console.log('📊 Calculando meses fuertes personalizados...');
+
+            if (!mesesPersonalizadosInput || !mesesPersonalizadosInput.value.trim()) {
+                console.warn('⚠️ No hay meses personalizados definidos, abortando cálculo');
+                return;
+            }
+
+            // Parsear meses
+            const mesesFuertes = mesesPersonalizadosInput.value
+                .split(',')
+                .map(m => parseInt(m.trim()))
+                .filter(m => !isNaN(m) && m >= 1 && m <= numMensualidades);
+
+            if (mesesFuertes.length === 0) {
+                console.warn('⚠️ Lista de meses personalizados vacía o inválida');
+                return;
+            }
+
+            // Parsear montos especiales
+            const montosEspeciales = {};
+            if (montosPersonalizadosInput && montosPersonalizadosInput.value.trim()) {
+                montosPersonalizadosInput.value.split(',').forEach(par => {
+                    const partes = par.split(':');
+                    if (partes.length === 2) {
+                        const mes = parseInt(partes[0].trim());
+                        const monto = parseFloat(partes[1].trim());
+                        if (!isNaN(mes) && !isNaN(monto)) {
+                            montosEspeciales[mes] = monto;
+                        }
+                    }
+                });
+            }
+
+            const montoFuerteBase = getNumericValue('id_monto_mes_fuerte');
+            const ultimoMes = numMensualidades;
+            const mesesNormales = numMensualidades - mesesFuertes.length;
+            const ultimoMesEsFuerte = mesesFuertes.includes(ultimoMes);
+            const montoUltimoMesBase = montosEspeciales[ultimoMes] || montoFuerteBase;
+
+            // Suma de meses fuertes excluyendo el último (se maneja con pago final)
+            let sumaFuertes = 0;
+            mesesFuertes.forEach(mes => {
+                if (mes !== ultimoMes) {
+                    sumaFuertes += montosEspeciales[mes] || montoFuerteBase;
+                }
+            });
+
+            let montoNormalRedondeado, nuevoMontoUltimoMes;
+
+            if (ultimoMesEsFuerte) {
+                if (mesesNormales > 0) {
+                    const montoNormalExacto = (totalAFinanciar - sumaFuertes - montoUltimoMesBase) / mesesNormales;
+                    montoNormalRedondeado = Math.floor(montoNormalExacto / 100) * 100;
+                } else {
+                    montoNormalRedondeado = 0;
+                }
+                const totalSinUltimo = sumaFuertes + (montoNormalRedondeado * mesesNormales);
+                nuevoMontoUltimoMes = totalAFinanciar - totalSinUltimo;
+            } else {
+                const mesesNormalesSinUltimo = mesesNormales - 1;
+                if (mesesNormalesSinUltimo > 0) {
+                    const montoNormalExacto = (totalAFinanciar - sumaFuertes) / (mesesNormalesSinUltimo + 1);
+                    montoNormalRedondeado = Math.floor(montoNormalExacto / 100) * 100;
+                } else {
+                    montoNormalRedondeado = 0;
+                }
+                const totalSinUltimo = sumaFuertes + (montoNormalRedondeado * mesesNormalesSinUltimo);
+                nuevoMontoUltimoMes = totalAFinanciar - totalSinUltimo;
+            }
+
+            // Actualizar mensualidad normal
+            const instanceNormal = autoNumericInstances['id_monto_mensualidad_normal_display'];
+            if (instanceNormal) {
+                instanceNormal.set(montoNormalRedondeado);
+            }
+            if (montoMensualidadNormalHidden) {
+                montoMensualidadNormalHidden.value = montoNormalRedondeado.toFixed(2);
+            }
+
+            // Actualizar monto pago final
+            const instanceUltimo = autoNumericInstances['id_monto_pago_final_display'];
+            const hiddenUltimo = document.getElementById('id_monto_pago_final');
+            if (instanceUltimo) {
+                instanceUltimo.set(nuevoMontoUltimoMes);
+            }
+            if (hiddenUltimo) {
+                hiddenUltimo.value = nuevoMontoUltimoMes.toFixed(2);
+            }
+
+            console.log('✅ Meses fuertes personalizados recalculados:', {
+                mesesFuertes, montosEspeciales,
+                montoNormal: montoNormalRedondeado,
+                montoUltimo: nuevoMontoUltimoMes,
+                totalAFinanciar
+            });
+        }
+
+        // =============================================
+        // FRECUENCIA: lógica original renombrada
+        // =============================================
+        function recalcularMesesFuertesConFrecuencia(totalAFinanciar, numMensualidades) {
             const cantidadMesesFuertes = parseInt(document.getElementById('id_cantidad_meses_fuertes').value) || 0;
             const frecuencia = parseInt(document.getElementById('id_frecuencia_meses_fuertes').value) || 0;
             
@@ -2759,6 +3028,36 @@ if (!window.commetaHtmxScriptLoaded) {
                     parseFloat(montoNormalInstance.getNumericString()) : 0;
                 
                 detalleCommetaData.monto_mes_fuerte = getNumericValue('id_monto_mes_fuerte');
+
+                // ✅ NUEVO: Datos de personalización
+                if (usarPersonalizadoCheck && usarPersonalizadoCheck.checked) {
+                    detalleCommetaData.usar_personalizado = true;
+
+                    // Parsear meses personalizados
+                    const mesesStr = mesesPersonalizadosInput ? mesesPersonalizadosInput.value.trim() : '';
+                    detalleCommetaData.meses_fuertes_personalizados = mesesStr
+                        ? mesesStr.split(',').map(m => parseInt(m.trim())).filter(m => !isNaN(m))
+                        : [];
+
+                    // Parsear montos personalizados como objeto {mes: monto}
+                    const montosObj = {};
+                    const montosStr = montosPersonalizadosInput ? montosPersonalizadosInput.value.trim() : '';
+                    if (montosStr) {
+                        montosStr.split(',').forEach(par => {
+                            const partes = par.split(':');
+                            if (partes.length === 2) {
+                                const mes = parseInt(partes[0].trim());
+                                const monto = parseFloat(partes[1].trim());
+                                if (!isNaN(mes) && !isNaN(monto)) {
+                                    montosObj[mes] = monto;
+                                }
+                            }
+                        });
+                    }
+                    detalleCommetaData.montos_fuertes_personalizados = montosObj;
+                } else {
+                    detalleCommetaData.usar_personalizado = false;
+                }
             }
             
             console.log('📤 Enviando datos para validación:', { 
@@ -3228,6 +3527,14 @@ if (!window.commetaHtmxScriptLoaded) {
                 }
             }
             
+            // ✅ NUEVO: Restaurar estado de personalización en edición
+            if (usarPersonalizadoCheck && usarPersonalizadoCheck.checked) {
+                if (personalizacionCampos) {
+                    personalizacionCampos.style.display = 'block';
+                    console.log('✅ Personalización restaurada en edición');
+                }
+            }
+            
             // Actualizar visibilidad de secciones
             toggleEsquemaSections();
         }
@@ -3364,6 +3671,37 @@ if (!window.commetaHtmxScriptLoaded) {
             });
         }
 
+        // ✅ NUEVO: Mostrar/ocultar campos de personalización
+        if (usarPersonalizadoCheck) {
+            usarPersonalizadoCheck.addEventListener('change', function() {
+                if (this.checked) {
+                    if (personalizacionCampos) personalizacionCampos.style.display = 'block';
+                } else {
+                    if (personalizacionCampos) personalizacionCampos.style.display = 'none';
+                    // Al desactivar, recalcular con el modo de frecuencia
+                    setTimeout(() => recalcularEnCascada('cantidad_meses_fuertes'), 150);
+                }
+            });
+            // Restaurar estado inicial (edición con personalización ya activa)
+            if (usarPersonalizadoCheck.checked && personalizacionCampos) {
+                personalizacionCampos.style.display = 'block';
+            }
+        }
+
+        // ✅ NUEVO: Recalcular al cambiar inputs de personalización
+        if (mesesPersonalizadosInput) {
+            mesesPersonalizadosInput.addEventListener('change', function() {
+                console.log('📝 Meses personalizados modificados');
+                setTimeout(() => recalcularEnCascada('personalizado'), 150);
+            });
+        }
+        if (montosPersonalizadosInput) {
+            montosPersonalizadosInput.addEventListener('change', function() {
+                console.log('📝 Montos personalizados modificados');
+                setTimeout(() => recalcularEnCascada('personalizado'), 150);
+            });
+        }
+
         // Sincronizar monto_mensualidad_normal entre display y hidden
         if (montoMensualidadNormalDisplay) {
             montoMensualidadNormalDisplay.addEventListener('blur', function() {
@@ -3448,5 +3786,4 @@ if (!window.commetaHtmxScriptLoaded) {
 
     console.log('📦 Script Commeta HTMX mejorado cargado');
 }
-
 </script>
