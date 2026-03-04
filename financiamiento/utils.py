@@ -163,11 +163,23 @@ def obtener_configuracion_commeta(lote):
 
 def validar_estructura_completa_commeta(financiamiento_data, detalle_commeta_data):
     """
-    Valida que toda la estructura de pagos de Commeta sea correcta
+    Valida que la estructura de pagos de Commeta sea correcta financieramente.
     
-    Returns: (es_valido, mensaje_error, desglose_pagos)
+    Args:
+        financiamiento_data: dict con campos del modelo Financiamiento
+            (precio_lote, apartado, enganche, num_mensualidades, monto_pago_final, etc.)
+        detalle_commeta_data: dict con campos del modelo FinanciamientoCommeta
+            (tipo_esquema, monto_mensualidad_normal, monto_mes_fuerte,
+             cantidad_meses_fuertes, frecuencia_meses_fuertes,
+             usar_personalizado, meses_fuertes_personalizados, montos_fuertes_personalizados)
+    
+    Returns:
+        tuple: (valido: bool, mensaje: str, desglose: dict)
     """
     try:
+        # =============================================
+        # 1. Extraer valores comunes
+        # =============================================
         precio_lote = float(financiamiento_data.get('precio_lote', 0))
         apartado = float(financiamiento_data.get('apartado', 0))
         enganche = float(financiamiento_data.get('enganche', 0))
@@ -180,7 +192,6 @@ def validar_estructura_completa_commeta(financiamiento_data, detalle_commeta_dat
         
         if total_a_financiar <= 0:
             return False, "El total a financiar debe ser mayor a cero", {}
-        
         if total_meses <= 0:
             return False, "El número de mensualidades debe ser mayor a cero", {}
         
@@ -190,104 +201,173 @@ def validar_estructura_completa_commeta(financiamiento_data, detalle_commeta_dat
             'pagos': []
         }
         
+        # =============================================
+        # 2. Procesar según tipo de esquema
+        # =============================================
+        
         if tipo_esquema == 'mensualidades_fijas':
+            # ---------- Mensualidades Fijas ----------
             monto_mensualidad = float(financiamiento_data.get('monto_mensualidad', 0))
-            
             if monto_mensualidad <= 0:
                 return False, "El monto de mensualidad debe ser mayor a cero", {}
             
-            # Crear desglose de pagos
             for mes in range(1, total_meses + 1):
                 if mes == total_meses and monto_pago_final > 0:
-                    desglose['pagos'].append({
-                        'mes': mes,
-                        'tipo': 'final',
-                        'monto': monto_pago_final
-                    })
+                    desglose['pagos'].append({'mes': mes, 'tipo': 'final', 'monto': monto_pago_final})
                 else:
-                    desglose['pagos'].append({
-                        'mes': mes,
-                        'tipo': 'fija',
-                        'monto': monto_mensualidad
-                    })
+                    desglose['pagos'].append({'mes': mes, 'tipo': 'fija', 'monto': monto_mensualidad})
             
-            # Calcular total
             if monto_pago_final > 0:
                 total_calculado = (monto_mensualidad * (total_meses - 1)) + monto_pago_final
             else:
                 total_calculado = monto_mensualidad * total_meses
-            
+        
         elif tipo_esquema == 'meses_fuertes':
-            cantidad_meses_fuertes = int(detalle_commeta_data.get('cantidad_meses_fuertes', 0))
-            frecuencia = detalle_commeta_data.get('frecuencia_meses_fuertes')
-            monto_normal = float(detalle_commeta_data.get('monto_mensualidad_normal', 0))
-            monto_fuerte = float(detalle_commeta_data.get('monto_mes_fuerte', 0))
+            # ---------- Meses Fuertes ----------
+            usar_personalizado = detalle_commeta_data.get('usar_personalizado', False)
             
-            if cantidad_meses_fuertes <= 0:
-                return False, "La cantidad de meses fuertes debe ser mayor a cero", {}
-            
-            if monto_normal <= 0 or monto_fuerte <= 0:
-                return False, "Los montos de mensualidad normal y fuerte deben ser mayores a cero", {}
-            
-            # Calcular meses fuertes
-            meses_fuertes = calcular_meses_fuertes_inicio(
-                total_meses, 
-                cantidad_meses_fuertes,
-                int(frecuencia) if frecuencia else None
-            )
-            
-            desglose['meses_fuertes'] = meses_fuertes
-            
-            # Crear desglose de pagos
-            for mes in range(1, total_meses + 1):
-                if mes == total_meses and monto_pago_final > 0:
-                    desglose['pagos'].append({
-                        'mes': mes,
-                        'tipo': 'final',
-                        'monto': monto_pago_final,
-                        'es_fuerte': mes in meses_fuertes
-                    })
-                elif mes in meses_fuertes:
-                    desglose['pagos'].append({
-                        'mes': mes,
-                        'tipo': 'fuerte',
-                        'monto': monto_fuerte,
-                        'es_fuerte': True
-                    })
+            if usar_personalizado:
+                # ----- Caso personalizado (meses y montos específicos) -----
+                meses_fuertes = detalle_commeta_data.get('meses_fuertes_personalizados', [])
+                montos_personalizados = detalle_commeta_data.get('montos_fuertes_personalizados', {})
+                monto_fuerte_base = float(detalle_commeta_data.get('monto_mes_fuerte', 0))
+                monto_normal = float(detalle_commeta_data.get('monto_mensualidad_normal', 0))
+                
+                if not meses_fuertes:
+                    return False, "La lista de meses fuertes personalizados no puede estar vacía", {}
+                if monto_normal <= 0:
+                    return False, "El monto de mensualidad normal debe ser mayor a cero", {}
+                if monto_fuerte_base <= 0:
+                    return False, "El monto base para meses fuertes debe ser mayor a cero", {}
+                
+                for mes in meses_fuertes:
+                    if mes < 1 or mes > total_meses:
+                        return False, f"El mes {mes} está fuera del rango (1-{total_meses})", {}
+                
+                # Construir desglose
+                for mes in range(1, total_meses + 1):
+                    if mes == total_meses and monto_pago_final > 0:
+                        desglose['pagos'].append({
+                            'mes': mes,
+                            'tipo': 'final',
+                            'monto': monto_pago_final,
+                            'es_fuerte': mes in meses_fuertes
+                        })
+                    elif mes in meses_fuertes:
+                        monto_mes = float(montos_personalizados.get(str(mes), monto_fuerte_base))
+                        desglose['pagos'].append({
+                            'mes': mes,
+                            'tipo': 'fuerte',
+                            'monto': monto_mes,
+                            'es_fuerte': True
+                        })
+                    else:
+                        desglose['pagos'].append({
+                            'mes': mes,
+                            'tipo': 'normal',
+                            'monto': monto_normal,
+                            'es_fuerte': False
+                        })
+                
+                # Calcular total
+                suma_fuertes = 0
+                for mes in meses_fuertes:
+                    if mes == total_meses and monto_pago_final > 0:
+                        # El último mes se maneja aparte con monto_pago_final
+                        continue
+                    suma_fuertes += float(montos_personalizados.get(str(mes), monto_fuerte_base))
+                
+                meses_normales = total_meses - len(meses_fuertes)
+                
+                if total_meses in meses_fuertes:
+                    if monto_pago_final > 0:
+                        total_calculado = suma_fuertes + (meses_normales * monto_normal) + monto_pago_final
+                    else:
+                        total_calculado = suma_fuertes + (meses_normales * monto_normal) + monto_fuerte_base  # último mes fuerte con base
                 else:
-                    desglose['pagos'].append({
-                        'mes': mes,
-                        'tipo': 'normal',
-                        'monto': monto_normal,
-                        'es_fuerte': False
-                    })
+                    if monto_pago_final > 0:
+                        total_calculado = suma_fuertes + ((meses_normales - 1) * monto_normal) + monto_pago_final
+                    else:
+                        total_calculado = suma_fuertes + (meses_normales * monto_normal)
+                
+                desglose['meses_fuertes'] = meses_fuertes
+                desglose['montos_personalizados'] = montos_personalizados
             
-            # Calcular total
-            meses_normales = total_meses - len(meses_fuertes)
-            
-            if total_meses in meses_fuertes and monto_pago_final > 0:
-                # Último mes es fuerte pero tiene monto_pago_final diferente
-                total_calculado = (meses_normales * monto_normal) + ((len(meses_fuertes) - 1) * monto_fuerte) + monto_pago_final
-            elif total_meses in meses_fuertes:
-                # Último mes es fuerte y usa monto_fuerte normal
-                total_calculado = (meses_normales * monto_normal) + (len(meses_fuertes) * monto_fuerte)
-            elif monto_pago_final > 0:
-                # Último mes es normal pero tiene monto_pago_final diferente
-                total_calculado = ((meses_normales - 1) * monto_normal) + (len(meses_fuertes) * monto_fuerte) + monto_pago_final
             else:
-                # Último mes es normal y usa monto_normal
-                total_calculado = (meses_normales * monto_normal) + (len(meses_fuertes) * monto_fuerte)
+                # ----- Caso con frecuencia (cálculo automático) -----
+                cantidad_meses_fuertes = int(detalle_commeta_data.get('cantidad_meses_fuertes', 0))
+                frecuencia = detalle_commeta_data.get('frecuencia_meses_fuertes')
+                monto_normal = float(detalle_commeta_data.get('monto_mensualidad_normal', 0))
+                monto_fuerte = float(detalle_commeta_data.get('monto_mes_fuerte', 0))
+                
+                if cantidad_meses_fuertes <= 0:
+                    return False, "La cantidad de meses fuertes debe ser mayor a cero", {}
+                if monto_normal <= 0 or monto_fuerte <= 0:
+                    return False, "Los montos de mensualidad normal y fuerte deben ser mayores a cero", {}
+                if cantidad_meses_fuertes > total_meses:
+                    return False, f"Los meses fuertes ({cantidad_meses_fuertes}) no pueden exceder el total de meses ({total_meses})", {}
+                
+                meses_fuertes = calcular_meses_fuertes_inicio(
+                    total_meses, 
+                    cantidad_meses_fuertes,
+                    int(frecuencia) if frecuencia else None
+                )
+                
+                desglose['meses_fuertes'] = meses_fuertes
+                
+                for mes in range(1, total_meses + 1):
+                    if mes == total_meses and monto_pago_final > 0:
+                        desglose['pagos'].append({
+                            'mes': mes,
+                            'tipo': 'final',
+                            'monto': monto_pago_final,
+                            'es_fuerte': mes in meses_fuertes
+                        })
+                    elif mes in meses_fuertes:
+                        desglose['pagos'].append({
+                            'mes': mes,
+                            'tipo': 'fuerte',
+                            'monto': monto_fuerte,
+                            'es_fuerte': True
+                        })
+                    else:
+                        desglose['pagos'].append({
+                            'mes': mes,
+                            'tipo': 'normal',
+                            'monto': monto_normal,
+                            'es_fuerte': False
+                        })
+                
+                meses_normales = total_meses - len(meses_fuertes)
+                
+                if total_meses in meses_fuertes:
+                    if monto_pago_final > 0:
+                        total_calculado = ((len(meses_fuertes) - 1) * monto_fuerte) + (meses_normales * monto_normal) + monto_pago_final
+                    else:
+                        total_calculado = (len(meses_fuertes) * monto_fuerte) + (meses_normales * monto_normal)
+                else:
+                    if monto_pago_final > 0:
+                        total_calculado = (len(meses_fuertes) * monto_fuerte) + ((meses_normales - 1) * monto_normal) + monto_pago_final
+                    else:
+                        total_calculado = (len(meses_fuertes) * monto_fuerte) + (meses_normales * monto_normal)
         
         else:
             return False, f"Tipo de esquema '{tipo_esquema}' no reconocido", {}
         
+        # =============================================
+        # 3. Validar diferencia
+        # =============================================
         desglose['total_calculado'] = total_calculado
         desglose['diferencia'] = total_calculado - total_a_financiar
         desglose['porcentaje_diferencia'] = abs(desglose['diferencia'] / total_a_financiar * 100) if total_a_financiar > 0 else 0
         
-        # Validar que la diferencia sea mínima (menos del 1%)
         if desglose['porcentaje_diferencia'] > 1.0:
-            return False, f"La estructura de pagos no coincide. Esperado: ${total_a_financiar:,.2f}, Calculado: ${total_calculado:,.2f}, Diferencia: ${desglose['diferencia']:,.2f} ({desglose['porcentaje_diferencia']:.2f}%)", desglose
+            return False, (
+                f"La estructura de pagos no coincide. "
+                f"Esperado: ${total_a_financiar:,.2f}, "
+                f"Calculado: ${total_calculado:,.2f}, "
+                f"Diferencia: ${desglose['diferencia']:,.2f} ({desglose['porcentaje_diferencia']:.2f}%)"
+            ), desglose
         
         return True, "✅ Estructura de pagos válida", desglose
         
