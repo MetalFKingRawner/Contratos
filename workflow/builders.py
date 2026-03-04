@@ -128,6 +128,7 @@ def build_financiamiento_context(fin, cli, ven, request=None, tpl=None, firma_da
                                  is_commeta=False, fin_commeta=None, **kwargs):
     """
     Context para Tabla de Financiamiento - Compatible con Normal y Commeta
+    Incluye soporte para meses fuertes personalizados y montos especiales.
     """
     clausulas_adicionales = kwargs.get('clausulas_adicionales', {})
     cliente2 = kwargs.get('cliente2', None)
@@ -142,14 +143,18 @@ def build_financiamiento_context(fin, cli, ven, request=None, tpl=None, firma_da
     resta_apartado = float(fin.precio_lote) - float(fin.apartado)
     resta_enganche = resta_apartado - float(fin.enganche or 0)
     
-    # 3) Lógica específica para Commeta - DETERMINAR MESES FUERTES
-    meses_fuertes = []
+    # 3) Lógica específica para Commeta - DETERMINAR MESES FUERTES Y MONTOS ESPECIALES
+    meses_fuertes_lista = []
+    montos_especiales = {}
     if is_commeta and fin_commeta:
         if fin_commeta.tipo_esquema == 'meses_fuertes':
-            if fin_commeta.usar_meses_especificos and fin_commeta.meses_fuertes_calculados:
-                meses_fuertes = fin_commeta.meses_fuertes_calculados
+            # Verificar si existe personalización (meses específicos)
+            if fin_commeta.meses_fuertes_personalizados:
+                meses_fuertes_lista = fin_commeta.meses_fuertes_personalizados
+                montos_especiales = fin_commeta.montos_fuertes_personalizados or {}
             else:
-                meses_fuertes = calcular_distribucion_meses_fuertes(
+                # Distribución por frecuencia
+                meses_fuertes_lista = calcular_distribucion_meses_fuertes(
                     total_meses=fin.num_mensualidades,
                     cantidad_meses_fuertes=fin_commeta.cantidad_meses_fuertes,
                     frecuencia=fin_commeta.frecuencia_meses_fuertes
@@ -164,24 +169,24 @@ def build_financiamiento_context(fin, cli, ven, request=None, tpl=None, firma_da
         
         for i in range(1, fin.num_mensualidades + 1):
             cuota = 0
+            es_ultimo_mes = (i == fin.num_mensualidades)
             
             if is_commeta and fin_commeta:
                 # ========== LÓGICA COMMETA ==========
-                
-                # Determinar si es el último mes
-                es_ultimo_mes = (i == fin.num_mensualidades)
-                
                 if fin_commeta.tipo_esquema == 'meses_fuertes':
-                    # --- ESQUEMA MESES FUERTES ---
+                    # --- ESQUEMA MESES FUERTES (con soporte personalizado) ---
                     if es_ultimo_mes and fin.monto_pago_final:
                         # Pago final explícito
                         cuota = float(fin.monto_pago_final)
                     elif es_ultimo_mes:
-                        # Último pago = saldo restante
+                        # Último pago = saldo restante (fallback)
                         cuota = saldo_actual
-                    elif i in meses_fuertes:
-                        # Mes fuerte
-                        cuota = float(fin_commeta.monto_mes_fuerte)
+                    elif i in meses_fuertes_lista:
+                        # Mes fuerte: verificar si tiene monto especial
+                        if str(i) in montos_especiales:
+                            cuota = float(montos_especiales[str(i)])
+                        else:
+                            cuota = float(fin_commeta.monto_mes_fuerte)
                     else:
                         # Mes normal
                         cuota = float(fin_commeta.monto_mensualidad_normal or 0)
@@ -197,17 +202,14 @@ def build_financiamiento_context(fin, cli, ven, request=None, tpl=None, firma_da
                 
                 else:
                     # --- ESQUEMA DE GRACIA (caso PROBADON) ---
-                    # Todos los meses tienen cuota 0 excepto el último
                     if es_ultimo_mes:
-                        # El último pago liquida todo el saldo
                         cuota = saldo_actual
                     else:
-                        # Período de gracia: cuota = 0
                         cuota = 0.0
             
             else:
                 # ========== LÓGICA FINANCIAMIENTO NORMAL ==========
-                if i == fin.num_mensualidades:
+                if es_ultimo_mes:
                     # Último pago = saldo actual
                     cuota = saldo_actual
                 else:
@@ -234,6 +236,7 @@ def build_financiamiento_context(fin, cli, ven, request=None, tpl=None, firma_da
                     else:
                         fecha_pago = fecha_pago.replace(month=fecha_pago.month + 1)
                 except:
+                    # En caso de fecha inválida (ej. 31 de febrero)
                     pass
 
     # 5) Pronombres según sexo
@@ -305,6 +308,10 @@ def build_financiamiento_context(fin, cli, ven, request=None, tpl=None, firma_da
             'TIPO_ESQUEMA': fin_commeta.tipo_esquema,
             'CANTIDAD_MESES_FUERTES': fin_commeta.cantidad_meses_fuertes if hasattr(fin_commeta, 'cantidad_meses_fuertes') else '',
         })
+        
+        # Opcional: agregar la lista de meses fuertes si existe (para mostrarlo en el documento)
+        if meses_fuertes_lista:
+            context['MESES_FUERTES_LISTA'] = ', '.join(str(m) for m in meses_fuertes_lista)
     
     # 9) Firma
     if request and tpl:
@@ -4931,6 +4938,7 @@ def build_contrato_commeta_pagos_varios_context(fin, cli, ven, cliente2=None, re
         context['FIRMA_BENE'] = ''
 
     return context
+
 
 
 
