@@ -189,6 +189,24 @@ class FinanciamientoCommetaForm(FinanciamientoForm):
         help_text="Monto a pagar en los meses fuertes"
     )
 
+    usar_personalizado = forms.BooleanField(
+        required=False,
+        label="Personalizar meses fuertes",
+        help_text="Activar para definir manualmente los meses fuertes y montos especiales"
+    )
+    meses_personalizados_input = forms.CharField(
+        required=False,
+        label="Meses fuertes (separados por comas)",
+        help_text="Ejemplo: 12, 18, 24, 30, 36",
+        widget=forms.TextInput(attrs={'placeholder': '12,18,24,30,36'})
+    )
+    montos_personalizados_input = forms.CharField(
+        required=False,
+        label="Montos especiales (mes:monto separados por comas)",
+        help_text="Ejemplo: 12:49000,36:21000 (opcional, solo para meses con monto diferente al mes fuerte general)",
+        widget=forms.TextInput(attrs={'placeholder': '12:49000,36:21000'})
+    )
+
     class Meta(FinanciamientoForm.Meta):
         widgets = {
             'precio_lote':        forms.TextInput(attrs={'type': 'text'}),
@@ -264,6 +282,19 @@ class FinanciamientoCommetaForm(FinanciamientoForm):
                 print(f"   - Tipo esquema: {detalle_commeta.tipo_esquema}")
                 print(f"   - Monto mensualidad normal: {detalle_commeta.monto_mensualidad_normal}")
                 print(f"   - Cantidad meses fuertes: {detalle_commeta.cantidad_meses_fuertes}")
+
+            # NUEVO: Cargar valores personalizados si existen
+            if detalle_commeta and detalle_commeta.meses_fuertes_personalizados:
+                # Marcar checkbox como activado
+                self.fields['usar_personalizado'].initial = True
+                # Convertir lista de meses a string separado por comas
+                meses_str = ','.join(str(m) for m in detalle_commeta.meses_fuertes_personalizados)
+                self.fields['meses_personalizados_input'].initial = meses_str
+                # Convertir diccionario de montos a string "mes:monto"
+                montos_list = []
+                for mes, monto in detalle_commeta.montos_fuertes_personalizados.items():
+                    montos_list.append(f"{mes}:{monto}")
+                self.fields['montos_personalizados_input'].initial = ','.join(montos_list)
         
         # ✅ CORREGIDO: Manejar proyecto_commeta y lotes
         if self.proyecto_commeta: 
@@ -330,6 +361,48 @@ class FinanciamientoCommetaForm(FinanciamientoForm):
                         "Para esquema de mensualidades fijas, debe especificar el monto de la mensualidad."
                     )
 
+            # NUEVA VALIDACIÓN PARA PERSONALIZACIÓN
+            usar_personalizado = cleaned_data.get('usar_personalizado')
+            if usar_personalizado:
+                meses_str = cleaned_data.get('meses_personalizados_input', '')
+                if not meses_str:
+                    raise forms.ValidationError("Debes ingresar la lista de meses fuertes cuando activas la personalización.")
+                
+                # Procesar meses
+                try:
+                    meses_list = [int(m.strip()) for m in meses_str.split(',') if m.strip()]
+                    if not meses_list:
+                        raise ValueError
+                    # Validar que los meses estén dentro del rango
+                    num_mensualidades = cleaned_data.get('num_mensualidades')
+                    if num_mensualidades:
+                        for mes in meses_list:
+                            if mes < 1 or mes > num_mensualidades:
+                                raise forms.ValidationError(f"El mes {mes} está fuera del rango (1-{num_mensualidades}).")
+                    # Guardar temporalmente para el save
+                    cleaned_data['meses_fuertes_personalizados'] = meses_list
+                except (ValueError, TypeError):
+                    raise forms.ValidationError("Formato inválido para meses. Usa números enteros separados por comas.")
+
+                # Procesar montos especiales (opcional)
+                montos_dict = {}
+                montos_str = cleaned_data.get('montos_personalizados_input', '')
+                if montos_str:
+                    partes = montos_str.split(',')
+                    for parte in partes:
+                        if ':' not in parte:
+                            raise forms.ValidationError(f"Formato inválido en '{parte}'. Debe ser mes:monto (ej. 12:49000).")
+                        try:
+                            mes_str, monto_str = parte.split(':')
+                            mes = int(mes_str.strip())
+                            monto = float(monto_str.strip())
+                            if mes not in meses_list:
+                                raise forms.ValidationError(f"El mes {mes} con monto especial no está en la lista de meses fuertes.")
+                            montos_dict[str(mes)] = monto  # guardamos como string para JSON
+                        except (ValueError, TypeError):
+                            raise forms.ValidationError(f"Valores numéricos inválidos en '{parte}'.")
+                cleaned_data['montos_fuertes_personalizados'] = montos_dict
+
         return cleaned_data
 
     def save(self, commit=True):
@@ -376,6 +449,19 @@ class FinanciamientoCommetaForm(FinanciamientoForm):
             detalle_commeta.monto_mensualidad_normal = self.cleaned_data.get('monto_mensualidad_normal')
             detalle_commeta.meses_fuertes_calculados = meses_fuertes_calculados
             detalle_commeta.configuracion_original = configuracion
+
+            # NUEVO: Manejar personalización
+            usar_personalizado = self.cleaned_data.get('usar_personalizado', False)
+            if usar_personalizado:
+                detalle_commeta.usar_meses_especificos = True  # si ya tienes este campo
+                detalle_commeta.meses_fuertes_personalizados = self.cleaned_data.get('meses_fuertes_personalizados', [])
+                detalle_commeta.montos_fuertes_personalizados = self.cleaned_data.get('montos_fuertes_personalizados', {})
+                # También puedes guardar en meses_fuertes_calculados para mantener consistencia
+                detalle_commeta.meses_fuertes_calculados = self.cleaned_data.get('meses_fuertes_personalizados', [])
+            else:
+                detalle_commeta.usar_meses_especificos = False
+                detalle_commeta.meses_fuertes_personalizados = []
+                detalle_commeta.montos_fuertes_personalizados = {}
             
             detalle_commeta.save()
             print(f"✅ FinanciamientoCommeta guardado: ID {detalle_commeta.id}")
@@ -515,5 +601,6 @@ class CartaIntencionForm(forms.ModelForm):
                 )
         
         return oferta
+
 
 
