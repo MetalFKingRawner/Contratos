@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('financiamiento', '0008_financiamientocommeta_monto_mensualidad_normal_and_more'),
+        ('financiamiento', '0004_financiamientocommeta'),
     ]
 
     operations = [
@@ -21,3 +21,4 @@ class Migration(migrations.Migration):
             field=models.JSONField(blank=True, default=dict, help_text="Diccionario con montos especiales por mes (ej: {'12': 49000, '36': 21000})"),
         ),
     ]
+
