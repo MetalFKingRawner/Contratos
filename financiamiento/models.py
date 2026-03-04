@@ -131,6 +131,18 @@ class FinanciamientoCommeta(models.Model):
         on_delete=models.PROTECT,
         help_text="Configuración base utilizada para este financiamiento"
     )
+
+    # NUEVOS CAMPOS PARA PERSONALIZACIÓN
+    meses_fuertes_personalizados = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="Lista específica de números de meses que son fuertes (ej: [12, 18, 24, 30, 36])"
+    )
+    montos_fuertes_personalizados = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text="Diccionario con montos especiales por mes (ej: {'12': 49000, '36': 21000})"
+    )
     
     class Meta:
         verbose_name = "Detalle Financiamiento Commeta"
@@ -204,5 +216,6 @@ class CartaIntencion(models.Model):
             'proyecto': self.financiamiento.lote.proyecto.nombre,
             'ubicacion': self.financiamiento.lote.proyecto.ubicacion,
         }
+
 
 
