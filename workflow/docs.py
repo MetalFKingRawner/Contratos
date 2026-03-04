@@ -49,7 +49,7 @@ DOCUMENTOS = {
     "financiamiento": {
         "titulo":     "Tabla de financiamiento",
         "descripcion":"Información detallada del financiamiento.",
-        "plantilla":  "pdfs/templates/pdfs/financiamiento.docx",
+        "plantilla":  "pdfs/templates/pdfs/tabla_financiamiento.docx",
         "builder":    build_financiamiento_context,
     },
     # Contratos Definitiva – Financiamiento
@@ -168,5 +168,6 @@ DOCUMENTOS = {
         "builder":    build_contrato_commeta_pagos_varios_context,
     },
 }
+
 
 
