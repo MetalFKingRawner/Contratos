@@ -153,7 +153,7 @@ class StaffAuthenticationForm(AuthenticationForm):
 class BeneficiarioForm(forms.ModelForm):
     class Meta:
         model = Beneficiario
-        fields = ['nombre_completo', 'sexo', 'telefono', 'email', 'numero_id']
+        fields = ['nombre_completo', 'sexo', 'telefono', 'email', 'numero_id', 'parentesco']
         widgets = {
             'nombre_completo': forms.TextInput(attrs={
                 'placeholder': 'Nombre completo del beneficiario *',
@@ -171,11 +171,14 @@ class BeneficiarioForm(forms.ModelForm):
                 'placeholder': 'Número de INE (opcional)',
                 'class': 'form-control'
             }),
+            'parentesco': forms.TextInput(attrs={
+                'placeholder': 'Parentesco (ej. Hijo, Cónyuge, etc.)',
+                'class': 'form-control'
+            }),
         }
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Hacer el campo de teléfono opcional si lo prefieres
         self.fields['telefono'].required = False
-
+        self.fields['parentesco'].required = False  # Opcional
 
