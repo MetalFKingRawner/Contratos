@@ -684,7 +684,7 @@ class SeleccionDocumentosView(FormView):
                     else:
                         slugs.append('contrato_canario_pagos')
 
-         if tramite.es_commeta:
+        if tramite.es_commeta:
             slugs.append('reglamento_commeta')
 
         kwargs['available_slugs'] = slugs
