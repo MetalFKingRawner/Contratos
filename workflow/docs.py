@@ -20,10 +20,21 @@ from workflow.builders import (
     build_contrato_canario_pagos_varios_context,
     build_financiamiento_context,
     build_contrato_commeta_pagos_context,
-    build_contrato_commeta_pagos_varios_context
+    build_contrato_commeta_pagos_varios_context,
+    build_solicitud_contrato_commeta_context,
+    build_carta_intencion_commeta_context
 )
 
 DOCUMENTOS = {
+
+    # Documento estático Reglamento Commeta
+    "reglamento_commeta": {
+        "titulo": "Reglamento Commeta Community",
+        "descripcion": "Reglamento interno de la comunidad Commeta.",
+        "plantilla": None,      # No hay plantilla .docx
+        "builder": None,        # No hay builder
+    },
+    
     # Paso 0: Aviso de privacidad
     "aviso_privacidad": {
         "titulo":     "Aviso de Privacidad",
@@ -38,12 +49,25 @@ DOCUMENTOS = {
         "plantilla":  "pdfs/templates/pdfs/carta_intencion_template.docx",
         "builder":    build_carta_intencion_context,
     },
+    "carta_intencion_commeta": {
+        "titulo": "Carta de Intención de Compra (Commeta)",
+        "descripcion": "Formaliza tu intención de compra en Commeta Community.",
+        "plantilla": "pdfs/templates/pdfs/carta_intencion_template_commeta.docx",
+        "builder": build_carta_intencion_commeta_context,
+    },
     # Paso 2: Solicitud de Contrato
     "solicitud_contrato": {
         "titulo":     "Solicitud de Contrato",
         "descripcion":"Información previa para tu contrato.",
         "plantilla":  "pdfs/templates/pdfs/SolicitudContrato.docx",
         "builder":    build_solicitud_contrato_context,
+    },
+    # Solicitud de Contrato para Commeta (nueva)
+    "solicitud_contrato_commeta": {
+        "titulo": "Solicitud de Contrato (Commeta)",
+        "descripcion": "Información previa para tu contrato en Commeta Community.",
+        "plantilla": "pdfs/templates/pdfs/SolicitudContratoCommeta.docx",
+        "builder": build_solicitud_contrato_commeta_context,
     },
     # Tabla de financiamiento
     "financiamiento": {
