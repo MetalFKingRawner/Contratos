@@ -90,6 +90,22 @@
                 </div>
               {% endif %}
             </div>
+            
+            <div class="form-group beneficiario-form-group">
+                <label for="{{ form.parentesco.id_for_label }}">
+                    <i class="fas fa-handshake label-icon"></i>
+                    {{ form.parentesco.label }}
+                </label>
+                {{ form.parentesco }}
+                {% if form.parentesco.errors %}
+                    <div class="form-errors">
+                        {% for error in form.parentesco.errors %}
+                            <span class="error-message"><i class="fas fa-exclamation-circle"></i> {{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                <small class="form-text text-muted">Ej. Hijo, Cónyuge, Padre, etc.</small>
+            </div>
           </div>
         </div>
 
