@@ -579,15 +579,82 @@ def build_carta_intencion_from_instance(carta, request=None, tpl=None):
     
     return context
 
+def build_carta_intencion_commeta_from_instance(carta, request=None, tpl=None):
+    """
+    Builder específico para carta de intención COMMETA desde la instancia de CartaIntencion
+    """
+    from datetime import date
+    
+    fecha = date.today()
+    meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+             "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
+    
+    fin = carta.financiamiento
+    lote = fin.lote
+    superficie = calcular_superficie(lote.norte, lote.sur, lote.este, lote.oeste)
+    
+    # Datos Commeta
+    proyecto = str(lote.proyecto.nombre).upper() if lote.proyecto else ''
+    manzana = lote.manzana or ''
+    
+    forma_pago_doc = 'Contado' if fin.tipo_pago == 'contado' else 'Financiado'
+    
+    context = {
+        'LUGAR': 'Oaxaca de Juárez, Oax',
+        # Fecha
+        'DIA_1': fecha.day,
+        'MES_1': meses[fecha.month - 1].upper(),
+        'ANIO_1': str(fecha.year)[-2:],
+        # Cliente (desde carta)
+        'NOMBRE_CLIENTE': carta.nombre_cliente,
+        'DIRECCION_CLIENTE': carta.domicilio,
+        'TIPO_ID': carta.tipo_id,
+        'NUMERO_ID': carta.numero_id,
+        'TELEFONO_CLIENTE': carta.telefono_cliente,
+        'EMAIL_CLIENTE': carta.correo_cliente,
+        # Lote (con campos Commeta)
+        'DIRECCION_INMUEBLE': lote.proyecto.ubicacion,
+        'PROYECTO': proyecto,
+        'NUMERO_LOTE': lote.identificador,
+        'MANZANA': manzana,
+        'SUPERFICIE': superficie,
+        'REGIMEN': lote.proyecto.tipo_contrato,
+        # Vendedor
+        'NOMBRE_ASESOR': carta.vendedor.nombre_completo,
+        'TELEFONO_ASESOR': carta.vendedor.telefono,
+        # Pagos
+        'VALOR_VENTA': f"{fin.precio_lote:.2f}",
+        'OFERTA_COMPRA': f"{carta.oferta:.2f}",
+        'FORMA_PAGO': forma_pago_doc,
+        'MONTO_APARTADO': f"{fin.apartado:.2f}",
+        'MONTO_LETRAS': numero_a_letras(float(fin.apartado)),
+        'DESTINATARIO_APARTADO': carta.destinatario_apartado or carta.vendedor.nombre_completo,
+        'TIPO_PAGO': carta.forma_pago.lower(),
+        # Vigencia
+        'VIGENCIA_DIA': fin.creado_en.day,
+        'VIGENCIA_MES': meses[fin.creado_en.month - 1],
+        'VIGENCIA_ANIO': str(fin.creado_en.year)[-2:],
+        # Firmas (vacías por ahora)
+        'FIRMA_CLIENTE': '',
+        'FIRMA_VENDEDOR': '',
+    }
+    return context
+
 def descargar_carta_intencion_pdf(request, pk):
     """
     Vista para descargar una carta de intención en PDF
     """
     # Obtener la carta de intención
     carta = get_object_or_404(CartaIntencion, pk=pk)
+    fin = carta.financiamiento
     
     # Ruta a la plantilla de carta de intención
-    tpl_path = os.path.join(settings.BASE_DIR, 'pdfs/templates/pdfs/carta_intencion_template.docx')
+    if fin.es_commeta:
+        tpl_path = os.path.join(settings.BASE_DIR, 'pdfs/templates/pdfs/carta_intencion_template_commeta.docx')
+        builder = build_carta_intencion_commeta_from_instance
+    else:
+        tpl_path = os.path.join(settings.BASE_DIR, 'pdfs/templates/pdfs/carta_intencion_template.docx')
+        builder = build_carta_intencion_from_instance
     
     # Verificar que la plantilla existe
     if not os.path.exists(tpl_path):
@@ -598,7 +665,7 @@ def descargar_carta_intencion_pdf(request, pk):
         tpl = DocxTemplate(tpl_path)
         
         # Generar contexto
-        context = build_carta_intencion_from_instance(carta, request=request, tpl=tpl)
+        context = builder(carta, request=request, tpl=tpl)
         
         # Renderizar plantilla
         tpl.render(context)
