@@ -90,6 +90,7 @@ class Lote(models.Model):
     def es_commeta(self):
         """Propiedad para verificar si el lote pertenece a un proyecto Commeta"""
         return self.proyecto.tipo_proyecto == 'commeta'
+        
 # En core/models.py - ACTUALIZAR ConfiguracionCommeta
 class ConfiguracionCommeta(models.Model):
     ZONA_CHOICES = [
@@ -296,13 +297,10 @@ class Beneficiario(models.Model):
     telefono        = models.CharField("Teléfono", max_length=20, blank=True)
     email           = models.EmailField("Correo electrónico", blank=True)
     numero_id       = models.CharField("Número de identificación", max_length=50, blank=True)
+    parentesco      = models.CharField("Parentesco", max_length=50, blank=True, default='')
 
     creado_en      = models.DateTimeField(auto_now_add=True)
     actualizado_en = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.nombre_completo
-
-
-
-
