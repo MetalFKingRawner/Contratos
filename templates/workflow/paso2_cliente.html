@@ -1604,6 +1604,20 @@
                       {% endfor %}
                   </div>
               </div>
+
+              <div class="form-row">
+                  <div class="form-field-wrapper {% if beneficiario_form.parentesco.errors %}error{% endif %}">
+                      <label for="{{ beneficiario_form.parentesco.id_for_label }}">
+                          <i class="fas fa-handshake"></i>
+                          {{ beneficiario_form.parentesco.label }}
+                      </label>
+                      {{ beneficiario_form.parentesco }}
+                      {% for error in beneficiario_form.parentesco.errors %}
+                          <div class="text-danger">{{ error }}</div>
+                      {% endfor %}
+                      <small class="field-hint"><i class="fas fa-info-circle"></i> Ej. Hijo, Cónyuge, Padre, etc.</small>
+                  </div>
+              </div>
           </div>
       </div>
 
