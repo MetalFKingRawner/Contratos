@@ -449,8 +449,96 @@ def build_carta_intencion_context(fin, cli, ven,request=None, tpl=None, firma_da
         context['FIRMA_VENDEDOR'] = ''
 
     return context
+
+def build_carta_intencion_commeta_context(fin, cli, ven, request=None, tpl=None, firma_data=None, tramite=None, fecha=None, **kwargs):
+    """
+    Context para Carta de Intención de Compra - VARIANTE COMMETA.
+    Añade los campos PROYECTO y MANZANA, y soporta argumentos extra.
+    """
+    print("BUILDER CARTA COMMETA recibe request:", type(request), hasattr(request, 'session'))
     
-def build_solicitud_contrato_context(fin, cli, ven, request=None, tpl=None, firma_data=None, tramite=None):
+    # Fecha actual (si no se pasa, usar hoy)
+    if fecha is None:
+        fecha = date.today()
+    meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio",
+             "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]
+    
+    lote = fin.lote
+    
+    # Obtener datos del proyecto y manzana
+    proyecto = str(lote.proyecto.nombre).upper() if lote.proyecto else ''
+    manzana = lote.manzana or ''
+    
+    context = {
+        'LUGAR': 'Oaxaca de Juárez, Oax',
+        # Fecha de emisión
+        'DIA_1': fecha.day,
+        'MES_1': meses[fecha.month - 1].upper(),
+        'ANIO_1': str(fecha.year)[-2:],
+        # Datos del cliente
+        'NOMBRE_CLIENTE': cli.nombre_completo,
+        'DIRECCION_CLIENTE': cli.domicilio,
+        'TIPO_ID': cli.tipo_id,
+        'NUMERO_ID': cli.numero_id,
+        # Datos del lote
+        'DIRECCION_INMUEBLE': lote.proyecto.ubicacion if lote.proyecto else '',
+        'PROYECTO': proyecto,
+        'NUMERO_LOTE': lote.identificador,
+        'MANZANA': manzana,
+        'SUPERFICIE': lote.superficie_m2,
+        'REGIMEN': lote.proyecto.tipo_contrato if lote.proyecto else '',
+        # Datos del vendedor/asesor
+        'NOMBRE_ASESOR': ven.nombre_completo,
+        # Datos de pago/apartado
+        'VALOR_VENTA': f"{fin.precio_lote:.2f}",
+        'OFERTA_COMPRA': f"{fin.precio_lote:.2f}",
+        'FORMA_PAGO': 'Contado' if fin.tipo_pago == 'contado' else 'Financiado',
+        'CREDITO_HIPOTECARIO': 'No',
+        'INSTITUCION_FINANCIERA': '',
+        'MONTO_APARTADO': f"{fin.apartado:.2f}",
+        'MONTO_LETRAS': numero_a_letras(float(fin.apartado)),
+        'DESTINATARIO_APARTADO': ven.nombre_completo,
+        'TIPO_PAGO': 'efectivo',  # Puedes cambiarlo si es necesario
+        'VIGENCIA_DIA': fecha.day,
+        'VIGENCIA_MES': meses[fecha.month - 1],
+        'VIGENCIA_ANIO': str(fecha.year)[-2:],
+        'TELEFONO_CLIENTE': cli.telefono,
+        'EMAIL_CLIENTE': cli.email,
+        'TELEFONO_ASESOR': ven.telefono,
+    }
+    
+    # Firmas (manejo seguro de tramite)
+    if request and tpl:
+        FIRMA_ANCHO = 40
+        FIRMA_ALTO = 15
+        
+        def crear_firma_unificada(data_url):
+            if not data_url:
+                return ''
+            try:
+                header, b64 = data_url.split(',', 1)
+                img_data = base64.b64decode(b64)
+                fd, temp_path = tempfile.mkstemp(suffix='.png')
+                with os.fdopen(fd, 'wb') as f:
+                    f.write(img_data)
+                return InlineImage(tpl, temp_path, width=Mm(FIRMA_ANCHO), height=Mm(FIRMA_ALTO))
+            except Exception as e:
+                print(f"Error al procesar firma: {e}")
+                return ''
+        
+        context['FIRMA_CLIENTE'] = crear_firma_unificada(firma_data)
+        # Firma del vendedor: solo si tramite existe y tiene firma
+        if tramite and tramite.firma_vendedor:
+            context['FIRMA_VENDEDOR'] = crear_firma_unificada(tramite.firma_vendedor)
+        else:
+            context['FIRMA_VENDEDOR'] = ''
+    else:
+        context['FIRMA_CLIENTE'] = ''
+        context['FIRMA_VENDEDOR'] = ''
+    
+    return context
+    
+def build_solicitud_contrato_context(fin, cli, ven, request=None, tpl=None, firma_data=None, tramite=None, **kwargs):
     """
     Context para Solicitud de Contratos.
     Campos comunes + ramificación contado/financiado.
@@ -479,12 +567,14 @@ def build_solicitud_contrato_context(fin, cli, ven, request=None, tpl=None, firm
     clave_bene = ''
     telefono_bene = ''
     correo_bene = ''
+    parentesco_bene = ''
 
     if tramite.beneficiario_1:
         nombre_bene = tramite.beneficiario_1.nombre_completo
         clave_bene = tramite.beneficiario_1.numero_id
         telefono_bene = tramite.beneficiario_1.telefono
         correo_bene = tramite.beneficiario_1.email
+        parentesco_bene = tramite.beneficiario_1.parentesco
 
     coords = {}
     for lado in ('norte','sur','este','oeste'):
@@ -513,6 +603,7 @@ def build_solicitud_contrato_context(fin, cli, ven, request=None, tpl=None, firm
         'CLAVE_BENE': clave_bene.upper(),
         'TELEFONO_BENE': telefono_bene,
         'CORREO_BENE': correo_bene.upper(),
+        'PARENTESCO_BENE': parentesco_bene,
         # Lote y financiamiento
         'NOMBRE_LOTE':        str(fin.lote.proyecto.nombre).upper(),
         'NUMERO_LOTE':        fin.lote.identificador,
@@ -575,6 +666,142 @@ def build_solicitud_contrato_context(fin, cli, ven, request=None, tpl=None, firm
         
     else:
         # Valores por defecto si no hay template
+        context['FIRMA_CLIENTE'] = ''
+        context['FIRMA_VENDEDOR'] = ''
+
+    return context
+
+def build_solicitud_contrato_commeta_context(fin, cli, ven, request=None, tpl=None, firma_data=None, tramite=None, **kwargs):
+    """
+    Context para Solicitud de Contratos - VARIANTE COMMETA.
+    Incluye campos adicionales: manzana, zona, testigos y sus claves.
+    """
+    # 1) Fecha actual y desgloses
+    hoy = date.today()
+    meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+             "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
+    DIA = hoy.day
+    MES = meses[hoy.month - 1].upper()
+    ANIO = hoy.year
+
+    # 2) Datos del cliente principal
+    email = (cli.email or '').strip()
+    rfc = (cli.rfc or '')
+    correo_comprador = email.upper() if email else 'NO PROPORCIONADO'
+    rfc_comprador = rfc.upper() if rfc else 'NO PROPORCIONADO'
+
+    # 3) Beneficiario (si existe)
+    nombre_bene = ''
+    clave_bene = ''
+    telefono_bene = ''
+    correo_bene = ''
+    parentesco_bene = ''
+    testigo1_nombre = ''
+    testigo1_clave = ''
+    testigo2_nombre = ''
+    testigo2_clave = ''
+
+    if tramite is not None:
+        if tramite.beneficiario_1:
+            nombre_bene = tramite.beneficiario_1.nombre_completo
+            clave_bene = tramite.beneficiario_1.numero_id
+            telefono_bene = tramite.beneficiario_1.telefono
+            correo_bene = tramite.beneficiario_1.email
+            parentesco_bene = tramite.beneficiario_1.parentesco
+        testigo1_nombre = (tramite.testigo_1_nombre or '').upper()
+        testigo1_clave = (tramite.testigo_1_idmex or '')
+        testigo2_nombre = (tramite.testigo_2_nombre or '').upper()
+        testigo2_clave = (tramite.testigo_2_idmex or '')
+
+    # 5) Coordenadas del lote
+    coords = {}
+    for lado in ('norte','sur','este','oeste'):
+        raw = getattr(fin.lote, lado, '')
+        m, c = _parse_coord(raw)
+        coords[f'LOTE_{lado.upper()}'] = m
+        coords[f'COLINDA_{lado.upper()}'] = c
+
+    # 6) Datos específicos de Commeta
+    manzana = fin.lote.manzana or ''
+    zona = getattr(tramite, 'zona_commeta', '') or ''
+
+    # 7) Construcción del contexto base (similar al original)
+    context = {
+        'DIA': DIA,
+        'MES': MES,
+        'ANIO': ANIO,
+        'NOMBRE_CLIENTE': cli.nombre_completo.upper(),
+        'TELEFONO_CLIENTE': cli.telefono,
+        'CORREO_CLIENTE': correo_comprador,
+        'OCUPACION_CLIENTE': cli.ocupacion.upper(),
+        'ESTADO_CIVIL': cli.estado_civil.upper(),
+        'ORIGINARIO_CLIENTE': cli.originario.upper(),
+        'NACIONALIDAD': cli.nacionalidad.upper(),
+        'DIRECCION_CLIENTE': cli.domicilio.upper(),
+        'RFC_CLIENTE': rfc_comprador,
+        'CLAVE_CLIENTE': cli.numero_id,
+        # Beneficiario
+        'NOMBRE_BENE': nombre_bene.upper(),
+        'CLAVE_BENE': clave_bene.upper(),
+        'TELEFONO_BENE': telefono_bene,
+        'CORREO_BENE': correo_bene.upper(),
+        'PARENTESCO_BENE': parentesco_bene,
+        # Testigos
+        'NOMBRE_TEST1': testigo1_nombre,
+        'CLAVE_TEST1': testigo1_clave,
+        'NOMBRE_TEST2': testigo2_nombre,
+        'CLAVE_TEST2': testigo2_clave,
+        # Lote y financiamiento
+        'NOMBRE_LOTE': str(fin.lote.proyecto.nombre).upper(),
+        'NUMERO_LOTE': fin.lote.identificador,
+        'MANZANA': manzana,
+        'ZONA': zona,
+        **coords,
+        'METROS_CUAD': fin.lote.superficie_m2,
+        # Vendedor
+        'NOMBRE_VENDEDOR': ven.nombre_completo.upper(),
+    }
+
+    # 8) Campos según tipo de pago (contado / financiado)
+    if fin.tipo_pago == 'contado':
+        context.update({
+            'PRECIO_LOTE_CONT': f"${fin.precio_lote:,.2f}",
+            'CANTIDAD_APARTADO_CONT': f"${fin.apartado:,.2f}",
+            'FECHA_PAGO_COMPLETO': fin.fecha_pago_completo.strftime("%d/%m/%Y") if fin.fecha_pago_completo else '',
+            'CANTIDAD_PAGO_TOTAL': f"${(fin.precio_lote - fin.apartado):,.2f}",
+        })
+    else:  # financiado
+        context.update({
+            'PRECIO_LOTE_FIN': f"${fin.precio_lote:,.2f}",
+            'CANTIDAD_APARTADO_FIN': f"${fin.apartado:,.2f}",
+            'CANTIDAD_ENGANCHE': f"${fin.enganche:,.2f}" if fin.enganche else '',
+            'FECHA_ENGANCHE': fin.fecha_enganche.strftime("%d/%m/%Y") if fin.fecha_enganche else '',
+            'NUM_MENSUALIDAD': fin.num_mensualidades,
+            'DIA_PAGO': fin.fecha_primer_pago.day if fin.fecha_primer_pago else '',
+        })
+
+    # 9) Firmas (idéntico al builder original)
+    if request and tpl:
+        FIRMA_ANCHO = 40
+        FIRMA_ALTO = 15
+
+        def crear_firma_unificada(data_url):
+            if not data_url:
+                return ''
+            try:
+                header, b64 = data_url.split(',', 1)
+                img_data = base64.b64decode(b64)
+                fd, temp_path = tempfile.mkstemp(suffix='.png')
+                with os.fdopen(fd, 'wb') as f:
+                    f.write(img_data)
+                return InlineImage(tpl, temp_path, width=Mm(FIRMA_ANCHO), height=Mm(FIRMA_ALTO))
+            except Exception as e:
+                print(f"Error al procesar firma: {e}")
+                return ''
+
+        context['FIRMA_CLIENTE'] = crear_firma_unificada(firma_data)
+        context['FIRMA_VENDEDOR'] = crear_firma_unificada(tramite.firma_vendedor)
+    else:
         context['FIRMA_CLIENTE'] = ''
         context['FIRMA_VENDEDOR'] = ''
 
@@ -4579,6 +4806,11 @@ def build_contrato_commeta_pagos_context(fin, cli, ven, request=None, tpl=None, 
         False: "EN LA COMUNIDAD DE SAN ANTONIO DE LA CAL, MUNICIPIO DE SU MISMO NOMBRE, OAXACA DE JUÁREZ",
         True:  "EN LA COMUNIDAD SANTA MARIA TONAMECA, MUNICIPIO DE SU MISMO NOMBRE, DISTRITO DE POCHUTLA, ESTADO DE OAXACA",
     }
+    
+    LUGAR_FIRMA_OPCIONES2 = {
+        False: "EN LA POBLACIÓN DE SAN ANTONIO DE LA CAL, OAXACA",
+        True:  "EN LA COMUNIDAD SANTA MARIA TONAMECA, MUNICIPIO DE SU MISMO NOMBRE, DISTRITO DE POCHUTLA, ESTADO DE OAXACA",
+    }
 
     # 5) Construcción del context
     context = {
@@ -4634,6 +4866,7 @@ def build_contrato_commeta_pagos_context(fin, cli, ven, request=None, tpl=None, 
         'ID_BENE': tramite.beneficiario_1.numero_id,
         'NUMERO_BENE': bene_numero1,
         'CORREO_BENE': bene_correo1,
+        'LUGAR_FIRMA_2': LUGAR_FIRMA_OPCIONES2[tramite.es_tonameca],
     }
 
     # 6) Firma
@@ -4820,6 +5053,11 @@ def build_contrato_commeta_pagos_varios_context(fin, cli, ven, cliente2=None, re
         True:  "EN LA COMUNIDAD SANTA MARIA TONAMECA, MUNICIPIO DE SU MISMO NOMBRE, DISTRITO DE POCHUTLA, ESTADO DE OAXACA",
     }
 
+    LUGAR_FIRMA_OPCIONES2 = {
+        False: "EN LA POBLACIÓN DE SAN ANTONIO DE LA CAL, OAXACA",
+        True:  "EN LA COMUNIDAD SANTA MARIA TONAMECA, MUNICIPIO DE SU MISMO NOMBRE, DISTRITO DE POCHUTLA, ESTADO DE OAXACA",
+    }
+
     # 5) Construcción del context
     context = {
         'LUGAR_FIRMA': LUGAR_FIRMA_OPCIONES[tramite.es_tonameca],
@@ -4886,6 +5124,7 @@ def build_contrato_commeta_pagos_varios_context(fin, cli, ven, cliente2=None, re
         'ID_BENE': tramite.beneficiario_1.numero_id,
         'NUMERO_BENE': bene_numero1,
         'CORREO_BENE': bene_correo1,
+        'LUGAR_FIRMA_2': LUGAR_FIRMA_OPCIONES2[tramite.es_tonameca],
     }
 
     # 6) Firma
