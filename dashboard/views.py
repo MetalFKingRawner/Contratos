@@ -38,6 +38,36 @@ class DownloadDocumentView(View):
     """Vista para descargar documentos individuales en Word o PDF."""
     
     def get(self, request, pk, document_type, format):
+        if document_type == 'reglamento_commeta':
+            # Definir la ruta base a los archivos estáticos
+            # Ajusta la carpeta según tu proyecto (ej: static/reglamentos/)
+            base_path = os.path.join(settings.BASE_DIR, 'static', 'docs', 'Reglamento_Commeta')
+            if format == 'word':
+                file_path = base_path + '.docx'
+                content_type = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+                filename = 'Reglamento_Commeta.docx'
+            elif format == 'pdf':
+                file_path = base_path + '.pdf'
+                content_type = 'application/pdf'
+                filename = 'Reglamento_Commeta.pdf'
+            else:
+                return HttpResponse("Formato no válido", status=400)
+
+            # Verificar existencia del archivo
+            if not os.path.exists(file_path):
+                # Opcional: usar el sistema de archivos estáticos de Django en desarrollo
+                from django.contrib.staticfiles.finders import find
+                found = find(f'docs/Reglamento_Commeta.{format}')
+                if found:
+                    file_path = found
+                else:
+                    return HttpResponse("Documento no encontrado", status=404)
+
+            with open(file_path, 'rb') as f:
+                response = HttpResponse(f.read(), content_type=content_type)
+                response['Content-Disposition'] = f'attachment; filename="{filename}"'
+                return response
+        
         # 1. Obtener el trámite
         tramite = get_object_or_404(Tramite, pk=pk)
         
