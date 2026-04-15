@@ -464,53 +464,95 @@
           </div>
         </div>
 
-        <!-- Carta de Intención de Compra -->
+        <!-- Carta de Intención de Compra (con variante Commeta si aplica) -->
         <div class="document-download-item">
           <div class="document-icon">
             <i class="fas fa-envelope"></i>
           </div>
           <div class="document-info">
-            <h4 class="document-name">Carta de Intención de Compra</h4>
-            <p class="document-description">Documento que manifiesta la intención de compra del cliente.</p>
+            <h4 class="document-name">
+              Carta de Intención de Compra
+              {% if tramite.es_commeta %}(Commeta){% endif %}
+            </h4>
+            <p class="document-description">
+              Documento que manifiesta la intención de compra del cliente.
+              {% if tramite.es_commeta %} - Versión Commeta Community.{% endif %}
+            </p>
           </div>
           <div class="document-actions">
-            <a class="download-btn word" 
-                    href="{% url 'dashboard:download_document' tramite.pk 'carta_intencion' 'word' %}"
+            {% if tramite.es_commeta %}
+              <a class="download-btn word" 
+                href="{% url 'dashboard:download_document' tramite.pk 'carta_intencion_commeta' 'word' %}"
                 download>
-              <i class="fas fa-file-word"></i>
-              <span>Word</span>
-            </a>
-            <a class="download-btn pdf" 
+                <i class="fas fa-file-word"></i>
+                <span>Word</span>
+              </a>
+              <a class="download-btn pdf" 
+                href="{% url 'dashboard:download_document' tramite.pk 'carta_intencion_commeta' 'pdf' %}"
+                download>
+                <i class="fas fa-file-pdf"></i>
+                <span>PDF</span>
+              </a>
+            {% else %}
+              <a class="download-btn word" 
+                href="{% url 'dashboard:download_document' tramite.pk 'carta_intencion' 'word' %}"
+                download>
+                <i class="fas fa-file-word"></i>
+                <span>Word</span>
+              </a>
+              <a class="download-btn pdf" 
                 href="{% url 'dashboard:download_document' tramite.pk 'carta_intencion' 'pdf' %}"
                 download>
                 <i class="fas fa-file-pdf"></i>
                 <span>PDF</span>
-            </a>
+              </a>
+            {% endif %}
           </div>
         </div>
 
-        <!-- Solicitud de Contrato -->
+        <!-- Solicitud de Contrato (con variante Commeta si aplica) -->
         <div class="document-download-item">
           <div class="document-icon">
             <i class="fas fa-file-signature"></i>
           </div>
           <div class="document-info">
-            <h4 class="document-name">Solicitud de Contrato</h4>
-            <p class="document-description">Formulario de solicitud para la elaboración del contrato.</p>
+            <h4 class="document-name">
+              Solicitud de Contrato
+              {% if tramite.es_commeta %}(Commeta){% endif %}
+            </h4>
+            <p class="document-description">
+              Formulario de solicitud para la elaboración del contrato.
+              {% if tramite.es_commeta %} - Versión Commeta Community.{% endif %}
+            </p>
           </div>
           <div class="document-actions">
-            <a class="download-btn word" 
-                    href="{% url 'dashboard:download_document' tramite.pk 'solicitud_contrato' 'word' %}"
+            {% if tramite.es_commeta %}
+              <a class="download-btn word" 
+                href="{% url 'dashboard:download_document' tramite.pk 'solicitud_contrato_commeta' 'word' %}"
                 download>
-              <i class="fas fa-file-word"></i>
-              <span>Word</span>
-            </a>
-            <a class="download-btn pdf" 
+                <i class="fas fa-file-word"></i>
+                <span>Word</span>
+              </a>
+              <a class="download-btn pdf" 
+                href="{% url 'dashboard:download_document' tramite.pk 'solicitud_contrato_commeta' 'pdf' %}"
+                download>
+                <i class="fas fa-file-pdf"></i>
+                <span>PDF</span>
+              </a>
+            {% else %}
+              <a class="download-btn word" 
+                href="{% url 'dashboard:download_document' tramite.pk 'solicitud_contrato' 'word' %}"
+                download>
+                <i class="fas fa-file-word"></i>
+                <span>Word</span>
+              </a>
+              <a class="download-btn pdf" 
                 href="{% url 'dashboard:download_document' tramite.pk 'solicitud_contrato' 'pdf' %}"
                 download>
                 <i class="fas fa-file-pdf"></i>
                 <span>PDF</span>
-            </a>
+              </a>
+            {% endif %}
           </div>
         </div>
 
@@ -569,6 +611,35 @@
             </a>
           </div>
         </div>
+
+        <!-- Reglamento Commeta (solo para trámites Commeta) -->
+        {% if tramite.es_commeta %}
+        <div class="document-download-item">
+          <div class="document-icon">
+            <i class="fas fa-file-alt"></i>
+          </div>
+          <div class="document-info">
+            <h4 class="document-name">Reglamento Commeta Community</h4>
+            <p class="document-description">
+              Reglamento interno.
+            </p>
+          </div>
+          <div class="document-actions">
+            <a class="download-btn word" 
+              href="{% url 'dashboard:download_document' tramite.pk 'reglamento_commeta' 'word' %}"
+              download>
+              <i class="fas fa-file-word"></i>
+              <span>Word</span>
+            </a>
+            <a class="download-btn pdf" 
+              href="{% url 'dashboard:download_document' tramite.pk 'reglamento_commeta' 'pdf' %}"
+              download>
+              <i class="fas fa-file-pdf"></i>
+              <span>PDF</span>
+            </a>
+          </div>
+        </div>
+        {% endif %}
       </div>
     </div>
   </div>
