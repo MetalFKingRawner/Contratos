@@ -604,8 +604,15 @@ class SeleccionDocumentosView(FormView):
         fin = tramite.financiamiento
 
         # 1) Empezamos con los documentos que siempre queremos mostrar
-        slugs = ['aviso_privacidad']
-        slugs += ['carta_intencion', 'solicitud_contrato']
+        #slugs = ['aviso_privacidad']
+        #slugs += ['carta_intencion', 'solicitud_contrato']
+        slugs = ['aviso_privacidad', 'carta_intencion']  # mantenemos carta_intencion normal por ahora
+
+        # Selección condicional para carta de intención y solicitud de contrato
+        if tramite.es_commeta:
+            slugs += ['carta_intencion_commeta', 'solicitud_contrato_commeta']
+        else:
+            slugs += ['carta_intencion', 'solicitud_contrato']
     
         # 2) Solo agregar el documento de financiamiento si el tipo de pago es 'financiado'
         if fin.tipo_pago == 'financiado':
@@ -676,6 +683,9 @@ class SeleccionDocumentosView(FormView):
                         slugs.append('contrato_canario_contado')
                     else:
                         slugs.append('contrato_canario_pagos')
+
+         if tramite.es_commeta:
+            slugs.append('reglamento_commeta')
 
         kwargs['available_slugs'] = slugs
         return kwargs
@@ -763,6 +773,25 @@ class SeleccionDocumentosView(FormView):
         buffer = io.BytesIO()
         with zipfile.ZipFile(buffer, 'w') as zf:
             for slug in selected:
+
+                if slug == 'reglamento_commeta':
+                    # Ruta al archivo PDF estático
+                    static_pdf_path = os.path.join(settings.BASE_DIR, 'static', 'docs', 'Reglamento_Commeta.pdf')
+                    # Fallback usando staticfiles finder (útil en desarrollo)
+                    if not os.path.exists(static_pdf_path):
+                        from django.contrib.staticfiles.finders import find
+                        found = find('docs/Reglamento_Commeta.pdf')
+                        if found:
+                            static_pdf_path = found
+                        else:
+                            print(f"❌ No se encontró el archivo estático: Reglamento_Commeta.pdf")
+                            continue  # Saltar este documento si no existe
+                    
+                    # Leer el archivo y añadirlo al ZIP con nombre "reglamento_commeta.pdf"
+                    with open(static_pdf_path, 'rb') as f:
+                        zf.writestr('reglamento_commeta.pdf', f.read())
+                    continue  # Saltar el resto de la lógica (builder, conversión)
+                    
                 doc_info = DOCUMENTOS[slug]
                 tpl_path = os.path.join(settings.BASE_DIR, doc_info['plantilla'])
                 
