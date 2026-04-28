@@ -439,28 +439,49 @@
     
     <div class="info-card-body">
       <div class="documents-download-grid">
-        <!-- Aviso de Privacidad -->
+        <!-- Aviso de Privacidad (con variante Commeta si aplica) -->
         <div class="document-download-item">
           <div class="document-icon">
             <i class="fas fa-shield-alt"></i>
           </div>
           <div class="document-info">
-            <h4 class="document-name">Aviso de Privacidad</h4>
-            <p class="document-description">Documento con las políticas de privacidad y manejo de datos.</p>
+            <h4 class="document-name">
+              Aviso de Privacidad
+              {% if tramite.es_commeta %}(Commeta){% endif %}
+            </h4>
+            <p class="document-description">
+              Documento con las políticas de privacidad y manejo de datos.
+              {% if tramite.es_commeta %} - Versión Commeta Community.{% endif %}
+            </p>
           </div>
           <div class="document-actions">
+            {% if tramite.es_commeta %}
+              <a class="download-btn word" 
+                href="{% url 'dashboard:download_document' tramite.pk 'aviso_privacidad_commeta' 'word' %}"
+                download>
+                <i class="fas fa-file-word"></i>
+                <span>Word</span>
+              </a>
+              <a class="download-btn pdf" 
+                href="{% url 'dashboard:download_document' tramite.pk 'aviso_privacidad_commeta' 'pdf' %}"
+                download>
+                <i class="fas fa-file-pdf"></i>
+                <span>PDF</span>
+              </a>
+            {% else %}
               <a class="download-btn word" 
                 href="{% url 'dashboard:download_document' tramite.pk 'aviso_privacidad' 'word' %}"
                 download>
-                  <i class="fas fa-file-word"></i>
-                  <span>Word</span>
+                <i class="fas fa-file-word"></i>
+                <span>Word</span>
               </a>
               <a class="download-btn pdf" 
                 href="{% url 'dashboard:download_document' tramite.pk 'aviso_privacidad' 'pdf' %}"
                 download>
-                  <i class="fas fa-file-pdf"></i>
-                  <span>PDF</span>
+                <i class="fas fa-file-pdf"></i>
+                <span>PDF</span>
               </a>
+            {% endif %}
           </div>
         </div>
 
