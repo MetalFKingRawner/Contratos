@@ -4784,6 +4784,12 @@ def build_contrato_commeta_pagos_context(fin, cli, ven, request=None, tpl=None, 
     else:
         benef = bene
 
+    bene_paren = (tramite.beneficiario_1.parentesco or '')        # convierte None -> ''
+    if bene_paren:
+        benepan = bene_paren.upper()
+    else:
+        benepan = bene_paren
+
     bene_numero = (tramite.beneficiario_1.telefono or '')
     if bene_numero:
         bene_numero1 = bene_numero
@@ -4811,6 +4817,9 @@ def build_contrato_commeta_pagos_context(fin, cli, ven, request=None, tpl=None, 
         False: "EN LA POBLACIÓN DE SAN ANTONIO DE LA CAL, OAXACA",
         True:  "EN LA COMUNIDAD SANTA MARIA TONAMECA, MUNICIPIO DE SU MISMO NOMBRE, DISTRITO DE POCHUTLA, ESTADO DE OAXACA",
     }
+
+    porcen = get_porcentaje_cometa(fin.lote.identificador)
+    porle = numero_a_letras(float(porcen))
 
     # 5) Construcción del context
     context = {
@@ -4856,7 +4865,8 @@ def build_contrato_commeta_pagos_context(fin, cli, ven, request=None, tpl=None, 
         'FECHA_INICIO': fecha_inicio.day,
         'DIA_PAGO': (fecha_inicio + timedelta(days=3)).day,
         'METROS_CUADRADOS': fin.lote.superficie_m2,
-        'PORCENTAJE': get_porcentaje_cometa(fin.lote.identificador),
+        'PORCENTAJE': porcen,
+        'POR_LETRA': porle,
 
         'NOMBRE_TEST2': test2,
         'NOMBRE_TEST1': test1,
@@ -4866,6 +4876,7 @@ def build_contrato_commeta_pagos_context(fin, cli, ven, request=None, tpl=None, 
         'ID_BENE': tramite.beneficiario_1.numero_id,
         'NUMERO_BENE': bene_numero1,
         'CORREO_BENE': bene_correo1,
+        'PARENTESCO': benepan,
         'LUGAR_FIRMA_2': LUGAR_FIRMA_OPCIONES2[tramite.es_tonameca],
     }
 
@@ -5030,6 +5041,12 @@ def build_contrato_commeta_pagos_varios_context(fin, cli, ven, cliente2=None, re
     else:
         benef = bene
 
+    bene_paren = (tramite.beneficiario_1.parentesco or '')        # convierte None -> ''
+    if bene_paren:
+        benepan = bene_paren.upper()
+    else:
+        benepan = bene_paren
+
     bene_numero = (tramite.beneficiario_1.telefono or '')
     if bene_numero:
         bene_numero1 = bene_numero
@@ -5057,6 +5074,9 @@ def build_contrato_commeta_pagos_varios_context(fin, cli, ven, cliente2=None, re
         False: "EN LA POBLACIÓN DE SAN ANTONIO DE LA CAL, OAXACA",
         True:  "EN LA COMUNIDAD SANTA MARIA TONAMECA, MUNICIPIO DE SU MISMO NOMBRE, DISTRITO DE POCHUTLA, ESTADO DE OAXACA",
     }
+
+    porcen = get_porcentaje_cometa(fin.lote.identificador)
+    porle = numero_a_letras(float(porcen))
 
     # 5) Construcción del context
     context = {
@@ -5114,7 +5134,8 @@ def build_contrato_commeta_pagos_varios_context(fin, cli, ven, cliente2=None, re
         'FECHA_INICIO': fecha_inicio.day,
         'DIA_PAGO': (fecha_inicio + timedelta(days=3)).day,
         'METROS_CUADRADOS': fin.lote.superficie_m2,
-        'PORCENTAJE': get_porcentaje_cometa(fin.lote.identificador),
+        'PORCENTAJE': porcen,
+        'POR_LETRA': porle,
 
         'NOMBRE_TEST2': test2,
         'NOMBRE_TEST1': test1,
@@ -5124,6 +5145,7 @@ def build_contrato_commeta_pagos_varios_context(fin, cli, ven, cliente2=None, re
         'ID_BENE': tramite.beneficiario_1.numero_id,
         'NUMERO_BENE': bene_numero1,
         'CORREO_BENE': bene_correo1,
+        'PARENTESCO': benepan,
         'LUGAR_FIRMA_2': LUGAR_FIRMA_OPCIONES2[tramite.es_tonameca],
     }
 
