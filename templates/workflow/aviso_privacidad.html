@@ -725,12 +725,12 @@
       Documento de Aviso de Privacidad
     </h3>
     
-    <object data="{% static 'docs/aviso_privacidad.pdf' %}"
+    <object data="{% if es_commeta %}{% static 'docs/aviso_privacidad_commeta.pdf' %}{% else %}{% static 'docs/aviso_privacidad.pdf' %}{% endif %}"
             type="application/pdf"
-            width="100%" height="500px">
-      <p>Tu navegador no soporta PDF, <a href="{% static 'docs/aviso_privacidad.pdf' %}">descárgalo aquí</a>.</p>
+            width="100%" height="500px"
+            class="signature-canvas">
+      <p>Tu navegador no soporta PDF, <a href="{% if es_commeta %}{% static 'docs/aviso_privacidad_commeta.pdf' %}{% else %}{% static 'docs/aviso_privacidad.pdf' %}{% endif %}">descárgalo aquí</a>.</p>
     </object>
-  </div>
 
   <form method="post" novalidate id="privacyForm">
     {% csrf_token %}
