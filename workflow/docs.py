@@ -35,11 +35,19 @@ DOCUMENTOS = {
         "builder": None,        # No hay builder
     },
     
-    # Paso 0: Aviso de privacidad
+    # Paso 0: Aviso de privacidad (normal)
     "aviso_privacidad": {
         "titulo":     "Aviso de Privacidad",
         "descripcion":"Acepta nuestro aviso y firma en pantalla",
         "plantilla":  "pdfs/templates/pdfs/aviso_privacidad_template.docx",
+        "builder":    build_aviso_privacidad_context,
+    },
+
+    # Aviso de privacidad para Commeta (mismo builder, plantilla diferente)
+    "aviso_privacidad_commeta": {
+        "titulo":     "Aviso de Privacidad (Commeta)",
+        "descripcion":"Acepta nuestro aviso con membrete Commeta",
+        "plantilla":  "pdfs/templates/pdfs/aviso_privacidad_commeta_template.docx",
         "builder":    build_aviso_privacidad_context,
     },
     # Paso 1: Carta de Intención
