@@ -606,7 +606,10 @@ class SeleccionDocumentosView(FormView):
         # 1) Empezamos con los documentos que siempre queremos mostrar
         #slugs = ['aviso_privacidad']
         #slugs += ['carta_intencion', 'solicitud_contrato']
-        slugs = ['aviso_privacidad', 'carta_intencion']  # mantenemos carta_intencion normal por ahora
+        if tramite.es_commeta:
+            slugs = ['aviso_privacidad_commeta']
+        else:
+            slugs = ['aviso_privacidad']
 
         # Selección condicional para carta de intención y solicitud de contrato
         if tramite.es_commeta:
@@ -950,6 +953,12 @@ class AvisoForm(forms.Form):
 class AvisoPrivacidadView(FormView):
     template_name = "workflow/aviso_privacidad.html"
     form_class    = AvisoForm
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        tipo_financiamiento = self.request.session.get('tipo_financiamiento', 'normal')
+        context['es_commeta'] = (tipo_financiamiento == 'commeta')
+        return context
 
     def form_valid(self, form):
         print("=== INICIANDO form_valid ===")  # Esto debería aparecer
