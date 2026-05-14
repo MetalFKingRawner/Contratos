@@ -168,7 +168,7 @@ class BeneficiarioForm(forms.ModelForm):
                 'class': 'form-control'
             }),
             'numero_id': forms.TextInput(attrs={
-                'placeholder': 'Número de INE (opcional)',
+                'placeholder': 'Número de Folio del INE (opcional)',
                 'class': 'form-control'
             }),
             'parentesco': forms.TextInput(attrs={
