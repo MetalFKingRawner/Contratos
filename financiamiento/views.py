@@ -842,23 +842,37 @@ def descargar_financiamiento_cotiza_pdf(request, pk):
     # Obtener el financiamiento
     from .models import Financiamiento
     fin = get_object_or_404(Financiamiento, pk=pk)
+    print(f"✅ Financiamiento obtenido: {fin.id}")
     
     # Ruta a la plantilla de financiamiento cotización
     tpl_path = os.path.join(settings.BASE_DIR, 'pdfs/templates/pdfs/cotiza_financia_n.docx')
+    print(f"📄 Ruta del template: {tpl_path}")
     
     # Verificar que la plantilla existe
     if not os.path.exists(tpl_path):
+        print("❌ Template no existe")
         return HttpResponse("Plantilla no encontrada", status=500)
+
+    # Verificar tamaño del archivo
+    file_size = os.path.getsize(tpl_path)
+    print(f"📏 Tamaño del template: {file_size} bytes")
+
+    # Intentar cargar el template
+    print("🔄 Intentando cargar template...")
     
     try:
         # Cargar plantilla
         tpl = DocxTemplate(tpl_path)
+        print("✅ Template cargado exitosamente")
         
         # Generar contexto - pasamos request para obtener el usuario actual
         context = build_financiamiento_cotiza_context(fin, request=request)
+        print(f"✅ Contexto generado con {len(context)} campos")
         
-        # Renderizar plantilla
+        # Renderizar
+        print("🔄 Renderizando...")
         tpl.render(context)
+        print("✅ Renderizado exitoso")
         
         # Crear directorio temporal si no existe
         temp_dir = os.path.join(settings.MEDIA_ROOT, 'temp')
